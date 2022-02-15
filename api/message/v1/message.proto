@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+package message.api.v1;
+option go_package = "api/message/v1;v1";
+
+message Message {
+  string from_user = 1;
+  string to_user = 2;
+  enum Type {
+    TEXT = 0;
+    IMAGES = 1;
+	UNKNOWN = -1;
+  }
+  Type type = 3;
+  string content = 4;
+  int64 send_ts = 5;
+}
