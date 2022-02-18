@@ -2,6 +2,8 @@
 
 IM Server written by golang.
 
+选型参考：https://zhuanlan.zhihu.com/p/31377253
+
 ## Desing
 
 ![desing](./static/goim.png)
