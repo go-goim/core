@@ -3,15 +3,35 @@ syntax = "proto3";
 package message.api.v1;
 option go_package = "api/message/v1;v1";
 
+enum MessageContentType {
+  Text = 0;
+  Image = 1;
+  Voice = 2;
+  UNKNOWN = -1;
+}
+
+// Message receive data from gateway
 message Message {
   string from_user = 1;
   string to_user = 2;
-  enum Type {
-    TEXT = 0;
-    IMAGES = 1;
-	UNKNOWN = -1;
-  }
-  Type type = 3;
+  MessageContentType content_type = 3;
   string content = 4;
-  int64 send_ts = 5;
+}
+
+enum PushMessageType {
+  // user to user
+  ToUser = 0;
+  // user to group
+  ToGroup = 1;
+  // gloabl broadcast
+  ToChannel = 2;
+}
+
+// PushMessage use for push a message to persistence connection server
+message PushMessage {
+  string from_user = 1;
+  string to_user = 2;
+  PushMessageType push_message_type = 3;
+  MessageContentType content_type = 4;
+  string content = 5;
 }
