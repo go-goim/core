@@ -9,7 +9,8 @@ import (
 
 type WsConn struct {
 	websocket.Conn
-	mu       sync.Mutex
+	mu sync.Mutex
+	// todo use websocket.Conn ping func instead of ping channel
 	pingChan <-chan struct{}
 }
 
