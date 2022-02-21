@@ -23,7 +23,7 @@ enum PushMessageType {
   ToUser = 0;
   // user to group
   ToGroup = 1;
-  // gloabl broadcast
+  // global broadcast
   ToChannel = 2;
 }
 
@@ -34,4 +34,14 @@ message PushMessage {
   PushMessageType push_message_type = 3;
   MessageContentType content_type = 4;
   string content = 5;
+}
+
+message MqMessage {
+  string from_user = 1;
+  string to_user = 2;
+  PushMessageType push_message_type = 3;
+  MessageContentType content_type = 4;
+  string content = 5;
+  string topic = 6;
+  int64 delay_sec = 7;
 }
