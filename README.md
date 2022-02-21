@@ -25,8 +25,6 @@ IM Server written by golang.
 
 - gateway 需要承受长连接带来的压力，需要更多的 gateway 来承受大量在线用户的情况
 
-![proxy](./static/conn_ws_gateway.png)
-
 ### httpdns 方案
 
 客户端先通过暴露的域名，去访问 httpdns 服务获取真正后端服务的 ip，然后通过 ip 直接进行长连接
@@ -40,7 +38,13 @@ IM Server written by golang.
 - 没有统一的鉴权入口，入口分散
 - 要求暴露后端服务 ip，安全性降低且比较浪费 ip 资源
 
+dns:
+
 ![ws](./static/conn_ws_dns.png)
+
+gateway:
+
+![gateway](./static/conn_ws_gateway.png)
 
 ## send/rec msg
 
