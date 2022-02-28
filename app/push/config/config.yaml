@@ -1,3 +1,5 @@
+name: goim.push.service
+version: v0.0.0
 http:
   scheme: http
   port: 8081

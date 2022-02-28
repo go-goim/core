@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"fmt"
 
 	"github.com/go-kratos/kratos/v2"
 	"github.com/go-kratos/kratos/v2/log"
@@ -16,9 +17,6 @@ import (
 )
 
 var (
-	Name    = "goim.gateway.service"
-	Version = "v0.0.0"
-	// flagconf is the config flag.
 	flagconf string
 )
 
@@ -28,14 +26,14 @@ func init() {
 
 func main() {
 	flag.Parse()
-	cfg := conf.ParseConfig(flagconf)
+	cfg, _ := conf.ParseConfig(flagconf)
 	s := &service.PushMessager{}
 
 	var servers = make([]transport.Server, 0)
 	if cfg.Http != nil {
 		// debug and metrics
 		servers = append(servers, http.NewServer(
-			http.Address(":8000"),
+			http.Address(fmt.Sprintf("%s:%d", cfg.Http.GetAddr(), cfg.Http.GetPort())),
 			http.Middleware(
 				recovery.Recovery(),
 			),
@@ -44,7 +42,7 @@ func main() {
 	if cfg.Grpc != nil {
 		// services
 		grpcSrv := grpc.NewServer(
-			grpc.Address(":9000"),
+			grpc.Address(fmt.Sprintf("%s:%d", cfg.Grpc.GetAddr(), cfg.Grpc.GetPort())),
 			grpc.Middleware(
 				recovery.Recovery(),
 			),
@@ -54,7 +52,8 @@ func main() {
 	}
 
 	app := kratos.New(
-		kratos.Name(Name),
+		kratos.Name(cfg.GetName()),
+		kratos.Version(cfg.GetVersion()),
 		kratos.Server(
 			servers...,
 		),
