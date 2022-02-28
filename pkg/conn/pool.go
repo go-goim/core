@@ -24,6 +24,13 @@ const (
 	defaultTimeout = time.Minute
 )
 
+var dp = newPool(defaultSize, defaultTimeout)
+
+// GetConn return user connection
+func GetConn(key string) (Conn, bool) {
+	return dp.get(key)
+}
+
 // newPool 初始化连接
 func newPool(size int, timeout time.Duration) *pool {
 	if size <= 0 {
@@ -64,11 +71,20 @@ func (p *pool) put(c Conn) error {
 	}
 	p.connections[c.Key()] = ic
 
-	if !ok {
-		go ic.daemon(p)
+	go ic.daemon(p)
+	return nil
+}
+
+func (p *pool) get(key string) (Conn, bool) {
+	p.mu.RLock()
+	defer p.mu.RUnlock()
+
+	i, ok := p.connections[key]
+	if ok {
+		return i.conn, true
 	}
 
-	return nil
+	return nil, false
 }
 
 func (i *idleConn) daemon(p *pool) {
