@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+package api.config.registry.v1;
+option go_package = "api/config/registry/v1;v1";
+
+message RegistryInfo {
+	string addr = 1;
+	string scheme = 2;
+}
+
+message Registry {
+	string name = 1;
+	oneof reg {
+		RegistryInfo consul = 2;
+		RegistryInfo etcd = 3;
+	}
+}

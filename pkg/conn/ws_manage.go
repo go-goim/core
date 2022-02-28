@@ -17,7 +17,7 @@ type WsConn struct {
 	pingChan chan struct{}
 }
 
-func (wc *WsConn) PushMessage(message *messagev1.PushMessage) error {
+func (wc *WsConn) PushMessage(message *messagev1.PushMessageReq) error {
 	b, err := json.Marshal(message)
 	if err != nil {
 		return err

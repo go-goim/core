@@ -1,0 +1,7 @@
+http:
+  scheme: http
+  port: 8081
+log:
+  level:
+  - info
+  - debug
