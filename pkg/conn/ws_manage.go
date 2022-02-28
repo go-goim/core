@@ -2,8 +2,9 @@ package conn
 
 import (
 	"encoding/json"
+	"log"
 	"net"
-	"sync"
+	"net/http"
 	"time"
 
 	"github.com/gorilla/websocket"
@@ -13,17 +14,27 @@ import (
 type WsConn struct {
 	*websocket.Conn
 	key      string
-	mu       sync.Mutex
 	pingChan chan struct{}
 }
 
-func (w *WsConn) PushMessage(message *messagev1.PushMessage) error {
+func (wc *WsConn) PushMessage(message *messagev1.PushMessage) error {
 	b, err := json.Marshal(message)
 	if err != nil {
 		return err
 	}
 
-	return w.WriteMessage(websocket.TextMessage, b)
+	_ = wc.SetWriteDeadline(time.Now().Add(time.Second))
+	w, err := wc.NextWriter(websocket.TextMessage)
+	if err != nil {
+		return err
+	}
+
+	_, err = w.Write(b)
+	if err != nil {
+		return err
+	}
+
+	return w.Close()
 }
 
 func (w *WsConn) Key() string {
@@ -31,26 +42,17 @@ func (w *WsConn) Key() string {
 }
 
 func (w *WsConn) Ping() <-chan struct{} {
-	w.mu.Lock()
-	if w.pingChan == nil {
-		w.pingChan = make(chan struct{})
-	}
-
-	ch := w.pingChan
-	w.mu.Unlock()
-	return ch
+	return w.pingChan
 }
-
-// closedChan is a reusable closed channel.
-var closedChan = make(chan struct{})
 
 func (w *WsConn) pingFunc(message string) error {
 	err := w.WriteControl(websocket.PongMessage, []byte(message), time.Now().Add(time.Second))
 	if err == nil {
-		if w.pingChan == nil {
-			w.pingChan = closedChan
-		} else {
-			close(w.pingChan)
+		select {
+		// try put ping
+		case w.pingChan <- struct{}{}:
+		// non-blocking
+		default:
 		}
 
 		return nil
@@ -62,4 +64,32 @@ func (w *WsConn) pingFunc(message string) error {
 		return nil
 	}
 	return err
+}
+
+var upgrader = websocket.Upgrader{
+	WriteBufferSize: 1 << 16,
+	ReadBufferSize:  1024,
+}
+
+func WsHandler(w http.ResponseWriter, r *http.Request) {
+	//todo use check uid/token middleware before this handler
+	uid := r.Header.Get("uid")
+	if uid == "" {
+		log.Println("uid not found")
+		return
+	}
+	c, err := upgrader.Upgrade(w, r, nil)
+	if err != nil {
+		// todo
+		log.Println(err)
+		return
+	}
+
+	wc := &WsConn{
+		Conn:     c,
+		pingChan: make(chan struct{}, 1),
+	}
+
+	wc.SetPingHandler(wc.pingFunc)
+	dp.put(wc)
 }
