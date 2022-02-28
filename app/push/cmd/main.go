@@ -4,6 +4,10 @@ import (
 	"flag"
 	"fmt"
 
+	"github.com/yusank/goim/app/push/router"
+
+	"github.com/gin-gonic/gin"
+
 	"github.com/go-kratos/kratos/v2"
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/go-kratos/kratos/v2/middleware/recovery"
@@ -31,13 +35,16 @@ func main() {
 
 	var servers = make([]transport.Server, 0)
 	if cfg.Http != nil {
-		// debug and metrics
-		servers = append(servers, http.NewServer(
+		g := gin.New()
+		router.RegisterRouter(g.Group("/gateway/api"))
+		httpSrv := http.NewServer(
 			http.Address(fmt.Sprintf("%s:%d", cfg.Http.GetAddr(), cfg.Http.GetPort())),
 			http.Middleware(
 				recovery.Recovery(),
 			),
-		))
+		)
+		httpSrv.HandlePrefix("/", g)
+		servers = append(servers, httpSrv)
 	}
 	if cfg.Grpc != nil {
 		// services

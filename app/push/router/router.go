@@ -5,6 +5,6 @@ import (
 	v1 "github.com/yusank/goim/app/push/router/v1"
 )
 
-func ReginterRouter(g *gin.RouterGroup) {
+func RegisterRouter(g *gin.RouterGroup) {
 	v1.Register(g.Group("/v1"))
 }

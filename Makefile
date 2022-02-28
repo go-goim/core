@@ -12,6 +12,10 @@ SHELL:=/usr/bin/env bash
 build-gateway: ## build gateway
 	go build -o bin/gateway app/gateway/cmd/main.go
 
+.PHONY: build-push
+build-push: ## build push server
+	go build -o bin/push app/push/cmd/main.go
+
 .PHONY: build-all
 build-all: build-gateway ## build all app to bin
 
