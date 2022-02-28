@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package message.api.v1;
+package api.message.v1;
 option go_package = "api/message/v1;v1";
 
 enum MessageContentType {
@@ -28,12 +28,32 @@ enum PushMessageType {
 }
 
 // PushMessage use for push a message to persistence connection server
-message PushMessage {
+message PushMessageReq {
   string from_user = 1;
   string to_user = 2;
-  PushMessageType push_message_type = 3;
-  MessageContentType content_type = 4;
-  string content = 5;
+  string agent_id = 3;
+  PushMessageType push_message_type = 4;
+  MessageContentType content_type = 5;
+  string content = 6;
+}
+
+enum PushMessageRespStatus {
+  OK = 0;
+  ConnectionNotFound = 1;
+  ConnectionLost = 2;
+  ConnectionTimeout = 3;
+  WriteTimeout=4;
+  Unknown=5;
+}
+
+
+message PushMessageResp {
+  PushMessageRespStatus status = 1;
+  string reason =2;
+}
+
+service PushMessager {
+  rpc PushMessage(PushMessageReq) returns (PushMessageResp);
 }
 
 message MqMessage {

@@ -1,8 +1,0 @@
-base:
-  port: 8080
-log:
-  level:
-  - debug
-  - info
-  - error
-  - fatal

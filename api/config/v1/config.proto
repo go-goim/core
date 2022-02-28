@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+package api.config.v1;
+option go_package = "api/config/v1;v1";
+
+message ServiceInfo {
+	string scheme = 1;
+	string addr = 2;
+	int32 port = 3;
+}
+
+message Service {
+	optional ServiceInfo http = 1;
+	optional ServiceInfo grpc = 2;
+}
