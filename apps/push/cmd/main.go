@@ -13,9 +13,9 @@ import (
 	"github.com/go-kratos/kratos/v2/transport/http"
 
 	messagev1 "github.com/yusank/goim/api/message/v1"
-	"github.com/yusank/goim/app/push/conf"
-	"github.com/yusank/goim/app/push/router"
-	"github.com/yusank/goim/app/push/service"
+	"github.com/yusank/goim/apps/push/conf"
+	"github.com/yusank/goim/apps/push/router"
+	"github.com/yusank/goim/apps/push/service"
 	"github.com/yusank/goim/pkg/registry"
 )
 
