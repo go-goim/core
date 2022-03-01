@@ -12,7 +12,12 @@ import (
 	clientv3 "go.etcd.io/etcd/client/v3"
 )
 
-func NewRegistry(regCfg *conf.Registry) (registry.Registrar, error) {
+type RegisterDiscover interface {
+	registry.Registrar
+	registry.Discovery
+}
+
+func NewRegistry(regCfg *conf.Registry) (RegisterDiscover, error) {
 	if cfg := regCfg.GetEtcd(); cfg != nil {
 		return newEtcdRegistry(cfg)
 	}
@@ -24,7 +29,7 @@ func NewRegistry(regCfg *conf.Registry) (registry.Registrar, error) {
 	return nil, nil
 }
 
-func newEtcdRegistry(cfg *registryv1.RegistryInfo) (registry.Registrar, error) {
+func newEtcdRegistry(cfg *registryv1.RegistryInfo) (RegisterDiscover, error) {
 	cli, err := clientv3.New(clientv3.Config{
 		Endpoints:            cfg.GetAddr(),
 		DialTimeout:          time.Second * time.Duration(cfg.GetDialTimeoutSec()),
@@ -38,7 +43,7 @@ func newEtcdRegistry(cfg *registryv1.RegistryInfo) (registry.Registrar, error) {
 	return etcd.New(cli), nil
 }
 
-func newConsulRegistry(cfg *registryv1.RegistryInfo) (registry.Registrar, error) {
+func newConsulRegistry(cfg *registryv1.RegistryInfo) (RegisterDiscover, error) {
 	cli, err := api.NewClient(&api.Config{
 		Address: cfg.GetAddr()[0],
 		Scheme:  cfg.GetScheme(),

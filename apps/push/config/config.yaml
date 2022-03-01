@@ -5,7 +5,7 @@ http:
   port: 8081
 grpc:
   scheme: grpc
-  port: 8091
+  port: 8083
 log:
   level:
   - INFO
