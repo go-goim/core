@@ -15,6 +15,7 @@ message Service {
 	optional Server http = 3;
 	optional Server grpc = 4;
 	Log log = 5;
+	map<string, string> metadata = 6;
 }
 
 enum Level {

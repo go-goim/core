@@ -8,5 +8,8 @@ grpc:
   port: 8091
 log:
   level:
-  - info
-  - debug
+  - INFO
+  - DEBUG
+metadata:
+  httpSrv: yes
+  grpcSrv: yes

@@ -1,4 +1,5 @@
 name: goim.push.service
 consul:
-  addr: 127.0.0.1
-  scheme: grpc
+  addr:
+    - 127.0.0.1:8500
+  scheme: http

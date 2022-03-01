@@ -3,9 +3,13 @@ syntax = "proto3";
 package api.config.registry.v1;
 option go_package = "api/config/registry/v1;v1";
 
+// todo: add validation
 message RegistryInfo {
-	string addr = 1;
+	repeated string addr = 1;
 	string scheme = 2;
+	int64 dial_timeout_sec = 3;
+	int64 dial_keep_alive_time_sec = 4;
+	int64 dial_keep_alive_timeout_sec = 5;
 }
 
 message Registry {
