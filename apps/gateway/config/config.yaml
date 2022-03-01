@@ -1,0 +1,11 @@
+name: goim.gateway.service
+version: v0.0.0
+http:
+  scheme: http
+  port: 8071
+log:
+  level:
+  - INFO
+  - DEBUG
+metadata:
+  httpSrv: yes
