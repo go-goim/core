@@ -2,6 +2,8 @@ SHELL:=/usr/bin/env bash
 
 .DEFAULT_GOAL:=help
 
+RunSrv ?= push
+
 ##################################################
 # Build                                          #
 ##################################################
@@ -18,6 +20,16 @@ build-push: ## build push server
 
 .PHONY: build-all
 build-all: build-gateway ## build all app to bin
+
+##################################################
+# Run                                            #
+##################################################
+
+##@ Run
+
+.PHONY: run
+run: build-$(RunSrv)## run provided server
+	./bin/$(RunSrv) --conf app/$(RunSrv)/config
 
 ##################################################
 # General                                        #
