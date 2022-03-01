@@ -14,4 +14,18 @@ message Service {
 	string version = 2;
 	optional Server http = 3;
 	optional Server grpc = 4;
+	Log log = 5;
+}
+
+enum Level {
+	DEBUG = 0;
+	INFO = 1;
+	WARING = 2;
+	ERROR = 3;
+	FATAL = 4;
+}
+
+message Log {
+	optional string log_path = 1;
+	repeated Level level = 2;
 }
