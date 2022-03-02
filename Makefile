@@ -3,6 +3,9 @@ SHELL:=/usr/bin/env bash
 .DEFAULT_GOAL:=help
 
 RunSrv ?= push
+BinPath ?= bin/$(RunSrv)
+CmdPath ?= apps/$(RunSrv)/cmd/main.go
+CfgPath ?= apps/$(RunSrv)/config
 
 ##################################################
 # Build                                          #
@@ -10,16 +13,9 @@ RunSrv ?= push
 
 ##@ Build
 
-.PHONY: build-gateway
-build-gateway: ## build gateway
-	go build -o bin/gateway app/gateway/cmd/main.go
-
-.PHONY: build-push
-build-push: ## build push server
-	go build -o bin/push app/push/cmd/main.go
-
-.PHONY: build-all
-build-all: build-gateway ## build all app to bin
+.PHONY: build
+build: ## build provided server
+	go build -o $(BinPath) $(CmdPath)
 
 ##################################################
 # Run                                            #
@@ -28,8 +24,8 @@ build-all: build-gateway ## build all app to bin
 ##@ Run
 
 .PHONY: run
-run: build-$(RunSrv)## run provided server
-	./bin/$(RunSrv) --conf app/$(RunSrv)/config
+run: build ## run provided server
+	./$(BinPath) --conf $(CfgPath)
 
 ##################################################
 # General                                        #
