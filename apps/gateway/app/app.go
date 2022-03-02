@@ -63,7 +63,7 @@ func InitApplication(confPath string) (*Application, error) {
 		kratos.Metadata(cfg.GetMetadata()),
 	}
 
-	reg, err := registry.NewRegistry(regCfg)
+	reg, err := registry.NewRegistry(regCfg.Registry)
 	if err != nil {
 		return nil, err
 	}
