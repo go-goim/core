@@ -10,12 +10,21 @@ enum MessageContentType {
   UNKNOWN = -1;
 }
 
-// Message receive data from gateway
-message Message {
+// SendMessageReq receive data from gateway
+message SendMessageReq {
   string from_user = 1;
   string to_user = 2;
   MessageContentType content_type = 3;
   string content = 4;
+}
+
+message SendMessageResp {
+  int32 status = 1;
+  string reason =2;
+}
+
+service SendMeesager {
+  rpc SendMessage(SendMessageReq) returns (SendMessageResp);
 }
 
 enum PushMessageType {

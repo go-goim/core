@@ -14,6 +14,92 @@ import (
 // Requires gRPC-Go v1.32.0 or later.
 const _ = grpc.SupportPackageIsVersion7
 
+// SendMeesagerClient is the client API for SendMeesager service.
+//
+// For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
+type SendMeesagerClient interface {
+	SendMessage(ctx context.Context, in *SendMessageReq, opts ...grpc.CallOption) (*SendMessageResp, error)
+}
+
+type sendMeesagerClient struct {
+	cc grpc.ClientConnInterface
+}
+
+func NewSendMeesagerClient(cc grpc.ClientConnInterface) SendMeesagerClient {
+	return &sendMeesagerClient{cc}
+}
+
+func (c *sendMeesagerClient) SendMessage(ctx context.Context, in *SendMessageReq, opts ...grpc.CallOption) (*SendMessageResp, error) {
+	out := new(SendMessageResp)
+	err := c.cc.Invoke(ctx, "/api.message.v1.SendMeesager/SendMessage", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+// SendMeesagerServer is the server API for SendMeesager service.
+// All implementations must embed UnimplementedSendMeesagerServer
+// for forward compatibility
+type SendMeesagerServer interface {
+	SendMessage(context.Context, *SendMessageReq) (*SendMessageResp, error)
+	mustEmbedUnimplementedSendMeesagerServer()
+}
+
+// UnimplementedSendMeesagerServer must be embedded to have forward compatible implementations.
+type UnimplementedSendMeesagerServer struct {
+}
+
+func (UnimplementedSendMeesagerServer) SendMessage(context.Context, *SendMessageReq) (*SendMessageResp, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SendMessage not implemented")
+}
+func (UnimplementedSendMeesagerServer) mustEmbedUnimplementedSendMeesagerServer() {}
+
+// UnsafeSendMeesagerServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to SendMeesagerServer will
+// result in compilation errors.
+type UnsafeSendMeesagerServer interface {
+	mustEmbedUnimplementedSendMeesagerServer()
+}
+
+func RegisterSendMeesagerServer(s grpc.ServiceRegistrar, srv SendMeesagerServer) {
+	s.RegisterService(&SendMeesager_ServiceDesc, srv)
+}
+
+func _SendMeesager_SendMessage_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SendMessageReq)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(SendMeesagerServer).SendMessage(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/api.message.v1.SendMeesager/SendMessage",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SendMeesagerServer).SendMessage(ctx, req.(*SendMessageReq))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+// SendMeesager_ServiceDesc is the grpc.ServiceDesc for SendMeesager service.
+// It's only intended for direct use with grpc.RegisterService,
+// and not to be introspected or modified (even as a copy)
+var SendMeesager_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "api.message.v1.SendMeesager",
+	HandlerType: (*SendMeesagerServer)(nil),
+	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "SendMessage",
+			Handler:    _SendMeesager_SendMessage_Handler,
+		},
+	},
+	Streams:  []grpc.StreamDesc{},
+	Metadata: "api/message/v1/message.proto",
+}
+
 // PushMessagerClient is the client API for PushMessager service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
@@ -31,7 +117,7 @@ func NewPushMessagerClient(cc grpc.ClientConnInterface) PushMessagerClient {
 
 func (c *pushMessagerClient) PushMessage(ctx context.Context, in *PushMessageReq, opts ...grpc.CallOption) (*PushMessageResp, error) {
 	out := new(PushMessageResp)
-	err := c.cc.Invoke(ctx, "/message.api.v1.PushMessager/PushMessage", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/api.message.v1.PushMessager/PushMessage", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -76,7 +162,7 @@ func _PushMessager_PushMessage_Handler(srv interface{}, ctx context.Context, dec
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/message.api.v1.PushMessager/PushMessage",
+		FullMethod: "/api.message.v1.PushMessager/PushMessage",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(PushMessagerServer).PushMessage(ctx, req.(*PushMessageReq))
@@ -88,7 +174,7 @@ func _PushMessager_PushMessage_Handler(srv interface{}, ctx context.Context, dec
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var PushMessager_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "message.api.v1.PushMessager",
+	ServiceName: "api.message.v1.PushMessager",
 	HandlerType: (*PushMessagerServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
