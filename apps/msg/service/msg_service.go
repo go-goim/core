@@ -5,8 +5,10 @@ import (
 
 	"github.com/go-kratos/kratos/v2/selector"
 	"github.com/go-kratos/kratos/v2/transport/grpc"
+
 	messagev1 "github.com/yusank/goim/api/message/v1"
 	"github.com/yusank/goim/apps/msg/app"
+	"github.com/yusank/goim/apps/msg/data"
 	"github.com/yusank/goim/pkg/registry"
 )
 
@@ -16,8 +18,7 @@ type SendMessage struct {
 
 func (m *SendMessage) SendMessage(ctx context.Context, req *messagev1.SendMessageReq) (*messagev1.SendMessageResp, error) {
 	var agentId string
-	// todo: load user online status and online push server from redis
-	str, err := app.GetApplication().Redis.Get(ctx, "xxx").Result()
+	str, err := app.GetApplication().Redis.Get(ctx, data.GetUserOnlineAgentKey(req.GetToUser())).Result()
 	if err != nil {
 		return nil, err
 	}
