@@ -57,5 +57,6 @@ func ParseConfig(fp string) (*Config, *Registry) {
 		panic(err)
 	}
 	log.Printf("%+v", reg)
+	reg.Name = cfg.GetName()
 	return cfg, reg
 }
