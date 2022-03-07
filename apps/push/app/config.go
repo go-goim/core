@@ -1,4 +1,4 @@
-package conf
+package app
 
 import (
 	"log"
@@ -11,7 +11,6 @@ import (
 
 type Config struct {
 	*configv1.Service `json:",inline"`
-	config.Config     `json:"-"`
 	Filepath          string
 }
 
@@ -23,7 +22,6 @@ func NewConfig() *Config {
 
 type Registry struct {
 	*registryv1.Registry `json:",inline"`
-	config.Config        `json:"-"`
 	FilePath             string
 }
 
@@ -44,7 +42,6 @@ func ParseConfig(fp string) (*Config, *Registry) {
 	}
 
 	cfg := NewConfig()
-	cfg.Config = c
 	// Unmarshal the config to struct
 	if err := c.Scan(cfg); err != nil {
 		panic(err)
@@ -52,7 +49,6 @@ func ParseConfig(fp string) (*Config, *Registry) {
 	log.Printf("%+v", cfg)
 
 	reg := NewRegistry()
-	reg.Config = c
 	if err := c.Scan(reg); err != nil {
 		panic(err)
 	}

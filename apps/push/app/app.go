@@ -8,7 +8,6 @@ import (
 	"github.com/go-kratos/kratos/v2/transport"
 	"github.com/go-kratos/kratos/v2/transport/grpc"
 	"github.com/go-kratos/kratos/v2/transport/http"
-
 	"github.com/yusank/goim/pkg/registry"
 )
 
@@ -88,12 +87,4 @@ func InitApplication(confPath string) (*Application, error) {
 
 func (a *Application) Run() error {
 	return a.Core.Run()
-}
-
-func GetRegister() registry.RegisterDiscover {
-	return application.Register
-}
-
-func GetServerConfig() *Config {
-	return application.ServerConfig
 }

@@ -12,8 +12,6 @@ var (
 	flagconf string
 )
 
-// todo: 整合合并重复的代码 包括初始化 app 以及 config 的解析
-
 func init() {
 	flag.StringVar(&flagconf, "conf", "../config", "config path, eg: --conf config.yaml")
 }

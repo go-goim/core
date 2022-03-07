@@ -1,4 +1,4 @@
-package conf
+package app
 
 import (
 	"log"
