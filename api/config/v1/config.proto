@@ -3,6 +3,8 @@ syntax = "proto3";
 package api.config.v1;
 option go_package = "api/config/v1;v1";
 
+import "google/protobuf/duration.proto";
+
 message Server {
 	string scheme = 1;
 	string addr = 2;
@@ -16,6 +18,7 @@ message Service {
 	optional Server grpc = 4;
 	Log log = 5;
 	map<string, string> metadata = 6;
+	Redis redis = 7;
 }
 
 enum Level {
@@ -29,4 +32,13 @@ enum Level {
 message Log {
 	optional string log_path = 1;
 	repeated Level level = 2;
+}
+
+message Redis {
+	string addr = 1;
+	string password = 2;
+	int32 max_conns = 3;
+	int32 min_idle_conns = 4;
+	google.protobuf.Duration dial_timeout = 5;
+	google.protobuf.Duration idle_timeout = 6;
 }

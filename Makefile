@@ -6,6 +6,7 @@ RunSrv ?= push
 BinPath ?= bin/$(RunSrv)
 CmdPath ?= apps/$(RunSrv)/cmd/main.go
 CfgPath ?= apps/$(RunSrv)/config
+ProtoFile ?= api/config/v1/config.proto
 
 ##################################################
 # Development                                    #
@@ -20,6 +21,16 @@ vet: ## Run go vet against code.
 .PHONY: lint
 lint: ## Run go lint against code.
 	golangci-lint run ./... -v
+
+##################################################
+# Generate                                          #
+##################################################
+
+##@ Generate
+
+.PHONY: protoc
+protoc: ## Run protoc command to generate pb code.
+	protoc -I. --go_out=. --go-grpc_out=. $(ProtoFile)
 
 ##################################################
 # Build                                          #
