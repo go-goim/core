@@ -91,5 +91,5 @@ func WsHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	wc.SetPingHandler(wc.pingFunc)
-	dp.put(wc)
+	_ = dp.put(wc)
 }

@@ -1,16 +1,18 @@
-package conf
+package app
 
 import (
 	"log"
 
 	"github.com/go-kratos/kratos/v2/config"
 	"github.com/go-kratos/kratos/v2/config/file"
+
 	registryv1 "github.com/yusank/goim/api/config/registry/v1"
 	configv1 "github.com/yusank/goim/api/config/v1"
 )
 
 type Config struct {
 	*configv1.Service `json:",inline"`
+	config.Config     `json:"-"`
 	Filepath          string
 }
 
@@ -22,6 +24,7 @@ func NewConfig() *Config {
 
 type Registry struct {
 	*registryv1.Registry `json:",inline"`
+	config.Config        `json:"-"`
 	FilePath             string
 }
 
@@ -42,6 +45,7 @@ func ParseConfig(fp string) (*Config, *Registry) {
 	}
 
 	cfg := NewConfig()
+	cfg.Config = c
 	// Unmarshal the config to struct
 	if err := c.Scan(cfg); err != nil {
 		panic(err)
@@ -49,6 +53,7 @@ func ParseConfig(fp string) (*Config, *Registry) {
 	log.Printf("%+v", cfg)
 
 	reg := NewRegistry()
+	reg.Config = c
 	if err := c.Scan(reg); err != nil {
 		panic(err)
 	}

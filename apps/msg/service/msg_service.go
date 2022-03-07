@@ -21,7 +21,9 @@ func (m *SendMessage) SendMessage(ctx context.Context, req *messagev1.SendMessag
 		return nil, err
 	}
 
-	cc, err := grpc.Dial(ctx, grpc.WithDiscovery(reg), grpc.WithFilter(getFilter(agentId)))
+	cc, err := grpc.Dial(ctx, grpc.WithDiscovery(reg),
+		grpc.WithEndpoint("discovry://goim.push.service"),
+		grpc.WithFilter(getFilter(agentId)))
 	if err != nil {
 		return nil, err
 	}

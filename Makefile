@@ -8,6 +8,20 @@ CmdPath ?= apps/$(RunSrv)/cmd/main.go
 CfgPath ?= apps/$(RunSrv)/config
 
 ##################################################
+# Development                                    #
+##################################################
+
+##@ Development
+
+.PHONY: vet
+vet: ## Run go vet against code.
+	go vet -v ./...
+
+.PHONY: lint
+lint: ## Run go lint against code.
+	golangci-lint run ./... -v
+
+##################################################
 # Build                                          #
 ##################################################
 

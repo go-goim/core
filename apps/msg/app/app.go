@@ -9,15 +9,14 @@ import (
 	"github.com/go-kratos/kratos/v2/transport/grpc"
 	"github.com/go-kratos/kratos/v2/transport/http"
 
-	"github.com/yusank/goim/apps/msg/conf"
 	"github.com/yusank/goim/pkg/registry"
 )
 
 type Application struct {
 	Core           *kratos.App
 	Register       registry.RegisterDiscover
-	ServerConfig   *conf.Config
-	RegisterConfig *conf.Registry
+	ServerConfig   *Config
+	RegisterConfig *Registry
 	HttpServer     *http.Server
 	GrpcServer     *grpc.Server
 }
@@ -34,7 +33,7 @@ func InitApplication(confPath string) (*Application, error) {
 	onceChan <- struct{}{}
 	close(onceChan)
 
-	cfg, regCfg := conf.ParseConfig(confPath)
+	cfg, regCfg := ParseConfig(confPath)
 	var servers = make([]transport.Server, 0)
 
 	application = &Application{
@@ -102,6 +101,6 @@ func GetRegister() registry.RegisterDiscover {
 	return application.Register
 }
 
-func GetServerConfig() *conf.Config {
+func GetServerConfig() *Config {
 	return application.ServerConfig
 }
