@@ -8,7 +8,9 @@ import (
 	"github.com/go-kratos/kratos/v2/transport"
 	"github.com/go-kratos/kratos/v2/transport/grpc"
 	"github.com/go-kratos/kratos/v2/transport/http"
+	redisv8 "github.com/go-redis/redis/v8"
 
+	"github.com/yusank/goim/pkg/db/redis"
 	"github.com/yusank/goim/pkg/registry"
 )
 
@@ -19,6 +21,7 @@ type Application struct {
 	RegisterConfig *Registry
 	HttpServer     *http.Server
 	GrpcServer     *grpc.Server
+	Redis          *redisv8.Client
 }
 
 var (
@@ -81,6 +84,12 @@ func InitApplication(confPath string) (*Application, error) {
 		application.Register = reg
 		options = append(options, kratos.Registrar(reg))
 	}
+
+	rdb, err := redis.NewRedis(redis.WithConfig(cfg.GetRedis()))
+	if err != nil {
+		return nil, err
+	}
+	application.Redis = rdb
 
 	application.Core = kratos.New(
 		options...,
