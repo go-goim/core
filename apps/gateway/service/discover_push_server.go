@@ -5,17 +5,13 @@ import (
 	"fmt"
 	"math/rand"
 
-	"github.com/yusank/goim/apps/gateway/app"
+	"github.com/yusank/goim/pkg/registry"
 )
 
 func LoadMatchedPushServer(ctx context.Context) (string, error) {
-	reg := app.GetRegister()
-	if reg == nil {
-		return "", fmt.Errorf("not init register")
-	}
 
 	// todo read service name from config
-	list, err := reg.GetService(ctx, "goim.push.service")
+	list, err := registry.GetService(ctx, "goim.push.service")
 	if err != nil {
 		return "", err
 	}

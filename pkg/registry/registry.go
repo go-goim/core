@@ -120,5 +120,6 @@ func newConsulRegistry(cfg *registryv1.RegistryInfo) (RegisterDiscover, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	return consul.New(cli, consul.WithHeartbeat(false), consul.WithHealthCheck(false)), nil
 }

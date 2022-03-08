@@ -31,6 +31,11 @@ func GetConn(key string) (Conn, bool) {
 	return dp.get(key)
 }
 
+// PutConn put the connection into pool
+func PutConn(c Conn) error {
+	return dp.put(c)
+}
+
 // newPool 初始化连接
 func newPool(size int, timeout time.Duration) *pool {
 	if size <= 0 {

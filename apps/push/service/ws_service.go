@@ -1,20 +1,35 @@
-package conn
+package service
 
 import (
+	"context"
 	"encoding/json"
-	"log"
 	"net"
-	"net/http"
 	"time"
 
 	"github.com/gorilla/websocket"
 	messagev1 "github.com/yusank/goim/api/message/v1"
+	"github.com/yusank/goim/apps/push/app"
+	"github.com/yusank/goim/apps/push/data"
+	"github.com/yusank/goim/pkg/conn"
 )
 
 type WsConn struct {
 	*websocket.Conn
 	key      string
 	pingChan chan struct{}
+}
+
+func HandleWsConn(c *websocket.Conn, uid string) {
+	wc := &WsConn{
+		Conn:     c,
+		key:      uid,
+		pingChan: make(chan struct{}, 1),
+	}
+
+	wc.SetPingHandler(wc.pingFunc)
+	_ = conn.PutConn(wc)
+
+	_ = app.GetApplication().Redis.Set(context.Background(), data.GetUserOnlineAgentKey(uid), app.GetAgentID(), data.UserOnlineAgentKeyExpire).Err()
 }
 
 func (wc *WsConn) PushMessage(message *messagev1.PushMessageReq) error {
@@ -64,32 +79,4 @@ func (w *WsConn) pingFunc(message string) error {
 		return nil
 	}
 	return err
-}
-
-var upgrader = websocket.Upgrader{
-	WriteBufferSize: 1 << 16,
-	ReadBufferSize:  1024,
-}
-
-func WsHandler(w http.ResponseWriter, r *http.Request) {
-	//todo use check uid/token middleware before this handler
-	uid := r.Header.Get("uid")
-	if uid == "" {
-		log.Println("uid not found")
-		return
-	}
-	c, err := upgrader.Upgrade(w, r, nil)
-	if err != nil {
-		// todo
-		log.Println(err)
-		return
-	}
-
-	wc := &WsConn{
-		Conn:     c,
-		pingChan: make(chan struct{}, 1),
-	}
-
-	wc.SetPingHandler(wc.pingFunc)
-	_ = dp.put(wc)
 }
