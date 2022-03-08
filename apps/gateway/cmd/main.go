@@ -3,7 +3,9 @@ package main
 import (
 	"flag"
 
+	"github.com/gin-gonic/gin"
 	"github.com/yusank/goim/apps/gateway/app"
+	"github.com/yusank/goim/apps/gateway/router"
 
 	"github.com/go-kratos/kratos/v2/log"
 )
@@ -22,6 +24,10 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	g := gin.New()
+	router.RegisterRouter(g.Group("/gateway/service"))
+	application.HttpSrv.HandlePrefix("/", g)
 
 	if err = application.Run(); err != nil {
 		log.Fatal(err)

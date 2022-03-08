@@ -8,6 +8,10 @@ import (
 	"github.com/go-kratos/kratos/v2/transport"
 	"github.com/go-kratos/kratos/v2/transport/grpc"
 	"github.com/go-kratos/kratos/v2/transport/http"
+	redisv8 "github.com/go-redis/redis/v8"
+	"github.com/google/uuid"
+
+	"github.com/yusank/goim/pkg/db/redis"
 	"github.com/yusank/goim/pkg/registry"
 )
 
@@ -16,6 +20,8 @@ type Application struct {
 	Register       registry.RegisterDiscover
 	ServerConfig   *Config
 	RegisterConfig *Registry
+	Redis          *redisv8.Client
+	agentID        string
 }
 
 var (
@@ -50,7 +56,6 @@ func InitApplication(confPath string) (*Application, error) {
 			),
 		)
 		servers = append(servers, grpcSrv)
-		//messagev1.RegisterPushMessagerServer(grpcSrv, s)
 	}
 
 	var options = []kratos.Option{
@@ -66,9 +71,13 @@ func InitApplication(confPath string) (*Application, error) {
 	if err != nil {
 		return nil, err
 	}
-
 	if reg != nil {
 		options = append(options, kratos.Registrar(reg))
+	}
+
+	rdb, err := redis.NewRedis(redis.WithConfig(cfg.GetRedis()))
+	if err != nil {
+		return nil, err
 	}
 
 	core := kratos.New(
@@ -80,6 +89,8 @@ func InitApplication(confPath string) (*Application, error) {
 		ServerConfig:   cfg,
 		RegisterConfig: regCfg,
 		Register:       reg,
+		Redis:          rdb,
+		agentID:        uuid.NewString(),
 	}
 
 	return application, nil
@@ -87,4 +98,12 @@ func InitApplication(confPath string) (*Application, error) {
 
 func (a *Application) Run() error {
 	return a.Core.Run()
+}
+
+func GetApplication() *Application {
+	return application
+}
+
+func GetAgentID() string {
+	return application.agentID
 }

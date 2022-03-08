@@ -8,18 +8,16 @@ import (
 	"github.com/go-kratos/kratos/v2/transport"
 	"github.com/go-kratos/kratos/v2/transport/grpc"
 	"github.com/go-kratos/kratos/v2/transport/http"
-	redisv8 "github.com/go-redis/redis/v8"
 
-	"github.com/yusank/goim/pkg/db/redis"
 	"github.com/yusank/goim/pkg/registry"
 )
 
 type Application struct {
 	Core           *kratos.App
 	Register       registry.RegisterDiscover
+	HttpSrv        *http.Server
 	ServerConfig   *Config
 	RegisterConfig *Registry
-	Redis          *redisv8.Client
 }
 
 var (
@@ -33,7 +31,10 @@ func InitApplication(confPath string) (*Application, error) {
 	close(onceChan)
 
 	cfg, regCfg := ParseConfig(confPath)
-	//s := &service.PushMessager{}
+	application = &Application{
+		ServerConfig:   cfg,
+		RegisterConfig: regCfg,
+	}
 
 	var servers = make([]transport.Server, 0)
 	if cfg.Http != nil {
@@ -43,6 +44,7 @@ func InitApplication(confPath string) (*Application, error) {
 				recovery.Recovery(),
 			),
 		)
+		application.HttpSrv = httpSrv
 		servers = append(servers, httpSrv)
 	}
 	if cfg.Grpc != nil {
@@ -54,7 +56,6 @@ func InitApplication(confPath string) (*Application, error) {
 			),
 		)
 		servers = append(servers, grpcSrv)
-		//messagev1.RegisterPushMessagerServer(grpcSrv, s)
 	}
 
 	var options = []kratos.Option{
@@ -72,25 +73,13 @@ func InitApplication(confPath string) (*Application, error) {
 	}
 
 	if reg != nil {
+		application.Register = reg
 		options = append(options, kratos.Registrar(reg))
 	}
 
-	rdb, err := redis.NewRedis(redis.WithConfig(cfg.GetRedis()))
-	if err != nil {
-		return nil, err
-	}
-
-	core := kratos.New(
+	application.Core = kratos.New(
 		options...,
 	)
-
-	application = &Application{
-		Core:           core,
-		ServerConfig:   cfg,
-		RegisterConfig: regCfg,
-		Register:       reg,
-		Redis:          rdb,
-	}
 
 	return application, nil
 }
