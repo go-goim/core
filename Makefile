@@ -2,10 +2,10 @@ SHELL:=/usr/bin/env bash
 
 .DEFAULT_GOAL:=help
 
-RunSrv ?= push
-BinPath ?= bin/$(RunSrv)
-CmdPath ?= apps/$(RunSrv)/cmd/main.go
-CfgPath ?= apps/$(RunSrv)/config
+Srv ?= push
+BinPath ?= bin/$(Srv)
+CmdPath ?= apps/$(Srv)/cmd/main.go
+CfgPath ?= apps/$(Srv)/config
 ProtoFile ?= api/config/v1/config.proto
 
 ##################################################

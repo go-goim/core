@@ -10,7 +10,6 @@ require (
 	github.com/google/uuid v1.3.0
 	github.com/gorilla/websocket v1.5.0
 	github.com/hashicorp/consul/api v1.12.0
-	github.com/yusank/goim/pkg/registry/consul v0.0.0-20220309040017-f16b1f1784a7
 	go.etcd.io/etcd/client/v3 v3.5.0
 	google.golang.org/grpc v1.44.0
 	google.golang.org/protobuf v1.27.1

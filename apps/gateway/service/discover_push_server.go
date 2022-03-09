@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"math/rand"
+	"strings"
 
 	"github.com/yusank/goim/pkg/registry"
 )
@@ -20,17 +21,17 @@ func LoadMatchedPushServer(ctx context.Context) (string, error) {
 		return "", fmt.Errorf("service not found")
 	}
 
+	var eps []string
 	for _, instance := range list {
-		if instance.Metadata["ready"] != "true" {
-			continue
+		for _, ep := range instance.Endpoints {
+			if strings.HasPrefix(ep, "http") {
+				eps = append(eps, ep)
+			}
 		}
-
-		if len(instance.Endpoints) == 0 {
-			continue
-		}
-
-		return instance.Endpoints[rand.Int()%len(instance.Endpoints)], nil
+	}
+	if len(eps) == 0 {
+		return "", fmt.Errorf("no matched service")
 	}
 
-	return "", fmt.Errorf("no matched service")
+	return eps[rand.Int()%len(eps)], nil
 }
