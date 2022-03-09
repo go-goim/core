@@ -12,7 +12,6 @@ import (
 type consulWatcher struct {
 	c           *Client
 	wp          *watch.Plan
-	watchers    map[string]*watch.Plan
 	next        chan []*registry.ServiceInstance
 	serviceName string
 
@@ -27,7 +26,6 @@ func newConsulWatcher(ctx context.Context, c *Client, name string) (registry.Wat
 		ctx:         ctx2,
 		cancel:      cancel,
 		next:        make(chan []*registry.ServiceInstance, 10),
-		watchers:    make(map[string]*watch.Plan),
 		serviceName: name,
 	}
 
