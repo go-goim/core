@@ -81,6 +81,7 @@ func (c *Client) Service(ctx context.Context, service string, passingOnly bool) 
 	opts = opts.WithContext(ctx)
 	entries, _, err := c.cli.Health().Service(service, "", passingOnly, opts)
 	if err != nil {
+		log.Errorf("[consul] get svc err:%v", err)
 		return nil, err
 	}
 	return c.resolver(ctx, entries), nil

@@ -84,7 +84,7 @@ func (r *Registry) Deregister(ctx context.Context, svc *registry.ServiceInstance
 
 // GetService return service by name
 func (r *Registry) GetService(ctx context.Context, name string) (services []*registry.ServiceInstance, err error) {
-	return r.cli.Service(ctx, name, false)
+	return r.cli.Service(ctx, name, true)
 }
 
 // ListServices return service list.

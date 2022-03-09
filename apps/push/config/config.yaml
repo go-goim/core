@@ -14,4 +14,4 @@ metadata:
   httpSrv: yes
   grpcSrv: yes
 redis:
-  addr: 127.0.0.1:7379
+  addr: 127.0.0.1:6379
