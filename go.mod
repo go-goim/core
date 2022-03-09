@@ -4,13 +4,13 @@ go 1.17
 
 require (
 	github.com/gin-gonic/gin v1.7.7
-	github.com/go-kratos/kratos/contrib/registry/consul/v2 v2.0.0-20220301040457-03ad2b663624
 	github.com/go-kratos/kratos/contrib/registry/etcd/v2 v2.0.0-20220301040457-03ad2b663624
 	github.com/go-kratos/kratos/v2 v2.2.0
 	github.com/go-redis/redis/v8 v8.11.4
 	github.com/google/uuid v1.3.0
 	github.com/gorilla/websocket v1.5.0
-	github.com/hashicorp/consul/api v1.9.1
+	github.com/hashicorp/consul/api v1.12.0
+	github.com/yusank/goim/pkg/registry/consul v0.0.0-20220309040017-f16b1f1784a7
 	go.etcd.io/etcd/client/v3 v3.5.0
 	google.golang.org/grpc v1.44.0
 	google.golang.org/protobuf v1.27.1
@@ -37,7 +37,7 @@ require (
 	github.com/hashicorp/go-immutable-radix v1.0.0 // indirect
 	github.com/hashicorp/go-rootcerts v1.0.2 // indirect
 	github.com/hashicorp/golang-lru v0.5.0 // indirect
-	github.com/hashicorp/serf v0.9.5 // indirect
+	github.com/hashicorp/serf v0.9.6 // indirect
 	github.com/imdario/mergo v0.3.12 // indirect
 	github.com/json-iterator/go v1.1.11 // indirect
 	github.com/leodido/go-urn v1.2.0 // indirect
