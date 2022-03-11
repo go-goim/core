@@ -30,6 +30,20 @@ func HandleWsConn(c *websocket.Conn, uid string) {
 	_ = conn.PutConn(wc)
 
 	_ = app.GetApplication().Redis.Set(context.Background(), data.GetUserOnlineAgentKey(uid), app.GetAgentID(), data.UserOnlineAgentKeyExpire).Err()
+
+	// write msg
+	_ = c.SetWriteDeadline(time.Now().Add(time.Second))
+	w, err := wc.NextWriter(websocket.TextMessage)
+	if err != nil {
+		return
+	}
+
+	_, err = w.Write([]byte("connect success"))
+	if err != nil {
+		return
+	}
+
+	_ = w.Close()
 }
 
 func (wc *WsConn) PushMessage(message *messagev1.PushMessageReq) error {
