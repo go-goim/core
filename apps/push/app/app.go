@@ -20,6 +20,8 @@ type Application struct {
 	Register       registry.RegisterDiscover
 	ServerConfig   *Config
 	RegisterConfig *Registry
+	HttpServer     *http.Server
+	GrpcServer     *grpc.Server
 	Redis          *redisv8.Client
 	agentID        string
 }
@@ -35,7 +37,11 @@ func InitApplication(confPath string) (*Application, error) {
 	close(onceChan)
 
 	cfg, regCfg := ParseConfig(confPath)
-	//s := &service.PushMessager{}
+	application = &Application{
+		ServerConfig:   cfg,
+		RegisterConfig: regCfg,
+		agentID:        uuid.NewString(),
+	}
 
 	var servers = make([]transport.Server, 0)
 	if cfg.Http != nil {
@@ -45,6 +51,7 @@ func InitApplication(confPath string) (*Application, error) {
 				recovery.Recovery(),
 			),
 		)
+		application.HttpServer = httpSrv
 		servers = append(servers, httpSrv)
 	}
 	if cfg.Grpc != nil {
@@ -55,6 +62,7 @@ func InitApplication(confPath string) (*Application, error) {
 				recovery.Recovery(),
 			),
 		)
+		application.GrpcServer = grpcSrv
 		servers = append(servers, grpcSrv)
 	}
 
@@ -72,6 +80,7 @@ func InitApplication(confPath string) (*Application, error) {
 		return nil, err
 	}
 	if reg != nil {
+		application.Register = reg
 		options = append(options, kratos.Registrar(reg))
 	}
 
@@ -79,20 +88,13 @@ func InitApplication(confPath string) (*Application, error) {
 	if err != nil {
 		return nil, err
 	}
+	application.Redis = rdb
 
 	core := kratos.New(
 		options...,
 	)
 
-	application = &Application{
-		Core:           core,
-		ServerConfig:   cfg,
-		RegisterConfig: regCfg,
-		Register:       reg,
-		Redis:          rdb,
-		agentID:        uuid.NewString(),
-	}
-
+	application.Core = core
 	return application, nil
 }
 

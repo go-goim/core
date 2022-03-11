@@ -1,7 +1,7 @@
 package v1
 
 import (
-	"log"
+	"net/http"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
@@ -17,14 +17,14 @@ func wsConnHandler(c *gin.Context) {
 	//todo use check uid/token middleware before this handler
 	uid := c.GetHeader("uid")
 	if uid == "" {
-		log.Println("uid not found")
+		c.JSON(http.StatusBadRequest, gin.H{"err": "uid not found"})
 		return
 	}
 
 	conn, err := upgrader.Upgrade(c.Writer, c.Request, nil)
 	if err != nil {
 		// todo
-		log.Println(err)
+		c.JSON(http.StatusBadRequest, gin.H{"err": err.Error()})
 		return
 	}
 

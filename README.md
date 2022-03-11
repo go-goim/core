@@ -6,7 +6,7 @@ IM Server written by golang.
 
 ## Desing
 
-![desing](./static/goim.png)
+![desing](./static/images/goim.png)
 
 ## user connect to server with websocket
 
@@ -40,14 +40,14 @@ IM Server written by golang.
 
 dns:
 
-![ws](./static/conn_ws_dns.png)
+![ws](./static/images/conn_ws_dns.png)
 
 gateway:
 
-![gateway](./static/conn_ws_gateway.png)
+![gateway](./static/images/conn_ws_gateway.png)
 
 ## send/rec msg
 
 IM 数据将在 HBASE 上存储，关系型数据存在 MySQL
 
-![msg](./static/send_rec_msg.png)
+![msg](./static/images/send_rec_msg.png)
