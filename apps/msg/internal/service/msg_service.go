@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"sync"
 
 	"github.com/apache/rocketmq-client-go/v2/consumer"
 	"github.com/apache/rocketmq-client-go/v2/primitive"
@@ -16,6 +17,19 @@ import (
 )
 
 type MqMessageService struct{}
+
+var (
+	mqMessageService *MqMessageService
+	once             sync.Once
+)
+
+func GetMqMessageService() *MqMessageService {
+	once.Do(func() {
+		mqMessageService = new(MqMessageService)
+	})
+
+	return mqMessageService
+}
 
 func (s *MqMessageService) HandleMqMessage(ctx context.Context, msg ...*primitive.MessageExt) (consumer.ConsumeResult, error) {
 	// msg 实际上只有一条

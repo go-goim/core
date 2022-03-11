@@ -1,3 +1,3 @@
 package log
 
-// define log api and imeplement
+// define log api and implement

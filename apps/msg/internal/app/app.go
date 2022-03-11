@@ -24,14 +24,13 @@ type Application struct {
 	GrpcServer     *grpc.Server
 	Redis          *redisv8.Client
 	Producer       mq.Producer
+	Consumer       []mq.Consumer
 }
 
 var (
 	application *Application
 	onceChan    = make(chan struct{}, 1)
 )
-
-// todo : app 层面尽可能不要引入当前 app 的包，否则很容易造成 import cycle 问题,最好是把 conf 和 app 包合并
 
 func InitApplication(confPath string) (*Application, error) {
 	// only can call this func once, if call twice will be panic
@@ -87,6 +86,17 @@ func InitApplication(confPath string) (*Application, error) {
 		options = append(options, kratos.Registrar(reg))
 	}
 
+	mqCfg := &mq.ProducerConfig{
+		Retry: int(cfg.Mq.GetMaxRetry()),
+		Addr:  cfg.Mq.GetAddr(),
+	}
+	p, err := mq.NewProducer(mqCfg)
+	if err != nil {
+		return nil, err
+	}
+
+	application.Producer = p
+
 	rdb, err := redis.NewRedis(redis.WithConfig(cfg.GetRedis()))
 	if err != nil {
 		return nil, err
@@ -101,7 +111,25 @@ func InitApplication(confPath string) (*Application, error) {
 }
 
 func (a *Application) Run() error {
+	for _, consumer := range a.Consumer {
+		if err := consumer.Start(); err != nil {
+			return err
+		}
+	}
+
+	if err := a.Producer.Start(); err != nil {
+		return err
+	}
+
 	return a.Core.Run()
+}
+
+func (a *Application) Stop() {
+	for _, consumer := range a.Consumer {
+		_ = consumer.Shutdown()
+	}
+
+	_ = a.Producer.Shutdown()
 }
 
 func GetApplication() *Application {
@@ -112,6 +140,10 @@ func GetRegister() registry.RegisterDiscover {
 	return application.Register
 }
 
-func GetServerConfig() *Config {
-	return application.ServerConfig
+func AddConsumer(c mq.Consumer) {
+	if application.Consumer == nil {
+		application.Consumer = make([]mq.Consumer, 0)
+	}
+
+	application.Consumer = append(application.Consumer, c)
 }
