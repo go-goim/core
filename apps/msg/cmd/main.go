@@ -8,6 +8,7 @@ import (
 	messagev1 "github.com/yusank/goim/api/message/v1"
 	"github.com/yusank/goim/apps/msg/internal/app"
 	"github.com/yusank/goim/apps/msg/internal/service"
+	"github.com/yusank/goim/pkg/mq"
 )
 
 var (
@@ -24,10 +25,25 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-
 	messagev1.RegisterSendMeesagerServer(application.GrpcServer, &service.SendMessageService{})
 
-	if err = application.Run(); err != nil {
+	// register consumer
+	c, err := mq.NewConsumer(&mq.ConsumerConfig{
+		Addr:  application.ServerConfig.Mq.GetAddr(),
+		Topic: "",
+		Group: "",
+		// should define interface which has methods to get topic, group and handle func
+		Handler:     service.GetMqMessageService().HandleMqMessage,
+		Concurrence: 1,
+	})
+	if err != nil {
 		log.Fatal(err)
 	}
+
+	app.AddConsumer(c)
+	if err = application.Run(); err != nil {
+		log.Info(err)
+	}
+
+	application.Stop()
 }

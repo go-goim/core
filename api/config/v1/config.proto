@@ -19,6 +19,7 @@ message Service {
 	Log log = 5;
 	map<string, string> metadata = 6;
 	Redis redis = 7;
+	MQ mq = 8;
 }
 
 enum Level {
@@ -41,4 +42,9 @@ message Redis {
 	int32 min_idle_conns = 4;
 	google.protobuf.Duration dial_timeout = 5;
 	google.protobuf.Duration idle_timeout = 6;
+}
+
+message MQ {
+	repeated string addr = 1;
+	int32 max_retry = 2;
 }
