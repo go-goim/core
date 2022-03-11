@@ -64,13 +64,3 @@ message PushMessageResp {
 service PushMessager {
   rpc PushMessage(PushMessageReq) returns (PushMessageResp);
 }
-
-message MqMessage {
-  string from_user = 1;
-  string to_user = 2;
-  PushMessageType push_message_type = 3;
-  MessageContentType content_type = 4;
-  string content = 5;
-  string topic = 6;
-  int64 delay_sec = 7;
-}

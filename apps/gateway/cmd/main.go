@@ -4,8 +4,9 @@ import (
 	"flag"
 
 	"github.com/gin-gonic/gin"
-	"github.com/yusank/goim/apps/gateway/app"
-	"github.com/yusank/goim/apps/gateway/router"
+
+	"github.com/yusank/goim/apps/gateway/internal/app"
+	"github.com/yusank/goim/apps/gateway/internal/router"
 
 	"github.com/go-kratos/kratos/v2/log"
 )

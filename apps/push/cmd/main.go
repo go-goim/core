@@ -7,9 +7,9 @@ import (
 	"github.com/go-kratos/kratos/v2/log"
 
 	messagev1 "github.com/yusank/goim/api/message/v1"
-	"github.com/yusank/goim/apps/push/app"
-	"github.com/yusank/goim/apps/push/router"
-	"github.com/yusank/goim/apps/push/service"
+	"github.com/yusank/goim/apps/push/internal/app"
+	"github.com/yusank/goim/apps/push/internal/router"
+	"github.com/yusank/goim/apps/push/internal/service"
 )
 
 var (

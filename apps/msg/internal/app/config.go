@@ -5,6 +5,7 @@ import (
 
 	"github.com/go-kratos/kratos/v2/config"
 	"github.com/go-kratos/kratos/v2/config/file"
+
 	registryv1 "github.com/yusank/goim/api/config/registry/v1"
 	configv1 "github.com/yusank/goim/api/config/v1"
 )

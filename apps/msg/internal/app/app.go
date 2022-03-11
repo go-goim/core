@@ -11,6 +11,7 @@ import (
 	redisv8 "github.com/go-redis/redis/v8"
 
 	"github.com/yusank/goim/pkg/db/redis"
+	"github.com/yusank/goim/pkg/mq"
 	"github.com/yusank/goim/pkg/registry"
 )
 
@@ -22,6 +23,7 @@ type Application struct {
 	HttpServer     *http.Server
 	GrpcServer     *grpc.Server
 	Redis          *redisv8.Client
+	Producer       mq.Producer
 }
 
 var (

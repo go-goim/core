@@ -7,9 +7,10 @@ import (
 	"time"
 
 	"github.com/gorilla/websocket"
+
 	messagev1 "github.com/yusank/goim/api/message/v1"
-	"github.com/yusank/goim/apps/push/app"
-	"github.com/yusank/goim/apps/push/data"
+	"github.com/yusank/goim/apps/push/internal/app"
+	"github.com/yusank/goim/apps/push/internal/data"
 	"github.com/yusank/goim/pkg/conn"
 )
 

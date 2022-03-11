@@ -2,38 +2,50 @@ package service
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
 
+	"github.com/apache/rocketmq-client-go/v2/consumer"
+	"github.com/apache/rocketmq-client-go/v2/primitive"
 	"github.com/go-kratos/kratos/v2/selector"
 	"github.com/go-kratos/kratos/v2/transport/grpc"
 
 	messagev1 "github.com/yusank/goim/api/message/v1"
-	"github.com/yusank/goim/apps/msg/app"
-	"github.com/yusank/goim/apps/msg/data"
-	"github.com/yusank/goim/pkg/registry"
+	"github.com/yusank/goim/apps/msg/internal/app"
+	"github.com/yusank/goim/apps/msg/internal/data"
 )
 
-type SendMessage struct {
-	*messagev1.UnimplementedSendMeesagerServer
+type MqMessageService struct{}
+
+func (s *MqMessageService) HandleMqMessage(ctx context.Context, msg ...*primitive.MessageExt) (consumer.ConsumeResult, error) {
+	// msg 实际上只有一条
+	err := s.handleSingleMsg(ctx, msg[0])
+	if err != nil {
+		return consumer.ConsumeRetryLater, nil
+	}
+
+	return consumer.ConsumeSuccess, nil
 }
 
-func (m *SendMessage) SendMessage(ctx context.Context, req *messagev1.SendMessageReq) (*messagev1.SendMessageResp, error) {
+func (s *MqMessageService) handleSingleMsg(ctx context.Context, msg *primitive.MessageExt) error {
+	req := &messagev1.PushMessageReq{}
+	if err := json.Unmarshal(msg.Body, req); err != nil {
+		return err
+	}
+
 	var agentId string
 	str, err := app.GetApplication().Redis.Get(ctx, data.GetUserOnlineAgentKey(req.GetToUser())).Result()
 	if err != nil {
-		return nil, err
+		return err
 	}
 	agentId = str
 
-	reg, err := registry.GetRegisterDiscover()
-	if err != nil {
-		return nil, err
-	}
-
+	reg := app.GetRegister()
 	cc, err := grpc.Dial(ctx, grpc.WithDiscovery(reg),
 		grpc.WithEndpoint("discovry://goim.push.service"),
 		grpc.WithFilter(getFilter(agentId)))
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	in := &messagev1.PushMessageReq{
@@ -46,13 +58,14 @@ func (m *SendMessage) SendMessage(ctx context.Context, req *messagev1.SendMessag
 
 	out, err := messagev1.NewPushMessagerClient(cc).PushMessage(ctx, in)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	return &messagev1.SendMessageResp{
-		Status: int32(out.GetStatus()),
-		Reason: out.GetReason(),
-	}, nil
+	if out.GetStatus() != messagev1.PushMessageRespStatus_OK {
+		return fmt.Errorf(out.GetReason())
+	}
+
+	return nil
 }
 
 func getFilter(agentId string) selector.Filter {
