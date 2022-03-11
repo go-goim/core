@@ -6,7 +6,8 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/yusank/goim/apps/gateway/service"
+
+	"github.com/yusank/goim/apps/gateway/internal/service"
 )
 
 func handleDiscoverPushServer(c *gin.Context) {
