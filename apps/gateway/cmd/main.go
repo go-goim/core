@@ -28,9 +28,11 @@ func main() {
 
 	g := gin.New()
 	router.RegisterRouter(g.Group("/gateway/service"))
-	application.HttpSrv.HandlePrefix("/", g)
+	application.HTTPSrv.HandlePrefix("/", g)
 
 	if err = application.Run(); err != nil {
-		log.Fatal(err)
+		log.Info(err)
 	}
+
+	application.Stop()
 }

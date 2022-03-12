@@ -31,7 +31,15 @@ func GetMqMessageService() *MqMessageService {
 	return mqMessageService
 }
 
-func (s *MqMessageService) HandleMqMessage(ctx context.Context, msg ...*primitive.MessageExt) (consumer.ConsumeResult, error) {
+func (s *MqMessageService) Group() string {
+	return "push_msg"
+}
+
+func (s *MqMessageService) Topic() string {
+	return "def_topic"
+}
+
+func (s *MqMessageService) Consume(ctx context.Context, msg ...*primitive.MessageExt) (consumer.ConsumeResult, error) {
 	// msg 实际上只有一条
 	err := s.handleSingleMsg(ctx, msg[0])
 	if err != nil {
@@ -47,17 +55,17 @@ func (s *MqMessageService) handleSingleMsg(ctx context.Context, msg *primitive.M
 		return err
 	}
 
-	var agentId string
+	var agentID string
 	str, err := app.GetApplication().Redis.Get(ctx, data.GetUserOnlineAgentKey(req.GetToUser())).Result()
 	if err != nil {
 		return err
 	}
-	agentId = str
+	agentID = str
 
 	reg := app.GetRegister()
 	cc, err := grpc.Dial(ctx, grpc.WithDiscovery(reg),
 		grpc.WithEndpoint("discovry://goim.push.service"),
-		grpc.WithFilter(getFilter(agentId)))
+		grpc.WithFilter(getFilter(agentID)))
 	if err != nil {
 		return err
 	}
@@ -67,7 +75,7 @@ func (s *MqMessageService) handleSingleMsg(ctx context.Context, msg *primitive.M
 		ToUser:          req.GetToUser(),
 		PushMessageType: messagev1.PushMessageType_ToUser,
 		ContentType:     req.GetContentType(),
-		AgentId:         agentId,
+		AgentId:         agentID,
 	}
 
 	out, err := messagev1.NewPushMessagerClient(cc).PushMessage(ctx, in)
@@ -82,11 +90,11 @@ func (s *MqMessageService) handleSingleMsg(ctx context.Context, msg *primitive.M
 	return nil
 }
 
-func getFilter(agentId string) selector.Filter {
+func getFilter(agentID string) selector.Filter {
 	return func(c context.Context, nodes []selector.Node) []selector.Node {
 		var filtered = make([]selector.Node, 0)
 		for i, n := range nodes {
-			if n.Metadata()["agentId"] == agentId {
+			if n.Metadata()["agentId"] == agentID {
 				filtered = append(filtered, nodes[i])
 			}
 		}

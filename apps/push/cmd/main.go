@@ -30,7 +30,7 @@ func main() {
 	messagev1.RegisterPushMessagerServer(application.GrpcServer, &service.PushMessager{})
 	g := gin.Default()
 	router.RegisterRouter(g.Group("/push/service"))
-	application.HttpServer.HandlePrefix("/", g)
+	application.HTTPServer.HandlePrefix("/", g)
 
 	if err = application.Run(); err != nil {
 		log.Fatal(err)

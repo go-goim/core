@@ -20,7 +20,7 @@ type Application struct {
 	Register       registry.RegisterDiscover
 	ServerConfig   *Config
 	RegisterConfig *Registry
-	HttpServer     *http.Server
+	HTTPServer     *http.Server
 	GrpcServer     *grpc.Server
 	Redis          *redisv8.Client
 	agentID        string
@@ -51,7 +51,7 @@ func InitApplication(confPath string) (*Application, error) {
 				recovery.Recovery(),
 			),
 		)
-		application.HttpServer = httpSrv
+		application.HTTPServer = httpSrv
 		servers = append(servers, httpSrv)
 	}
 	if cfg.Grpc != nil {

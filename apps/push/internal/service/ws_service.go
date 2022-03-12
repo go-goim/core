@@ -67,20 +67,20 @@ func (wc *WsConn) PushMessage(message *messagev1.PushMessageReq) error {
 	return w.Close()
 }
 
-func (w *WsConn) Key() string {
-	return w.key
+func (wc *WsConn) Key() string {
+	return wc.key
 }
 
-func (w *WsConn) Ping() <-chan struct{} {
-	return w.pingChan
+func (wc *WsConn) Ping() <-chan struct{} {
+	return wc.pingChan
 }
 
-func (w *WsConn) pingFunc(message string) error {
-	err := w.WriteControl(websocket.PongMessage, []byte(message), time.Now().Add(time.Second))
+func (wc *WsConn) pingFunc(message string) error {
+	err := wc.WriteControl(websocket.PongMessage, []byte(message), time.Now().Add(time.Second))
 	if err == nil {
 		select {
 		// try put ping
-		case w.pingChan <- struct{}{}:
+		case wc.pingChan <- struct{}{}:
 		// non-blocking
 		default:
 		}

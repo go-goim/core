@@ -1,6 +1,7 @@
 package mq
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/apache/rocketmq-client-go/v2"
@@ -45,10 +46,14 @@ func NewProducer(cfg *ProducerConfig) (Producer, error) {
 
 type ConsumerConfig struct {
 	Addr        []string
-	Topic       string
-	Group       string
-	Handler     SubscribeCallback
+	Subscriber  Subscriber
 	Concurrence int
+}
+
+type Subscriber interface {
+	Group() string
+	Topic() string
+	Consume(context.Context, ...*primitive.MessageExt) (consumer.ConsumeResult, error)
 }
 
 func (pc *ConsumerConfig) validate() error {
@@ -60,6 +65,10 @@ func (pc *ConsumerConfig) validate() error {
 		return fmt.Errorf("invalid producer config")
 	}
 
+	if pc.Subscriber == nil {
+		return fmt.Errorf("must specify subscriber")
+	}
+
 	return nil
 }
 
@@ -69,7 +78,7 @@ func NewConsumer(cfg *ConsumerConfig) (Consumer, error) {
 	}
 
 	c, err := rocketmq.NewPushConsumer(
-		consumer.WithGroupName(cfg.Group),
+		consumer.WithGroupName(cfg.Subscriber.Group()),
 		consumer.WithNsResolver(primitive.NewPassthroughResolver(cfg.Addr)),
 	)
 	if err != nil {
@@ -77,7 +86,7 @@ func NewConsumer(cfg *ConsumerConfig) (Consumer, error) {
 	}
 
 	for i := 0; i < cfg.Concurrence; i++ {
-		if err = c.Subscribe(cfg.Topic, consumer.MessageSelector{}, cfg.Handler); err != nil {
+		if err = c.Subscribe(cfg.Subscriber.Topic(), consumer.MessageSelector{}, cfg.Subscriber.Consume); err != nil {
 			return nil, err
 		}
 	}

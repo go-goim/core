@@ -18,12 +18,12 @@ func handleDiscoverPushServer(c *gin.Context) {
 		return
 	}
 
-	agentId, err := service.LoadMatchedPushServer(context.Background())
+	agentID, err := service.LoadMatchedPushServer(context.Background())
 	if err != nil {
 		log.Println(err)
 		c.JSON(http.StatusOK, gin.H{"err": err.Error()})
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"agentId": agentId})
+	c.JSON(http.StatusOK, gin.H{"agentID": agentID})
 }

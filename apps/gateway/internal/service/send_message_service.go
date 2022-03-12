@@ -2,32 +2,46 @@ package service
 
 import (
 	"context"
-	"fmt"
+	"encoding/json"
+	"sync"
 
-	"github.com/go-kratos/kratos/v2/transport/grpc"
+	"github.com/go-kratos/kratos/v2/log"
+
+	"github.com/apache/rocketmq-client-go/v2/primitive"
+
+	"github.com/yusank/goim/apps/gateway/internal/app"
 
 	messagev1 "github.com/yusank/goim/api/message/v1"
-	"github.com/yusank/goim/apps/gateway/internal/app"
 )
 
-type SendMessageService struct {
+type SendMessageService struct{}
+
+var (
+	sendMessageService     *SendMessageService
+	sendMessageServiceOnce sync.Once
+)
+
+func GetSendMessageService() *SendMessageService {
+	sendMessageServiceOnce.Do(func() {
+		sendMessageService = new(SendMessageService)
+	})
+
+	return sendMessageService
 }
 
 func (s *SendMessageService) SendMessage(ctx context.Context, msg *messagev1.SendMessageReq) error {
-	cc, err := grpc.Dial(ctx, grpc.WithDiscovery(app.GetRegister()),
-		grpc.WithEndpoint("discovry://goim.msg.service"))
+	// check req params
+
+	b, err := json.Marshal(msg)
 	if err != nil {
 		return err
 	}
 
-	out, err := messagev1.NewSendMeesagerClient(cc).SendMessage(ctx, msg)
+	rs, err := app.GetApplication().Producer.SendSync(ctx, primitive.NewMessage("def_topic", b))
 	if err != nil {
 		return err
 	}
 
-	if out.GetStatus() != int32(messagev1.PushMessageRespStatus_OK) {
-		return fmt.Errorf(out.GetReason())
-	}
-
+	log.Info(rs.String())
 	return nil
 }
