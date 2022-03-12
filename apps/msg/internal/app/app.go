@@ -20,10 +20,9 @@ type Application struct {
 	Register       registry.RegisterDiscover
 	ServerConfig   *Config
 	RegisterConfig *Registry
-	HttpServer     *http.Server
+	HTTPServer     *http.Server
 	GrpcServer     *grpc.Server
 	Redis          *redisv8.Client
-	Producer       mq.Producer
 	Consumer       []mq.Consumer
 }
 
@@ -52,7 +51,7 @@ func InitApplication(confPath string) (*Application, error) {
 				recovery.Recovery(),
 			),
 		)
-		application.HttpServer = httpSrv
+		application.HTTPServer = httpSrv
 		servers = append(servers, httpSrv)
 	}
 	if cfg.Grpc != nil {
@@ -86,17 +85,6 @@ func InitApplication(confPath string) (*Application, error) {
 		options = append(options, kratos.Registrar(reg))
 	}
 
-	mqCfg := &mq.ProducerConfig{
-		Retry: int(cfg.Mq.GetMaxRetry()),
-		Addr:  cfg.Mq.GetAddr(),
-	}
-	p, err := mq.NewProducer(mqCfg)
-	if err != nil {
-		return nil, err
-	}
-
-	application.Producer = p
-
 	rdb, err := redis.NewRedis(redis.WithConfig(cfg.GetRedis()))
 	if err != nil {
 		return nil, err
@@ -117,10 +105,6 @@ func (a *Application) Run() error {
 		}
 	}
 
-	if err := a.Producer.Start(); err != nil {
-		return err
-	}
-
 	return a.Core.Run()
 }
 
@@ -128,8 +112,6 @@ func (a *Application) Stop() {
 	for _, consumer := range a.Consumer {
 		_ = consumer.Shutdown()
 	}
-
-	_ = a.Producer.Shutdown()
 }
 
 func GetApplication() *Application {

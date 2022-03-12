@@ -2,12 +2,11 @@ package main
 
 import (
 	"flag"
+	"github.com/yusank/goim/apps/msg/internal/service"
 
 	"github.com/go-kratos/kratos/v2/log"
 
-	messagev1 "github.com/yusank/goim/api/message/v1"
 	"github.com/yusank/goim/apps/msg/internal/app"
-	"github.com/yusank/goim/apps/msg/internal/service"
 	"github.com/yusank/goim/pkg/mq"
 )
 
@@ -25,16 +24,12 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	messagev1.RegisterSendMeesagerServer(application.GrpcServer, &service.SendMessageService{})
 
 	// register consumer
 	c, err := mq.NewConsumer(&mq.ConsumerConfig{
-		Addr:  application.ServerConfig.Mq.GetAddr(),
-		Topic: "",
-		Group: "",
-		// should define interface which has methods to get topic, group and handle func
-		Handler:     service.GetMqMessageService().HandleMqMessage,
+		Addr:        application.ServerConfig.Mq.GetAddr(),
 		Concurrence: 1,
+		Subscriber:  service.GetMqMessageService(),
 	})
 	if err != nil {
 		log.Fatal(err)

@@ -3,6 +3,8 @@ package app
 import (
 	"fmt"
 
+	"github.com/yusank/goim/pkg/mq"
+
 	"github.com/go-kratos/kratos/v2"
 	"github.com/go-kratos/kratos/v2/middleware/recovery"
 	"github.com/go-kratos/kratos/v2/transport"
@@ -15,9 +17,10 @@ import (
 type Application struct {
 	Core           *kratos.App
 	Register       registry.RegisterDiscover
-	HttpSrv        *http.Server
+	HTTPSrv        *http.Server
 	ServerConfig   *Config
 	RegisterConfig *Registry
+	Producer       mq.Producer
 }
 
 var (
@@ -44,7 +47,7 @@ func InitApplication(confPath string) (*Application, error) {
 				recovery.Recovery(),
 			),
 		)
-		application.HttpSrv = httpSrv
+		application.HTTPSrv = httpSrv
 		servers = append(servers, httpSrv)
 	}
 	if cfg.Grpc != nil {
@@ -57,6 +60,17 @@ func InitApplication(confPath string) (*Application, error) {
 		)
 		servers = append(servers, grpcSrv)
 	}
+
+	mqCfg := &mq.ProducerConfig{
+		Retry: int(cfg.Mq.GetMaxRetry()),
+		Addr:  cfg.Mq.GetAddr(),
+	}
+	p, err := mq.NewProducer(mqCfg)
+	if err != nil {
+		return nil, err
+	}
+
+	application.Producer = p
 
 	var options = []kratos.Option{
 		kratos.Name(cfg.GetName()),
@@ -85,13 +99,26 @@ func InitApplication(confPath string) (*Application, error) {
 }
 
 func (a *Application) Run() error {
+	if err := a.Producer.Start(); err != nil {
+		return err
+	}
 	return a.Core.Run()
+}
+
+func (a *Application) Stop() {
+	_ = a.Producer.Shutdown()
 }
 
 func GetRegister() registry.RegisterDiscover {
 	return application.Register
 }
 
-func GetServerConfig() *Config {
-	return application.ServerConfig
+func GetApplication() *Application {
+	select {
+	case <-onceChan:
+		panic("application not init")
+	default:
+	}
+
+	return application
 }
