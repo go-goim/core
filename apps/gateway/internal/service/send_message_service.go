@@ -7,11 +7,9 @@ import (
 
 	"github.com/go-kratos/kratos/v2/log"
 
-	"github.com/apache/rocketmq-client-go/v2/primitive"
-
-	"github.com/yusank/goim/apps/gateway/internal/app"
-
 	messagev1 "github.com/yusank/goim/api/message/v1"
+	"github.com/yusank/goim/apps/gateway/internal/app"
+	"github.com/yusank/goim/pkg/mq"
 )
 
 type SendMessageService struct{}
@@ -37,7 +35,7 @@ func (s *SendMessageService) SendMessage(ctx context.Context, msg *messagev1.Sen
 		return err
 	}
 
-	rs, err := app.GetApplication().Producer.SendSync(ctx, primitive.NewMessage("def_topic", b))
+	rs, err := app.GetApplication().Producer.SendSync(ctx, mq.NewMessage("def_topic", b))
 	if err != nil {
 		return err
 	}

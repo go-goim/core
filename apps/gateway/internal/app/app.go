@@ -3,6 +3,8 @@ package app
 import (
 	"fmt"
 
+	"go.uber.org/atomic"
+
 	"github.com/yusank/goim/pkg/mq"
 
 	"github.com/go-kratos/kratos/v2"
@@ -25,13 +27,14 @@ type Application struct {
 
 var (
 	application *Application
-	onceChan    = make(chan struct{}, 1)
+	initFlag    atomic.Bool
 )
 
 func InitApplication(confPath string) (*Application, error) {
 	// only can call this func once, if call twice will be panic
-	onceChan <- struct{}{}
-	close(onceChan)
+	if !initFlag.CAS(false, true) {
+		panic("Application already initialized, don't call init function twice")
+	}
 
 	cfg, regCfg := ParseConfig(confPath)
 	application = &Application{
@@ -114,11 +117,8 @@ func GetRegister() registry.RegisterDiscover {
 }
 
 func GetApplication() *Application {
-	select {
-	case <-onceChan:
-		panic("application not init")
-	default:
+	if !initFlag.Load() {
+		panic("Application not initialized")
 	}
-
 	return application
 }
