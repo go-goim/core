@@ -93,3 +93,7 @@ func NewConsumer(cfg *ConsumerConfig) (Consumer, error) {
 
 	return c, nil
 }
+
+func NewMessage(topic string, data []byte) *primitive.Message {
+	return primitive.NewMessage(topic, data)
+}

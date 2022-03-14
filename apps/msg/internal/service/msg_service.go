@@ -73,7 +73,7 @@ func (s *MqMessageService) handleSingleMsg(ctx context.Context, msg *primitive.M
 	in := &messagev1.PushMessageReq{
 		FromUser:        req.GetFromUser(),
 		ToUser:          req.GetToUser(),
-		PushMessageType: messagev1.PushMessageType_ToUser,
+		PushMessageType: messagev1.PushMessageType_User,
 		ContentType:     req.GetContentType(),
 		AgentId:         agentID,
 	}

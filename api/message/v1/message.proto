@@ -4,10 +4,10 @@ package api.message.v1;
 option go_package = "api/message/v1;v1";
 
 enum MessageContentType {
-  Text = 0;
-  Image = 1;
-  Voice = 2;
-  UNKNOWN = -1;
+  UnknownContentType = 0;
+  Text = 1;
+  Image = 2;
+  Voice = 3;
 }
 
 // SendMessageReq receive data from gateway
@@ -19,12 +19,13 @@ message SendMessageReq {
 }
 
 enum PushMessageType {
+  UnknownUserType = 0;
   // user to user
-  ToUser = 0;
+  User = 1;
   // user to group
-  ToGroup = 1;
+  Group = 2;
   // global broadcast
-  ToChannel = 2;
+  Broadcast = 3;
 }
 
 // PushMessage use for push a message to persistence connection server
