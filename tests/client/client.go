@@ -10,9 +10,12 @@ import (
 	"net/url"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/gorilla/websocket"
 	"github.com/jroimartin/gocui"
+
+	messagev1 "github.com/yusank/goim/api/message/v1"
 )
 
 var (
@@ -29,6 +32,11 @@ func init() {
 		panic(err)
 	}
 	logger = log.New(f, "[log]", log.Lshortfile)
+	u, _ := url.Parse("discovery://goim.push.service")
+	logger.Println(u.Scheme)
+	logger.Println(u.Host)
+	logger.Println(u.Path)
+	logger.Println(u.Opaque)
 	flag.Parse()
 }
 
@@ -56,42 +64,21 @@ func main() {
 	if err = g.SetKeybinding("", gocui.KeyCtrlC, gocui.ModNone, quit); err != nil {
 		panic(err)
 	}
+	if err = g.SetKeybinding("", gocui.KeyCtrlK, gocui.ModNone, resetInput); err != nil {
+		panic(err)
+	}
 
-	if err = g.MainLoop(); err != nil {
+	dc, ec := readMsgFromConn(conn)
+	go handleConn(conn, g, dc)
+
+	go func() {
+		ec <- g.MainLoop()
+	}()
+
+	if err = <-ec; err != nil {
+		g.Close()
 		fmt.Println("exit:", err)
 	}
-}
-
-func layout(g *gocui.Gui) error {
-	var views = []string{outputView, inputView}
-	maxX, maxY := g.Size()
-	for _, view := range views {
-		x0, y0, x1, y1 := viewPositions[view].getCoordinates(maxX, maxY)
-		logger.Println(x0, y0, x1, y1)
-		if v, err := g.SetView(view, x0, y0, x1, y1); err != nil {
-			logger.Println(err)
-			v.SelFgColor = gocui.ColorBlack
-			v.SelBgColor = gocui.ColorGreen
-
-			v.Title = " " + view + " "
-
-			if view == inputView {
-				v.Editable = true
-				v.Wrap = true
-			}
-
-			if err != gocui.ErrUnknownView {
-				return err
-			}
-		}
-	}
-
-	_, err := g.SetCurrentView(inputView)
-	if err != nil {
-		log.Fatal("failed to set current view: ", err)
-	}
-	return nil
-
 }
 
 func quit(g *gocui.Gui, v *gocui.View) error {
@@ -105,6 +92,7 @@ func connectWs(addr string, h http.Header) (*websocket.Conn, error) {
 		return nil, err
 	}
 
+	c.WriteControl(websocket.PingMessage, []byte("ping"), time.Now().Add(time.Second))
 	return c, nil
 }
 
@@ -135,5 +123,56 @@ func getPushServerAddr() (addr string, err error) {
 		return "", err
 	}
 
-	return result["agentID"], nil
+	return result["agentId"], nil
+}
+
+func readMsgFromConn(conn *websocket.Conn) (chan []byte, chan error) {
+	var (
+		dataChan = make(chan []byte, 1)
+		errChan  = make(chan error, 1)
+	)
+
+	go func() {
+		_, data, err := conn.ReadMessage()
+		if err != nil {
+			logger.Println(err)
+			errChan <- err
+			return
+		}
+		logger.Println("data:", string(data))
+		dataChan <- data
+	}()
+
+	return dataChan, errChan
+}
+
+func handleConn(conn *websocket.Conn, g *gocui.Gui, dataChan chan []byte) {
+	var (
+		ticker = time.NewTicker(time.Second * 5)
+	)
+	for {
+		select {
+		case <-ticker.C:
+			conn.WriteControl(websocket.PingMessage, []byte("ping"), time.Now().Add(time.Second))
+		case data := <-dataChan:
+			msg := new(messagev1.SendMessageReq)
+			if err := json.Unmarshal(data, msg); err != nil {
+				logger.Println("unmarshal err:", err)
+				msg.Content = string(data)
+				msg.ContentType = messagev1.MessageContentType_Text
+			}
+
+			g.Update(func(gg *gocui.Gui) error {
+				v, err1 := gg.View("output")
+				if err1 != nil {
+					logger.Println("update err:", err1)
+					return err1
+				}
+				fmt.Fprintln(v, "------")
+				fmt.Fprintf(v, "From:%s|Tp:%v|Content:%s\n", msg.GetFromUser(), msg.GetContentType(), msg.GetContent())
+				return nil
+			})
+
+		}
+	}
 }

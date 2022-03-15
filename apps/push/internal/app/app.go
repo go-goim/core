@@ -43,6 +43,12 @@ func InitApplication(confPath string) (*Application, error) {
 		agentID:        uuid.NewString(),
 	}
 
+	metadata := cfg.GetMetadata()
+	if metadata == nil {
+		metadata = make(map[string]string)
+	}
+	metadata["agentId"] = application.agentID
+
 	var servers = make([]transport.Server, 0)
 	if cfg.Http != nil {
 		httpSrv := http.NewServer(
@@ -72,7 +78,7 @@ func InitApplication(confPath string) (*Application, error) {
 		kratos.Server(
 			servers...,
 		),
-		kratos.Metadata(cfg.GetMetadata()),
+		kratos.Metadata(metadata),
 	}
 
 	reg, err := registry.NewRegistry(regCfg.Registry)

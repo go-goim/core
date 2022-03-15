@@ -25,5 +25,5 @@ func handleDiscoverPushServer(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"agentID": agentID})
+	c.JSON(http.StatusOK, gin.H{"agentId": agentID})
 }

@@ -13,12 +13,6 @@ type pool struct {
 	size        int
 }
 
-type idleConn struct {
-	conn     Conn
-	stopChan chan struct{}
-	t        time.Time
-}
-
 const (
 	defaultSize    = 100
 	defaultTimeout = time.Minute
@@ -27,13 +21,18 @@ const (
 var dp = newPool(defaultSize, defaultTimeout)
 
 // GetConn return user connection
-func GetConn(key string) (Conn, bool) {
+func GetConn(key string) (*WsConn, bool) {
 	return dp.get(key)
 }
 
 // PutConn put the connection into pool
-func PutConn(c Conn) error {
+func PutConn(c *WsConn) error {
 	return dp.put(c)
+}
+
+// RemoveConn close and remove a connection
+func RemoveConn(key string) {
+	dp.del(key)
 }
 
 // newPool 初始化连接
@@ -57,7 +56,7 @@ func newPool(size int, timeout time.Duration) *pool {
 
 var errPoolReachMaxSize = errors.New("connection poll reach mas size")
 
-func (p *pool) put(c Conn) error {
+func (p *pool) put(c *WsConn) error {
 	p.mu.Lock()
 	defer p.mu.Unlock()
 
@@ -65,52 +64,44 @@ func (p *pool) put(c Conn) error {
 		return errPoolReachMaxSize
 	}
 
-	old, ok := p.connections[c.Key()]
+	old, ok := p.connections[c.Key]
 	if ok {
 		old.stop()
 	}
 
 	ic := &idleConn{
-		conn: c,
-		t:    time.Now(),
+		WsConn:   c,
+		p:        p,
+		stopChan: make(chan struct{}, 1),
+		t:        time.Now(),
 	}
-	p.connections[c.Key()] = ic
+	p.connections[c.Key] = ic
 
 	go ic.daemon(p)
 	return nil
 }
 
-func (p *pool) get(key string) (Conn, bool) {
+func (p *pool) get(key string) (*WsConn, bool) {
 	p.mu.RLock()
 	defer p.mu.RUnlock()
 
 	i, ok := p.connections[key]
 	if ok {
-		return i.conn, true
+		return i.WsConn, true
 	}
 
 	return nil, false
 }
 
-func (i *idleConn) daemon(p *pool) {
-	var (
-		timer = time.NewTimer(p.idleTimeout)
-	)
-loop:
-	for {
-		select {
-		case <-i.stopChan:
-			break loop
-		case <-i.conn.Ping():
-			timer.Reset(p.idleTimeout)
-		case <-timer.C:
-			break loop
-		}
+func (p *pool) del(key string) {
+	p.mu.Lock()
+	defer p.mu.Unlock()
+
+	i, ok := p.connections[key]
+	if !ok {
+		return
 	}
 
-	_ = i.conn.Close()
-}
-
-func (i *idleConn) stop() {
-	i.stopChan <- struct{}{}
+	i.stop()
+	delete(p.connections, key)
 }

@@ -24,7 +24,6 @@ func wsConnHandler(c *gin.Context) {
 
 	conn, err := upgrader.Upgrade(c.Writer, c.Request, nil)
 	if err != nil {
-		// todo
 		c.JSON(http.StatusBadRequest, gin.H{"err": err.Error()})
 		return
 	}

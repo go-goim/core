@@ -8,6 +8,9 @@ CmdPath ?= apps/$(Srv)/cmd/main.go
 CfgPath ?= apps/$(Srv)/config
 ProtoFile ?= api/config/v1/config.proto
 
+## env
+export ROCKETMQ_GO_LOG_LEVEL=warn
+
 ##################################################
 # Development                                    #
 ##################################################

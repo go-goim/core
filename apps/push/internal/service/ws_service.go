@@ -2,96 +2,61 @@ package service
 
 import (
 	"context"
-	"encoding/json"
 	"net"
 	"time"
 
+	"github.com/go-kratos/kratos/v2/log"
 	"github.com/gorilla/websocket"
 
-	messagev1 "github.com/yusank/goim/api/message/v1"
 	"github.com/yusank/goim/apps/push/internal/app"
 	"github.com/yusank/goim/apps/push/internal/data"
 	"github.com/yusank/goim/pkg/conn"
 )
 
-type WsConn struct {
-	*websocket.Conn
-	key      string
-	pingChan chan struct{}
-}
-
 func HandleWsConn(c *websocket.Conn, uid string) {
-	wc := &WsConn{
-		Conn:     c,
-		key:      uid,
-		pingChan: make(chan struct{}, 1),
+	wc := &conn.WsConn{
+		Conn: c,
+		Key:  uid,
 	}
 
-	wc.SetPingHandler(wc.pingFunc)
-	_ = conn.PutConn(wc)
-
-	_ = app.GetApplication().Redis.Set(context.Background(), data.GetUserOnlineAgentKey(uid), app.GetAgentID(), data.UserOnlineAgentKeyExpire).Err()
-
-	// write msg
-	_ = c.SetWriteDeadline(time.Now().Add(time.Second))
-	w, err := wc.NextWriter(websocket.TextMessage)
-	if err != nil {
-		return
-	}
-
-	_, err = w.Write([]byte("connect success"))
-	if err != nil {
-		return
-	}
-
-	_ = w.Close()
-}
-
-func (wc *WsConn) PushMessage(message *messagev1.PushMessageReq) error {
-	b, err := json.Marshal(message)
-	if err != nil {
-		return err
-	}
-
-	_ = wc.SetWriteDeadline(time.Now().Add(time.Second))
-	w, err := wc.NextWriter(websocket.TextMessage)
-	if err != nil {
-		return err
-	}
-
-	_, err = w.Write(b)
-	if err != nil {
-		return err
-	}
-
-	return w.Close()
-}
-
-func (wc *WsConn) Key() string {
-	return wc.key
-}
-
-func (wc *WsConn) Ping() <-chan struct{} {
-	return wc.pingChan
-}
-
-func (wc *WsConn) pingFunc(message string) error {
-	err := wc.WriteControl(websocket.PongMessage, []byte(message), time.Now().Add(time.Second))
-	if err == nil {
-		select {
-		// try put ping
-		case wc.pingChan <- struct{}{}:
-		// non-blocking
-		default:
+	c.SetPingHandler(func(message string) error {
+		err := c.WriteControl(websocket.PongMessage, []byte(message), time.Now().Add(time.Second))
+		if err == nil {
+			log.Infof("get user:%s ping", wc.Key)
+			app.GetApplication().Redis.SetEX(context.Background(), data.GetUserOnlineAgentKey(wc.Key), app.GetAgentID(), data.UserOnlineAgentKeyExpire).Err()
+			return nil
 		}
 
-		return nil
+		if err == websocket.ErrCloseSent {
+			return nil
+		} else if e, ok := err.(net.Error); ok && e.Temporary() {
+			return nil
+		}
+		return err
+	})
+
+	err := conn.PutConn(wc)
+	if err != nil {
+		log.Info(err)
 	}
 
-	if err == websocket.ErrCloseSent {
-		return nil
-	} else if e, ok := err.(net.Error); ok && e.Temporary() {
-		return nil
+	err = app.GetApplication().Redis.Set(context.Background(), data.GetUserOnlineAgentKey(uid), app.GetAgentID(), data.UserOnlineAgentKeyExpire).Err()
+	if err != nil {
+		log.Info(err)
 	}
-	return err
+
+	go func() {
+		// write msg
+		_ = c.SetWriteDeadline(time.Now().Add(time.Second))
+		w, err1 := c.NextWriter(websocket.TextMessage)
+		if err1 != nil {
+			return
+		}
+		defer w.Close()
+
+		_, err = w.Write([]byte("connect success"))
+		if err != nil {
+			return
+		}
+	}()
 }

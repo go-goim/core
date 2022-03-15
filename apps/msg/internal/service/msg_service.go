@@ -8,6 +8,7 @@ import (
 
 	"github.com/apache/rocketmq-client-go/v2/consumer"
 	"github.com/apache/rocketmq-client-go/v2/primitive"
+	"github.com/go-kratos/kratos/v2/log"
 	"github.com/go-kratos/kratos/v2/selector"
 	"github.com/go-kratos/kratos/v2/transport/grpc"
 
@@ -43,7 +44,7 @@ func (s *MqMessageService) Consume(ctx context.Context, msg ...*primitive.Messag
 	// msg 实际上只有一条
 	err := s.handleSingleMsg(ctx, msg[0])
 	if err != nil {
-		return consumer.ConsumeRetryLater, nil
+		log.Infof("consumer error. msg:%s,err:%v", string(msg[0].Body), err)
 	}
 
 	return consumer.ConsumeSuccess, nil
@@ -63,8 +64,9 @@ func (s *MqMessageService) handleSingleMsg(ctx context.Context, msg *primitive.M
 	agentID = str
 
 	reg := app.GetRegister()
-	cc, err := grpc.Dial(ctx, grpc.WithDiscovery(reg),
-		grpc.WithEndpoint("discovry://goim.push.service"),
+	cc, err := grpc.DialInsecure(ctx,
+		grpc.WithDiscovery(reg),
+		grpc.WithEndpoint("discovery://dc1/goim.push.service"),
 		grpc.WithFilter(getFilter(agentID)))
 	if err != nil {
 		return err
@@ -75,11 +77,13 @@ func (s *MqMessageService) handleSingleMsg(ctx context.Context, msg *primitive.M
 		ToUser:          req.GetToUser(),
 		PushMessageType: messagev1.PushMessageType_User,
 		ContentType:     req.GetContentType(),
+		Content:         req.GetContent(),
 		AgentId:         agentID,
 	}
 
 	out, err := messagev1.NewPushMessagerClient(cc).PushMessage(ctx, in)
 	if err != nil {
+		log.Info("MSG send msg err=", err)
 		return err
 	}
 
@@ -94,6 +98,7 @@ func getFilter(agentID string) selector.Filter {
 	return func(c context.Context, nodes []selector.Node) []selector.Node {
 		var filtered = make([]selector.Node, 0)
 		for i, n := range nodes {
+			log.Info("filter", n.ServiceName(), n.Address(), n.Metadata())
 			if n.Metadata()["agentId"] == agentID {
 				filtered = append(filtered, nodes[i])
 			}
