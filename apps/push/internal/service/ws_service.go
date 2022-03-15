@@ -23,7 +23,7 @@ func HandleWsConn(c *websocket.Conn, uid string) {
 		err := c.WriteControl(websocket.PongMessage, []byte(message), time.Now().Add(time.Second))
 		if err == nil {
 			log.Infof("get user:%s ping", wc.Key)
-			app.GetApplication().Redis.SetEX(context.Background(), data.GetUserOnlineAgentKey(wc.Key), app.GetAgentID(), data.UserOnlineAgentKeyExpire).Err()
+			_ = app.GetApplication().Redis.SetEX(context.Background(), data.GetUserOnlineAgentKey(wc.Key), app.GetAgentID(), data.UserOnlineAgentKeyExpire).Err()
 			return nil
 		}
 
