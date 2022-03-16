@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"io"
 	"log"
 	"net/http"
 	"strconv"
@@ -22,11 +23,12 @@ func layout(g *gocui.Gui) error {
 			v.SelFgColor = gocui.ColorBlack
 			v.SelBgColor = gocui.ColorGreen
 
-			v.Title = " " + view + " "
+			v.Title = " " + toUid + " "
 
 			if view == inputView {
 				v.Editable = true
 				v.Wrap = true
+				v.Title = " " + uid + " "
 			}
 
 			if err != gocui.ErrUnknownView {
@@ -43,11 +45,13 @@ func layout(g *gocui.Gui) error {
 }
 
 func resetInput(g *gocui.Gui, v *gocui.View) error {
+	buf := &bytes.Buffer{}
+	io.Copy(buf, v)
 	m := map[string]interface{}{
-		"from_user":    "a",
-		"to_user":      "user1",
+		"from_user":    uid,
+		"to_user":      toUid,
 		"content_type": 1,
-		"content":      "hello",
+		"content":      buf.String(),
 	}
 	b, err := json.Marshal(&m)
 	if err != nil {
@@ -55,10 +59,10 @@ func resetInput(g *gocui.Gui, v *gocui.View) error {
 		return err
 	}
 
-	buf := bytes.NewReader(b)
-	size := buf.Size()
+	r := bytes.NewReader(b)
+	size := r.Size()
 
-	req, err := http.NewRequest(http.MethodPost, "http://127.0.0.1:8071/gateway/service/v1/send_msg", buf)
+	req, err := http.NewRequest(http.MethodPost, "http://127.0.0.1:8071/gateway/service/v1/send_msg", r)
 	if err != nil {
 		logger.Println(err)
 		return err

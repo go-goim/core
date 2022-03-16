@@ -21,12 +21,14 @@ import (
 var (
 	serverAddr string
 	uid        string
+	toUid      string
 	logger     *log.Logger
 )
 
 func init() {
 	flag.StringVar(&serverAddr, "s", "127.0.0.1:8071", "gateway server addr")
-	flag.StringVar(&uid, "u", "user1", "user id")
+	flag.StringVar(&uid, "u", "", "from user id")
+	flag.StringVar(&toUid, "t", "", "to user id")
 	f, err := os.Create("log.log")
 	if err != nil {
 		panic(err)
@@ -39,8 +41,17 @@ func init() {
 	logger.Println(u.Opaque)
 	flag.Parse()
 }
+func assert(b bool, msg string) {
+	if !b {
+		panic(msg)
+	}
+}
 
 func main() {
+	assert(uid != "", "from user id must be provided")
+	assert(toUid != "", "to user id must be provided")
+	assert(uid != toUid, "uid and toUid must be different")
+
 	addr, err := getPushServerAddr()
 	if err != nil {
 		panic(err)
@@ -133,14 +144,16 @@ func readMsgFromConn(conn *websocket.Conn) (chan []byte, chan error) {
 	)
 
 	go func() {
-		_, data, err := conn.ReadMessage()
-		if err != nil {
-			logger.Println(err)
-			errChan <- err
-			return
+		for {
+			_, data, err := conn.ReadMessage()
+			if err != nil {
+				logger.Println(err)
+				errChan <- err
+				return
+			}
+			logger.Println("data:", string(data))
+			dataChan <- data
 		}
-		logger.Println("data:", string(data))
-		dataChan <- data
 	}()
 
 	return dataChan, errChan
@@ -169,7 +182,7 @@ func handleConn(conn *websocket.Conn, g *gocui.Gui, dataChan chan []byte) {
 					return err1
 				}
 				fmt.Fprintln(v, "------")
-				fmt.Fprintf(v, "From:%s|Tp:%v|Content:%s\n", msg.GetFromUser(), msg.GetContentType(), msg.GetContent())
+				fmt.Fprintf(v, "Receive|From:%s|Tp:%v|Content:%s\n", msg.GetFromUser(), msg.GetContentType(), msg.GetContent())
 				return nil
 			})
 
