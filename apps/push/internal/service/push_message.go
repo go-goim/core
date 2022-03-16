@@ -30,12 +30,12 @@ func (p *PushMessager) PushMessage(ctx context.Context, req *messagev1.PushMessa
 	}
 
 	err1 := PushMessage(c.Conn, req)
-	if err1 != nil {
-		log.Info("PUSH| push err=", err1)
+	if err1 == nil {
 		resp = &messagev1.PushMessageResp{Status: messagev1.PushMessageRespStatus_OK}
 		return
 	}
 
+	log.Info("PUSH| push err=", err1)
 	resp = &messagev1.PushMessageResp{
 		Status: messagev1.PushMessageRespStatus_Unknown,
 		Reason: err1.Error(),
