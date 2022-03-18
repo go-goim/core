@@ -2,7 +2,7 @@ name: goim.msg.service
 version: v0.0.0
 http:
   scheme: grpc
-  port: 8063
+  port: 18063
 log:
   level:
   - INFO
