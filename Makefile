@@ -7,6 +7,8 @@ BinPath ?= bin/$(Srv)
 CmdPath ?= apps/$(Srv)/cmd/main.go
 CfgPath ?= apps/$(Srv)/config
 ProtoFile ?= api/config/v1/config.proto
+IMAGE ?= goim/$(Srv)
+VERSION ?= $(shell git describe --exact-match --tags 2> /dev/null || git rev-parse --abbrev-ref HEAD)
 
 ## env
 export ROCKETMQ_GO_LOG_LEVEL=warn
@@ -44,6 +46,18 @@ protoc: ## Run protoc command to generate pb code.
 .PHONY: build
 build: ## build provided server
 	go build -o $(BinPath) $(CmdPath)
+
+##################################################
+# Docker                                         #
+##################################################
+
+##@ Docker
+
+.PHONY: docker-build
+docker-build: ## build docker image
+	## build binary for docker image
+	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o $(BinPath) $(CmdPath)
+	docker build -f build/$(Srv).Dockerfile -t $(IMAGE):$(VERSION) .
 
 ##################################################
 # Run                                            #
