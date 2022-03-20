@@ -47,6 +47,11 @@ protoc: ## Run protoc command to generate pb code.
 build: ## build provided server
 	go build -o $(BinPath) $(CmdPath)
 
+.PHONY: build-all
+build-all: ## build all apps
+	make build Srv=push
+	make build Srv=gateway
+	make build Srv=msg
 ##################################################
 # Docker                                         #
 ##################################################

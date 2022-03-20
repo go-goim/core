@@ -35,6 +35,13 @@ func HandleWsConn(c *websocket.Conn, uid string) {
 		return err
 	})
 
+	c.SetCloseHandler(func(code int, text string) error {
+		message := websocket.FormatCloseMessage(code, "")
+		_ = c.WriteControl(websocket.CloseMessage, message, time.Now().Add(time.Second))
+		_ = app.GetApplication().Redis.Del(context.Background(), data.GetUserOnlineAgentKey(wc.Key)).Err()
+		return nil
+	})
+
 	err := conn.PutConn(wc)
 	if err != nil {
 		log.Info(err)
@@ -46,17 +53,6 @@ func HandleWsConn(c *websocket.Conn, uid string) {
 	}
 
 	go func() {
-		// write msg
-		_ = c.SetWriteDeadline(time.Now().Add(time.Second))
-		w, err1 := c.NextWriter(websocket.TextMessage)
-		if err1 != nil {
-			return
-		}
-		defer w.Close()
-
-		_, err = w.Write([]byte("connect success"))
-		if err != nil {
-			return
-		}
+		_ = c.WriteMessage(websocket.TextMessage, []byte("connect success"))
 	}()
 }

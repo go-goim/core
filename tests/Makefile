@@ -4,6 +4,10 @@ ADDR ?= 127.0.0.1:8071
 UID ?= user1
 TOUID ?= user2
 
-.PHONEY: run
-run:
-	go run client/*.go -s $(ADDR) -u $(UID) -t $(TOUID)
+.PHONEY: run-gui
+run-gui:
+	go run client-gui/*.go -s $(ADDR) -u $(UID) -t $(TOUID)
+
+.PHONEY: run-bench
+run-bench:
+	go run client-bench/*.go
