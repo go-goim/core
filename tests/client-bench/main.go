@@ -33,7 +33,7 @@ func main() {
 		go runClient(fmt.Sprintf("user_%d", i))
 	}
 
-	var sigChan = make(chan os.Signal)
+	var sigChan = make(chan os.Signal, 1)
 	signal.Notify(sigChan, os.Interrupt, syscall.SIGQUIT, syscall.SIGINT)
 	<-sigChan
 }
