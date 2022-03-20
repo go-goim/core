@@ -3,7 +3,6 @@ package service
 import (
 	"context"
 	"encoding/json"
-	"time"
 
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/gorilla/websocket"
@@ -50,16 +49,5 @@ func PushMessage(wc *websocket.Conn, message *messagev1.PushMessageReq) error {
 		return err
 	}
 
-	_ = wc.SetWriteDeadline(time.Now().Add(time.Second))
-	w, err := wc.NextWriter(websocket.TextMessage)
-	if err != nil {
-		return err
-	}
-
-	_, err = w.Write(b)
-	if err != nil {
-		return err
-	}
-
-	return w.Close()
+	return wc.WriteMessage(websocket.TextMessage, b)
 }
