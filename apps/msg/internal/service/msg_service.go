@@ -6,18 +6,23 @@ import (
 	"fmt"
 	"sync"
 
+	"google.golang.org/grpc/connectivity"
+
 	"github.com/apache/rocketmq-client-go/v2/consumer"
 	"github.com/apache/rocketmq-client-go/v2/primitive"
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/go-kratos/kratos/v2/selector"
 	"github.com/go-kratos/kratos/v2/transport/grpc"
+	ggrpc "google.golang.org/grpc"
 
 	messagev1 "github.com/yusank/goim/api/message/v1"
 	"github.com/yusank/goim/apps/msg/internal/app"
 	"github.com/yusank/goim/apps/msg/internal/data"
 )
 
-type MqMessageService struct{}
+type MqMessageService struct {
+	connMap sync.Map
+}
 
 var (
 	mqMessageService *MqMessageService
@@ -27,6 +32,7 @@ var (
 func GetMqMessageService() *MqMessageService {
 	once.Do(func() {
 		mqMessageService = new(MqMessageService)
+		mqMessageService.connMap = sync.Map{}
 	})
 
 	return mqMessageService
@@ -63,11 +69,7 @@ func (s *MqMessageService) handleSingleMsg(ctx context.Context, msg *primitive.M
 	}
 	agentID = str
 
-	reg := app.GetRegister()
-	cc, err := grpc.DialInsecure(ctx,
-		grpc.WithDiscovery(reg),
-		grpc.WithEndpoint("discovery://dc1/goim.push.service"),
-		grpc.WithFilter(getFilter(agentID)))
+	cc, err := s.loadGrpcConn(ctx, agentID)
 	if err != nil {
 		return err
 	}
@@ -92,6 +94,28 @@ func (s *MqMessageService) handleSingleMsg(ctx context.Context, msg *primitive.M
 	}
 
 	return nil
+}
+
+func (s *MqMessageService) loadGrpcConn(ctx context.Context, agentID string) (cc *ggrpc.ClientConn, err error) {
+	v, ok := s.connMap.Load(agentID)
+	if ok {
+		cc = v.(*ggrpc.ClientConn)
+		if cc.GetState() != connectivity.Shutdown {
+			return cc, nil
+		}
+		// remove
+		s.connMap.Delete(agentID)
+	}
+
+	cc, err = grpc.DialInsecure(ctx,
+		grpc.WithDiscovery(app.GetRegister()),
+		grpc.WithEndpoint("discovery://dc1/goim.push.service"),
+		grpc.WithFilter(getFilter(agentID)))
+	if err != nil {
+		return
+	}
+	s.connMap.Store(agentID, cc)
+	return
 }
 
 func getFilter(agentID string) selector.Filter {
