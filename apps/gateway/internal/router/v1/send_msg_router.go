@@ -15,7 +15,7 @@ func handleSendMsg(c *gin.Context) {
 		return
 	}
 
-	if err := service.GetSendMessageService().SendMessage(mid.GetContext(c), req); err != nil {
+	if _, err := service.GetSendMessageService().SendMessage(mid.GetContext(c), req); err != nil {
 		util.ErrorResp(c, err)
 		return
 	}

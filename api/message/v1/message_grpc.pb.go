@@ -14,6 +14,94 @@ import (
 // Requires gRPC-Go v1.32.0 or later.
 const _ = grpc.SupportPackageIsVersion7
 
+// SendMessagerClient is the client API for SendMessager service.
+//
+// For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
+type SendMessagerClient interface {
+	// SendMessage send message to one or multi users/channels
+	SendMessage(ctx context.Context, in *SendMessageReq, opts ...grpc.CallOption) (*SendMessageResp, error)
+}
+
+type sendMessagerClient struct {
+	cc grpc.ClientConnInterface
+}
+
+func NewSendMessagerClient(cc grpc.ClientConnInterface) SendMessagerClient {
+	return &sendMessagerClient{cc}
+}
+
+func (c *sendMessagerClient) SendMessage(ctx context.Context, in *SendMessageReq, opts ...grpc.CallOption) (*SendMessageResp, error) {
+	out := new(SendMessageResp)
+	err := c.cc.Invoke(ctx, "/api.message.v1.SendMessager/SendMessage", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+// SendMessagerServer is the server API for SendMessager service.
+// All implementations must embed UnimplementedSendMessagerServer
+// for forward compatibility
+type SendMessagerServer interface {
+	// SendMessage send message to one or multi users/channels
+	SendMessage(context.Context, *SendMessageReq) (*SendMessageResp, error)
+	mustEmbedUnimplementedSendMessagerServer()
+}
+
+// UnimplementedSendMessagerServer must be embedded to have forward compatible implementations.
+type UnimplementedSendMessagerServer struct {
+}
+
+func (UnimplementedSendMessagerServer) SendMessage(context.Context, *SendMessageReq) (*SendMessageResp, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SendMessage not implemented")
+}
+func (UnimplementedSendMessagerServer) mustEmbedUnimplementedSendMessagerServer() {}
+
+// UnsafeSendMessagerServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to SendMessagerServer will
+// result in compilation errors.
+type UnsafeSendMessagerServer interface {
+	mustEmbedUnimplementedSendMessagerServer()
+}
+
+func RegisterSendMessagerServer(s grpc.ServiceRegistrar, srv SendMessagerServer) {
+	s.RegisterService(&SendMessager_ServiceDesc, srv)
+}
+
+func _SendMessager_SendMessage_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SendMessageReq)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(SendMessagerServer).SendMessage(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/api.message.v1.SendMessager/SendMessage",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SendMessagerServer).SendMessage(ctx, req.(*SendMessageReq))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+// SendMessager_ServiceDesc is the grpc.ServiceDesc for SendMessager service.
+// It's only intended for direct use with grpc.RegisterService,
+// and not to be introspected or modified (even as a copy)
+var SendMessager_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "api.message.v1.SendMessager",
+	HandlerType: (*SendMessagerServer)(nil),
+	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "SendMessage",
+			Handler:    _SendMessager_SendMessage_Handler,
+		},
+	},
+	Streams:  []grpc.StreamDesc{},
+	Metadata: "api/message/v1/message.proto",
+}
+
 // PushMessagerClient is the client API for PushMessager service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.

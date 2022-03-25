@@ -122,5 +122,5 @@ func newConsulRegistry(cfg *registryv1.RegistryInfo) (RegisterDiscover, error) {
 		return nil, err
 	}
 
-	return consul.New(cli, consul.WithHeartbeat(false), consul.WithHealthCheck(false)), nil
+	return consul.New(cli, consul.WithHeartbeat(false), consul.WithHealthCheck(true)), nil
 }
