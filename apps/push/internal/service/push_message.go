@@ -8,7 +8,8 @@ import (
 	"github.com/gorilla/websocket"
 
 	messagev1 "github.com/yusank/goim/api/message/v1"
-	"github.com/yusank/goim/pkg/conn"
+	"github.com/yusank/goim/pkg/pool"
+	goimwebsocket "github.com/yusank/goim/pkg/websocket"
 )
 
 type PushMessager struct {
@@ -17,8 +18,8 @@ type PushMessager struct {
 
 func (p *PushMessager) PushMessage(ctx context.Context, req *messagev1.PushMessageReq) (resp *messagev1.PushMessageResp, err error) {
 	log.Info("PUSH receive msg|", req.GetContent())
-	c, ok := conn.GetConn(req.GetToUser())
-	if !ok {
+	c := pool.Get(req.GetToUser())
+	if c == nil {
 		log.Info("PUSH| user conn not found=", req.GetToUser())
 		resp = &messagev1.PushMessageResp{
 			Status: messagev1.PushMessageRespStatus_ConnectionNotFound,
@@ -28,7 +29,7 @@ func (p *PushMessager) PushMessage(ctx context.Context, req *messagev1.PushMessa
 		return
 	}
 
-	err1 := PushMessage(c.Conn, req)
+	err1 := PushMessage(c.(*goimwebsocket.WrappedWs), req)
 	if err1 == nil {
 		resp = &messagev1.PushMessageResp{Status: messagev1.PushMessageRespStatus_OK}
 		return
@@ -43,11 +44,11 @@ func (p *PushMessager) PushMessage(ctx context.Context, req *messagev1.PushMessa
 	return
 }
 
-func PushMessage(wc *websocket.Conn, message *messagev1.PushMessageReq) error {
+func PushMessage(ww *goimwebsocket.WrappedWs, message *messagev1.PushMessageReq) error {
 	b, err := json.Marshal(message)
 	if err != nil {
 		return err
 	}
 
-	return wc.WriteMessage(websocket.TextMessage, b)
+	return ww.WriteMessage(websocket.TextMessage, b)
 }

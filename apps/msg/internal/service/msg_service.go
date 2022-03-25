@@ -18,11 +18,10 @@ import (
 	messagev1 "github.com/yusank/goim/api/message/v1"
 	"github.com/yusank/goim/apps/msg/internal/app"
 	"github.com/yusank/goim/apps/msg/internal/data"
+	"github.com/yusank/goim/pkg/pool"
 )
 
-type MqMessageService struct {
-	connMap sync.Map
-}
+type MqMessageService struct{}
 
 var (
 	mqMessageService *MqMessageService
@@ -32,7 +31,6 @@ var (
 func GetMqMessageService() *MqMessageService {
 	once.Do(func() {
 		mqMessageService = new(MqMessageService)
-		mqMessageService.connMap = sync.Map{}
 	})
 
 	return mqMessageService
@@ -97,14 +95,10 @@ func (s *MqMessageService) handleSingleMsg(ctx context.Context, msg *primitive.M
 }
 
 func (s *MqMessageService) loadGrpcConn(ctx context.Context, agentID string) (cc *ggrpc.ClientConn, err error) {
-	v, ok := s.connMap.Load(agentID)
-	if ok {
-		cc = v.(*ggrpc.ClientConn)
-		if cc.GetState() != connectivity.Shutdown {
-			return cc, nil
-		}
-		// remove
-		s.connMap.Delete(agentID)
+	c := pool.Get(agentID)
+	if c != nil {
+		wc := c.(*wrappedConn)
+		return wc.ClientConn, nil
 	}
 
 	cc, err = grpc.DialInsecure(ctx,
@@ -114,8 +108,33 @@ func (s *MqMessageService) loadGrpcConn(ctx context.Context, agentID string) (cc
 	if err != nil {
 		return
 	}
-	s.connMap.Store(agentID, cc)
+
+	pool.Add(&wrappedConn{
+		ClientConn: cc,
+		agentID:    agentID,
+	})
 	return
+}
+
+type wrappedConn struct {
+	agentID string
+	*ggrpc.ClientConn
+}
+
+func (w *wrappedConn) Key() string {
+	return w.agentID
+}
+
+func (w *wrappedConn) IsClosed() bool {
+	return w.GetState() == connectivity.Shutdown
+}
+
+func (w *wrappedConn) Reconcile() error {
+	if w.IsClosed() {
+		return fmt.Errorf("connection closed")
+	}
+
+	return nil
 }
 
 func getFilter(agentID string) selector.Filter {
