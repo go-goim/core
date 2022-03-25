@@ -62,7 +62,7 @@ func resetInput(g *gocui.Gui, v *gocui.View) error {
 	r := bytes.NewReader(b)
 	size := r.Size()
 
-	req, err := http.NewRequest(http.MethodPost, "http://127.0.0.1:8071/gateway/service/v1/send_msg", r)
+	req, err := http.NewRequest(http.MethodPost, fmt.Sprintf("http://%s/gateway/service/v1/send_msg", serverAddr), r)
 	if err != nil {
 		logger.Println(err)
 		return err
@@ -86,7 +86,7 @@ func resetInput(g *gocui.Gui, v *gocui.View) error {
 			return err1
 		}
 		fmt.Fprintln(v, "------")
-		fmt.Fprintf(v, "Send|From:%v|Tp:%v|Content:%v\n", m["from_user"], m["content_type"], m["content"])
+		fmt.Fprintf(v, "Send|From:%v|Tp:%v|Content:%v", m["from_user"], m["content_type"], m["content"])
 		return nil
 	})
 	return nil

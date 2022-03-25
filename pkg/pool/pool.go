@@ -55,7 +55,7 @@ func (p *namedPool) add(c Conn) {
 func (p *namedPool) get(key string) Conn {
 	p.RLock()
 	i, ok := p.m[key]
-	p.Unlock()
+	p.RUnlock()
 
 	if ok {
 		if !i.c.IsClosed() {

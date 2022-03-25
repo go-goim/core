@@ -78,7 +78,7 @@ func (w *WrappedWs) IsClosed() bool {
 func (w *WrappedWs) Reconcile() error {
 	mt, message, err := w.ReadMessage()
 	if err != nil {
-		log.Info("read:", err)
+		log.Infof("wrpappedws|reconcile|uid=%s,err=%s", w.UID, err)
 		return err
 	}
 	log.Infof("receiveType=%v, msg=%s", mt, message)
