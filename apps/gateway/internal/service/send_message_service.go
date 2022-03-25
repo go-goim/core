@@ -43,7 +43,10 @@ func (s *SendMessageService) SendMessage(ctx context.Context, msg *messagev1.Sen
 	}
 
 	log.Info(rs.String())
-	return err2Resp(nil), nil
+	rsp := err2Resp(nil)
+	rsp.MsgSeq = rs.MsgID
+
+	return rsp, nil
 }
 
 func err2Resp(err error) *messagev1.SendMessageResp {

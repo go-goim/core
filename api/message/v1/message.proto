@@ -22,6 +22,8 @@ message SendMessageReq {
 message SendMessageResp {
   int32 status = 1;
   string reason = 2;
+  // MsgSeq is unique seq number of a message
+  string msg_seq = 3;
 }
 
 // SendMessager provide send message service
