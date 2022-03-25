@@ -12,7 +12,9 @@ import (
 	"github.com/yusank/goim/pkg/mq"
 )
 
-type SendMessageService struct{}
+type SendMessageService struct {
+	messagev1.UnimplementedSendMessagerServer
+}
 
 var (
 	sendMessageService     *SendMessageService
@@ -27,19 +29,32 @@ func GetSendMessageService() *SendMessageService {
 	return sendMessageService
 }
 
-func (s *SendMessageService) SendMessage(ctx context.Context, msg *messagev1.SendMessageReq) error {
+func (s *SendMessageService) SendMessage(ctx context.Context, msg *messagev1.SendMessageReq) (*messagev1.SendMessageResp, error) {
 	// check req params
 
 	b, err := json.Marshal(msg)
 	if err != nil {
-		return err
+		return err2Resp(err), err
 	}
 
 	rs, err := app.GetApplication().Producer.SendSync(ctx, mq.NewMessage("def_topic", b))
 	if err != nil {
-		return err
+		return err2Resp(err), err
 	}
 
 	log.Info(rs.String())
-	return nil
+	return err2Resp(nil), nil
+}
+
+func err2Resp(err error) *messagev1.SendMessageResp {
+	if err == nil {
+		return &messagev1.SendMessageResp{
+			Reason: "ok",
+		}
+	}
+
+	return &messagev1.SendMessageResp{
+		Status: -1,
+		Reason: err.Error(),
+	}
 }

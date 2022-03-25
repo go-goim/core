@@ -18,6 +18,18 @@ message SendMessageReq {
   string content = 4;
 }
 
+// SendMessageResp is response body for sendMessage
+message SendMessageResp {
+  int32 status = 1;
+  string reason = 2;
+}
+
+// SendMessager provide send message service
+service SendMessager {
+  // SendMessage send message to one or multi users/channels
+  rpc SendMessage(SendMessageReq) returns (SendMessageResp);
+}
+
 enum PushMessageType {
   UnknownUserType = 0;
   // user to user

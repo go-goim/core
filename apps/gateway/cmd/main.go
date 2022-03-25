@@ -5,8 +5,10 @@ import (
 
 	"github.com/gin-gonic/gin"
 
+	messagev1 "github.com/yusank/goim/api/message/v1"
 	"github.com/yusank/goim/apps/gateway/internal/app"
 	"github.com/yusank/goim/apps/gateway/internal/router"
+	"github.com/yusank/goim/apps/gateway/internal/service"
 
 	"github.com/go-kratos/kratos/v2/log"
 )
@@ -25,6 +27,9 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	// register grpc
+	messagev1.RegisterSendMessagerServer(application.GrpcSrv, &service.SendMessageService{})
 
 	g := gin.New()
 	router.RegisterRouter(g.Group("/gateway/service"))

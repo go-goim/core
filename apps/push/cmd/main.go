@@ -27,10 +27,10 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	messagev1.RegisterPushMessagerServer(application.GrpcServer, &service.PushMessager{})
+	messagev1.RegisterPushMessagerServer(application.GrpcSrv, &service.PushMessager{})
 	g := gin.Default()
 	router.RegisterRouter(g.Group("/push/service"))
-	application.HTTPServer.HandlePrefix("/", g)
+	application.HTTPSrv.HandlePrefix("/", g)
 
 	if err = application.Run(); err != nil {
 		log.Fatal(err)

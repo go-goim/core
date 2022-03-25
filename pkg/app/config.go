@@ -10,31 +10,42 @@ import (
 	configv1 "github.com/yusank/goim/api/config/v1"
 )
 
+// Config contains service config.
+// Use this as a basic config and add own fields in own app packages if needed.
 type Config struct {
-	*configv1.Service `json:",inline"`
-	config.Config     `json:"-"`
-	Filepath          string
+	SrvConfig *ServiceConfig
+	RegConfig *RegistryConfig
 }
 
-func NewConfig() *Config {
-	return &Config{
+func (c *Config) Validate() error {
+	return nil
+}
+
+// ServiceConfig contains service config
+type ServiceConfig struct {
+	*configv1.Service `json:",inline"`
+	FilePath          string
+}
+
+func NewConfig() *ServiceConfig {
+	return &ServiceConfig{
 		Service: new(configv1.Service),
 	}
 }
 
-type Registry struct {
+// RegistryConfig contains registry config
+type RegistryConfig struct {
 	*registryv1.Registry `json:",inline"`
-	config.Config        `json:"-"`
 	FilePath             string
 }
 
-func NewRegistry() *Registry {
-	return &Registry{
+func NewRegistry() *RegistryConfig {
+	return &RegistryConfig{
 		Registry: new(registryv1.Registry),
 	}
 }
 
-func ParseConfig(fp string) (*Config, *Registry) {
+func ParseConfig(fp string) *Config {
 	c := config.New(
 		config.WithSource(
 			file.NewSource(fp),
@@ -45,19 +56,23 @@ func ParseConfig(fp string) (*Config, *Registry) {
 	}
 
 	cfg := NewConfig()
-	cfg.Config = c
 	// Unmarshal the config to struct
 	if err := c.Scan(cfg); err != nil {
 		panic(err)
 	}
+	cfg.FilePath = fp
 	log.Printf("%+v", cfg)
 
 	reg := NewRegistry()
-	reg.Config = c
 	if err := c.Scan(reg); err != nil {
 		panic(err)
 	}
+	reg.FilePath = fp
 	log.Printf("%+v", reg)
 	reg.Name = cfg.GetName()
-	return cfg, reg
+
+	return &Config{
+		SrvConfig: cfg,
+		RegConfig: reg,
+	}
 }

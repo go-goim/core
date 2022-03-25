@@ -2,11 +2,11 @@ package main
 
 import (
 	"flag"
-	"github.com/yusank/goim/apps/msg/internal/service"
 
 	"github.com/go-kratos/kratos/v2/log"
 
 	"github.com/yusank/goim/apps/msg/internal/app"
+	"github.com/yusank/goim/apps/msg/internal/service"
 	"github.com/yusank/goim/pkg/mq"
 )
 
@@ -27,7 +27,7 @@ func main() {
 
 	// register consumer
 	c, err := mq.NewConsumer(&mq.ConsumerConfig{
-		Addr:        application.ServerConfig.Mq.GetAddr(),
+		Addr:        application.Config.SrvConfig.Mq.GetAddr(),
 		Concurrence: 1,
 		Subscriber:  service.GetMqMessageService(),
 	})
@@ -35,7 +35,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	app.AddConsumer(c)
+	application.AddConsumer(c)
 	if err = application.Run(); err != nil {
 		log.Info(err)
 	}
