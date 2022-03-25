@@ -2,6 +2,7 @@ package v1
 
 import (
 	"github.com/gin-gonic/gin"
+
 	messagev1 "github.com/yusank/goim/api/message/v1"
 	"github.com/yusank/goim/apps/gateway/internal/service"
 	"github.com/yusank/goim/pkg/mid"
@@ -15,10 +16,11 @@ func handleSendMsg(c *gin.Context) {
 		return
 	}
 
-	if _, err := service.GetSendMessageService().SendMessage(mid.GetContext(c), req); err != nil {
+	rsp, err := service.GetSendMessageService().SendMessage(mid.GetContext(c), req)
+	if err != nil {
 		util.ErrorResp(c, err)
 		return
 	}
 
-	util.Success(c, nil)
+	util.Success(c, rsp)
 }
