@@ -2,7 +2,6 @@ package app
 
 import (
 	"github.com/yusank/goim/pkg/app"
-	"github.com/yusank/goim/pkg/registry"
 )
 
 type Application struct {
@@ -27,8 +26,4 @@ func InitApplication(confPath string) (*Application, error) {
 
 func GetApplication() *Application {
 	return application
-}
-
-func GetRegister() registry.RegisterDiscover {
-	return application.Register
 }
