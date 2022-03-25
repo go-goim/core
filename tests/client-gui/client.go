@@ -26,7 +26,7 @@ var (
 )
 
 func init() {
-	flag.StringVar(&serverAddr, "s", "127.0.0.1:8071", "gateway server addr")
+	flag.StringVar(&serverAddr, "s", "127.0.0.1:18071", "gateway server addr")
 	flag.StringVar(&uid, "u", "", "from user id")
 	flag.StringVar(&toUid, "t", "", "to user id")
 	f, err := os.Create("log.log")
@@ -182,7 +182,7 @@ func handleConn(conn *websocket.Conn, g *gocui.Gui, dataChan chan []byte) {
 					return err1
 				}
 				fmt.Fprintln(v, "------")
-				fmt.Fprintf(v, "Receive|From:%s|Tp:%v|Content:%s\n", msg.GetFromUser(), msg.GetContentType(), msg.GetContent())
+				fmt.Fprintf(v, "Receive|From:%s|Tp:%v|Content:%s", msg.GetFromUser(), msg.GetContentType(), msg.GetContent())
 				return nil
 			})
 
