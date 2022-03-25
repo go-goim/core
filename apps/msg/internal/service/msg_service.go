@@ -102,7 +102,7 @@ func (s *MqMessageService) handleSingleMsg(ctx context.Context, msg *primitive.M
 func (s *MqMessageService) putToRedis(ctx context.Context, msg *primitive.MessageExt, to string) error {
 	msgID, err := primitive.UnmarshalMsgID([]byte(msg.MsgId))
 	if err != nil {
-		log.Infof("unmarshal msg id err=", err)
+		log.Info("unmarshal msg id err=", err)
 	} else {
 		log.Infof("unmarshal msg|host=%s, port=%d, offset=%d", msgID.Addr, msgID.Port, msgID.Offset)
 	}
