@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"sync"
 
+	redisv8 "github.com/go-redis/redis/v8"
+
 	"google.golang.org/grpc/connectivity"
 
 	"github.com/apache/rocketmq-client-go/v2/consumer"
@@ -63,6 +65,9 @@ func (s *MqMessageService) handleSingleMsg(ctx context.Context, msg *primitive.M
 	var agentID string
 	str, err := app.GetApplication().Redis.Get(ctx, data.GetUserOnlineAgentKey(req.GetToUser())).Result()
 	if err != nil {
+		if err == redisv8.ErrClosed {
+			return s.putToRedis(ctx, msg, req.ToUser)
+		}
 		return err
 	}
 	agentID = str
@@ -94,6 +99,20 @@ func (s *MqMessageService) handleSingleMsg(ctx context.Context, msg *primitive.M
 	return nil
 }
 
+func (s *MqMessageService) putToRedis(ctx context.Context, msg *primitive.MessageExt, to string) error {
+	msgID, err := primitive.UnmarshalMsgID([]byte(msg.MsgId))
+	if err != nil {
+		log.Infof("unmarshal msg id err=", err)
+	} else {
+		log.Infof("unmarshal msg|host=%s, port=%d, offset=%d", msgID.Addr, msgID.Port, msgID.Offset)
+	}
+
+	return app.GetApplication().Redis.ZAdd(ctx, data.GetUserOfflineQueueKey(to), &redisv8.Z{
+		Score:  float64(msgID.Offset),
+		Member: string(msg.Body),
+	}).Err()
+}
+
 func (s *MqMessageService) loadGrpcConn(ctx context.Context, agentID string) (cc *ggrpc.ClientConn, err error) {
 	c := pool.Get(agentID)
 	if c != nil {
@@ -102,7 +121,7 @@ func (s *MqMessageService) loadGrpcConn(ctx context.Context, agentID string) (cc
 	}
 
 	cc, err = grpc.DialInsecure(ctx,
-		grpc.WithDiscovery(app.GetRegister()),
+		grpc.WithDiscovery(app.GetApplication().Register),
 		grpc.WithEndpoint("discovery://dc1/goim.push.service"),
 		grpc.WithFilter(getFilter(agentID)))
 	if err != nil {
