@@ -72,7 +72,6 @@ func (w *WrappedWs) Key() string {
 }
 
 func (w *WrappedWs) IsClosed() bool {
-	w.Close()
 	return w.closed
 }
 
