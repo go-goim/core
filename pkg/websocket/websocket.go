@@ -23,7 +23,7 @@ func WrapWs(c *websocket.Conn, uid string) *WrappedWs {
 
 	ww.SetCloseHandler(func(code int, text string) error {
 		message := websocket.FormatCloseMessage(code, "")
-		ww.WriteControl(websocket.CloseMessage, message, time.Now().Add(time.Second))
+		_ = ww.WriteControl(websocket.CloseMessage, message, time.Now().Add(time.Second))
 		ww.closed = true
 		return nil
 	})
