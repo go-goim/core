@@ -5,7 +5,6 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-kratos/kratos/v2/errors"
-	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/proto"
 )
 
@@ -22,8 +21,7 @@ const jsonContentType = "application/json; charset=utf-8"
 func Success(c *gin.Context, body interface{}) {
 	v, ok := body.(proto.Message)
 	if ok {
-		o := protojson.MarshalOptions{EmitUnpopulated: true}
-		b, _ := o.Marshal(v)
+		b, _ := MarshallPb(v)
 		c.Data(http.StatusOK, jsonContentType, b)
 		return
 	}

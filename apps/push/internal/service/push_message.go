@@ -9,7 +9,7 @@ import (
 
 	messagev1 "github.com/yusank/goim/api/message/v1"
 	"github.com/yusank/goim/pkg/pool"
-	goimwebsocket "github.com/yusank/goim/pkg/websocket"
+	goimwebsocket "github.com/yusank/goim/pkg/pool/wrapper"
 )
 
 type PushMessager struct {
@@ -29,7 +29,7 @@ func (p *PushMessager) PushMessage(ctx context.Context, req *messagev1.PushMessa
 		return
 	}
 
-	err1 := PushMessage(c.(*goimwebsocket.WrappedWs), req)
+	err1 := PushMessage(c.(*goimwebsocket.WebsocketWrapper), req)
 	if err1 == nil {
 		resp = &messagev1.PushMessageResp{Status: messagev1.PushMessageRespStatus_OK}
 		return
@@ -44,7 +44,7 @@ func (p *PushMessager) PushMessage(ctx context.Context, req *messagev1.PushMessa
 	return
 }
 
-func PushMessage(ww *goimwebsocket.WrappedWs, message *messagev1.PushMessageReq) error {
+func PushMessage(ww *goimwebsocket.WebsocketWrapper, message *messagev1.PushMessageReq) error {
 	b, err := json.Marshal(message)
 	if err != nil {
 		return err

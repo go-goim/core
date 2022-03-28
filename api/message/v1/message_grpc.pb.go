@@ -187,3 +187,89 @@ var PushMessager_ServiceDesc = grpc.ServiceDesc{
 	Streams:  []grpc.StreamDesc{},
 	Metadata: "api/message/v1/message.proto",
 }
+
+// OfflineMessageClient is the client API for OfflineMessage service.
+//
+// For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
+type OfflineMessageClient interface {
+	QueryOfflineMessage(ctx context.Context, in *QueryOfflineMessageReq, opts ...grpc.CallOption) (*QueryOfflineMessageResp, error)
+}
+
+type offlineMessageClient struct {
+	cc grpc.ClientConnInterface
+}
+
+func NewOfflineMessageClient(cc grpc.ClientConnInterface) OfflineMessageClient {
+	return &offlineMessageClient{cc}
+}
+
+func (c *offlineMessageClient) QueryOfflineMessage(ctx context.Context, in *QueryOfflineMessageReq, opts ...grpc.CallOption) (*QueryOfflineMessageResp, error) {
+	out := new(QueryOfflineMessageResp)
+	err := c.cc.Invoke(ctx, "/api.message.v1.OfflineMessage/QueryOfflineMessage", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+// OfflineMessageServer is the server API for OfflineMessage service.
+// All implementations must embed UnimplementedOfflineMessageServer
+// for forward compatibility
+type OfflineMessageServer interface {
+	QueryOfflineMessage(context.Context, *QueryOfflineMessageReq) (*QueryOfflineMessageResp, error)
+	mustEmbedUnimplementedOfflineMessageServer()
+}
+
+// UnimplementedOfflineMessageServer must be embedded to have forward compatible implementations.
+type UnimplementedOfflineMessageServer struct {
+}
+
+func (UnimplementedOfflineMessageServer) QueryOfflineMessage(context.Context, *QueryOfflineMessageReq) (*QueryOfflineMessageResp, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method QueryOfflineMessage not implemented")
+}
+func (UnimplementedOfflineMessageServer) mustEmbedUnimplementedOfflineMessageServer() {}
+
+// UnsafeOfflineMessageServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to OfflineMessageServer will
+// result in compilation errors.
+type UnsafeOfflineMessageServer interface {
+	mustEmbedUnimplementedOfflineMessageServer()
+}
+
+func RegisterOfflineMessageServer(s grpc.ServiceRegistrar, srv OfflineMessageServer) {
+	s.RegisterService(&OfflineMessage_ServiceDesc, srv)
+}
+
+func _OfflineMessage_QueryOfflineMessage_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryOfflineMessageReq)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(OfflineMessageServer).QueryOfflineMessage(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/api.message.v1.OfflineMessage/QueryOfflineMessage",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(OfflineMessageServer).QueryOfflineMessage(ctx, req.(*QueryOfflineMessageReq))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+// OfflineMessage_ServiceDesc is the grpc.ServiceDesc for OfflineMessage service.
+// It's only intended for direct use with grpc.RegisterService,
+// and not to be introspected or modified (even as a copy)
+var OfflineMessage_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "api.message.v1.OfflineMessage",
+	HandlerType: (*OfflineMessageServer)(nil),
+	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "QueryOfflineMessage",
+			Handler:    _OfflineMessage_QueryOfflineMessage_Handler,
+		},
+	},
+	Streams:  []grpc.StreamDesc{},
+	Metadata: "api/message/v1/message.proto",
+}

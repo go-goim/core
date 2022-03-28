@@ -5,6 +5,7 @@ import (
 
 	"github.com/go-kratos/kratos/v2/log"
 
+	messagev1 "github.com/yusank/goim/api/message/v1"
 	"github.com/yusank/goim/apps/msg/internal/app"
 	"github.com/yusank/goim/apps/msg/internal/service"
 	"github.com/yusank/goim/pkg/mq"
@@ -25,6 +26,9 @@ func main() {
 		log.Fatal(err)
 	}
 
+	// register grpc
+	messagev1.RegisterOfflineMessageServer(application.GrpcSrv, &service.OfflineMessageService{})
+
 	// register consumer
 	c, err := mq.NewConsumer(&mq.ConsumerConfig{
 		Addr:        application.Config.SrvConfig.Mq.GetAddr(),
@@ -34,8 +38,8 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-
 	application.AddConsumer(c)
+
 	if err = application.Run(); err != nil {
 		log.Info(err)
 	}
