@@ -1,4 +1,4 @@
-package websocket
+package wrapper
 
 import (
 	"net"
@@ -8,14 +8,14 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-type WrappedWs struct {
+type WebsocketWrapper struct {
 	*websocket.Conn
 	closed bool
 	UID    string
 }
 
-func WrapWs(c *websocket.Conn, uid string) *WrappedWs {
-	ww := &WrappedWs{
+func WrapWs(c *websocket.Conn, uid string) *WebsocketWrapper {
+	ww := &WebsocketWrapper{
 		Conn:   c,
 		UID:    uid,
 		closed: false,
@@ -43,7 +43,7 @@ func WrapWs(c *websocket.Conn, uid string) *WrappedWs {
 	return ww
 }
 
-func (w *WrappedWs) AddCloseAction(f func() error) {
+func (w *WebsocketWrapper) AddCloseAction(f func() error) {
 	cf := w.CloseHandler()
 	w.SetCloseHandler(func(code int, text string) error {
 		err := cf(code, text)
@@ -55,7 +55,7 @@ func (w *WrappedWs) AddCloseAction(f func() error) {
 	})
 }
 
-func (w *WrappedWs) AddPingAction(f func() error) {
+func (w *WebsocketWrapper) AddPingAction(f func() error) {
 	pf := w.PingHandler()
 	w.SetPingHandler(func(appData string) error {
 		err := pf(appData)
@@ -67,15 +67,15 @@ func (w *WrappedWs) AddPingAction(f func() error) {
 	})
 }
 
-func (w *WrappedWs) Key() string {
+func (w *WebsocketWrapper) Key() string {
 	return w.UID
 }
 
-func (w *WrappedWs) IsClosed() bool {
+func (w *WebsocketWrapper) IsClosed() bool {
 	return w.closed
 }
 
-func (w *WrappedWs) Reconcile() error {
+func (w *WebsocketWrapper) Reconcile() error {
 	mt, message, err := w.ReadMessage()
 	if err != nil {
 		log.Infof("wrpappedws|reconcile|uid=%s,err=%s", w.UID, err)

@@ -8,8 +8,6 @@ import (
 
 	redisv8 "github.com/go-redis/redis/v8"
 
-	"google.golang.org/grpc/connectivity"
-
 	"github.com/apache/rocketmq-client-go/v2/consumer"
 	"github.com/apache/rocketmq-client-go/v2/primitive"
 	"github.com/go-kratos/kratos/v2/log"
@@ -21,6 +19,7 @@ import (
 	"github.com/yusank/goim/apps/msg/internal/app"
 	"github.com/yusank/goim/apps/msg/internal/data"
 	"github.com/yusank/goim/pkg/pool"
+	"github.com/yusank/goim/pkg/pool/wrapper"
 )
 
 type MqMessageService struct{}
@@ -66,7 +65,8 @@ func (s *MqMessageService) handleSingleMsg(ctx context.Context, msg *primitive.M
 	str, err := app.GetApplication().Redis.Get(ctx, data.GetUserOnlineAgentKey(req.GetToUser())).Result()
 	if err != nil {
 		if err == redisv8.Nil {
-			return s.putToRedis(ctx, msg, req.ToUser)
+			log.Infof("user=%s not online, put to offline queue", req.GetToUser())
+			return s.putToRedis(ctx, msg, req)
 		}
 		return err
 	}
@@ -99,61 +99,57 @@ func (s *MqMessageService) handleSingleMsg(ctx context.Context, msg *primitive.M
 	return nil
 }
 
-func (s *MqMessageService) putToRedis(ctx context.Context, msg *primitive.MessageExt, to string) error {
-	msgID, err := primitive.UnmarshalMsgID([]byte(msg.MsgId))
+func (s *MqMessageService) putToRedis(ctx context.Context, ext *primitive.MessageExt, req *messagev1.PushMessageReq) error {
+	msgID, err := primitive.UnmarshalMsgID([]byte(ext.MsgId))
 	if err != nil {
-		log.Info("unmarshal msg id err=", err)
-	} else {
-		log.Infof("unmarshal msg|host=%s, port=%d, offset=%d", msgID.Addr, msgID.Port, msgID.Offset)
+		log.Info("unmarshal ext id err=", err)
+		return err
+	}
+	log.Infof("unmarshal ext|host=%s, port=%d, offset=%d", msgID.Addr, msgID.Port, msgID.Offset)
+
+	msg := &messagev1.BriefMessage{
+		FromUser:    req.GetFromUser(),
+		ToUser:      req.GetToUser(),
+		ContentType: req.GetContentType(),
+		Content:     req.GetContent(),
+		MsgSeq:      ext.MsgId,
 	}
 
-	return app.GetApplication().Redis.ZAdd(ctx, data.GetUserOfflineQueueKey(to), &redisv8.Z{
+	body, err := json.Marshal(msg)
+	if err != nil {
+		return err
+	}
+
+	return app.GetApplication().Redis.ZAdd(ctx, data.GetUserOfflineQueueKey(req.GetToUser()), &redisv8.Z{
 		Score:  float64(msgID.Offset),
-		Member: string(msg.Body),
+		Member: string(body),
 	}).Err()
 }
 
 func (s *MqMessageService) loadGrpcConn(ctx context.Context, agentID string) (cc *ggrpc.ClientConn, err error) {
-	c := pool.Get(agentID)
+	var (
+		ep = "discovery://dc1/goim.push.service"
+		ck = fmt.Sprintf("%s:%s", ep, agentID)
+	)
+	c := pool.Get(ck)
 	if c != nil {
-		wc := c.(*wrappedConn)
+		wc := c.(*wrapper.GrpcWrapper)
 		return wc.ClientConn, nil
 	}
 
 	cc, err = grpc.DialInsecure(ctx,
 		grpc.WithDiscovery(app.GetApplication().Register),
-		grpc.WithEndpoint("discovery://dc1/goim.push.service"),
+		grpc.WithEndpoint(ep),
 		grpc.WithFilter(getFilter(agentID)))
 	if err != nil {
 		return
 	}
 
-	pool.Add(&wrappedConn{
+	pool.Add(&wrapper.GrpcWrapper{
 		ClientConn: cc,
-		agentID:    agentID,
+		ConnKey:    ck,
 	})
 	return
-}
-
-type wrappedConn struct {
-	agentID string
-	*ggrpc.ClientConn
-}
-
-func (w *wrappedConn) Key() string {
-	return w.agentID
-}
-
-func (w *wrappedConn) IsClosed() bool {
-	return w.GetState() == connectivity.Shutdown
-}
-
-func (w *wrappedConn) Reconcile() error {
-	if w.IsClosed() {
-		return fmt.Errorf("connection closed")
-	}
-
-	return nil
 }
 
 func getFilter(agentID string) selector.Filter {
