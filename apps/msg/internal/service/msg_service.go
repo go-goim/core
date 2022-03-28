@@ -65,7 +65,7 @@ func (s *MqMessageService) handleSingleMsg(ctx context.Context, msg *primitive.M
 	var agentID string
 	str, err := app.GetApplication().Redis.Get(ctx, data.GetUserOnlineAgentKey(req.GetToUser())).Result()
 	if err != nil {
-		if err == redisv8.ErrClosed {
+		if err == redisv8.Nil {
 			return s.putToRedis(ctx, msg, req.ToUser)
 		}
 		return err
