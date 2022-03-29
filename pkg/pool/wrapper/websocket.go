@@ -1,6 +1,7 @@
 package wrapper
 
 import (
+	"fmt"
 	"net"
 	"time"
 
@@ -75,12 +76,22 @@ func (w *WebsocketWrapper) IsClosed() bool {
 	return w.closed
 }
 
-func (w *WebsocketWrapper) Reconcile() error {
-	mt, message, err := w.ReadMessage()
-	if err != nil {
-		log.Infof("wrpappedws|reconcile|uid=%s,err=%s", w.UID, err)
-		return err
+func (w *WebsocketWrapper) Close() error {
+	if w.closed {
+		return fmt.Errorf("already closed")
 	}
-	log.Infof("receiveType=%v, msg=%s", mt, message)
-	return nil
+
+	return w.Conn.Close()
+}
+
+// Daemon is keep read msg from connection, and handle registered ping, pong, close events
+func (w *WebsocketWrapper) Daemon() {
+	for {
+		mt, message, err := w.ReadMessage()
+		if err != nil {
+			log.Infof("wrpappedws|reconcile|uid=%s,err=%s", w.UID, err)
+			return
+		}
+		log.Infof("receiveType=%v, msg=%s", mt, message)
+	}
 }

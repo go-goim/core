@@ -1,8 +1,6 @@
 package wrapper
 
 import (
-	"fmt"
-
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/connectivity"
 )
@@ -17,13 +15,6 @@ func (w *GrpcWrapper) Key() string {
 }
 
 func (w *GrpcWrapper) IsClosed() bool {
+	w.GetState()
 	return w.GetState() == connectivity.Shutdown
-}
-
-func (w *GrpcWrapper) Reconcile() error {
-	if w.IsClosed() {
-		return fmt.Errorf("connection closed")
-	}
-
-	return nil
 }

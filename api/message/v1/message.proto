@@ -50,6 +50,7 @@ message PushMessageReq {
   PushMessageType push_message_type = 4;
   MessageContentType content_type = 5;
   string content = 6;
+  string msg_seq = 7;
 }
 
 enum PushMessageRespStatus {
