@@ -7,6 +7,7 @@ import (
 	"github.com/gorilla/websocket"
 
 	"github.com/yusank/goim/apps/push/internal/service"
+	"github.com/yusank/goim/pkg/mid"
 )
 
 var upgrader = websocket.Upgrader{
@@ -28,5 +29,5 @@ func wsConnHandler(c *gin.Context) {
 		return
 	}
 
-	service.HandleWsConn(conn, uid)
+	service.HandleWsConn(mid.GetContext(c), conn, uid)
 }
