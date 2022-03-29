@@ -1,12 +1,15 @@
 package pool
 
-import "time"
+import (
+	"time"
+
+	"github.com/go-kratos/kratos/v2/log"
+)
 
 type Conn interface {
 	Key() string
 	IsClosed() bool
 	Close() error
-	Reconcile() error
 }
 
 type idleConn struct {
@@ -15,8 +18,8 @@ type idleConn struct {
 	stopChan chan struct{}
 }
 
-// close is diffrent form stop
-// close is close the connection and delete it from pool
+// close is different form stop
+// close is closes the connection and delete it from pool
 // stop is a trigger to stop the daemon then call the close
 func (i *idleConn) close() {
 	_ = i.c.Close()
@@ -30,17 +33,14 @@ func (i *idleConn) stop() {
 func (i *idleConn) daemon() {
 	var (
 		timer = time.NewTimer(time.Second * 5)
-		err   error
 	)
 loop:
 	for {
-		if err = i.c.Reconcile(); err != nil {
-			break
-		}
 
 		select {
 		case <-timer.C:
 			timer.Reset(time.Second * 5)
+			log.Infof("tick for conn=%s", i.c.Key())
 		case <-i.stopChan:
 			break loop
 		}

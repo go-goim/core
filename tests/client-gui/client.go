@@ -168,7 +168,7 @@ func handleConn(conn *websocket.Conn, g *gocui.Gui, dataChan chan []byte) {
 		case <-ticker.C:
 			conn.WriteControl(websocket.PingMessage, []byte("ping"), time.Now().Add(time.Second))
 		case data := <-dataChan:
-			msg := new(messagev1.SendMessageReq)
+			msg := new(messagev1.BriefMessage)
 			if err := json.Unmarshal(data, msg); err != nil {
 				logger.Println("unmarshal err:", err)
 				msg.Content = string(data)
@@ -182,7 +182,7 @@ func handleConn(conn *websocket.Conn, g *gocui.Gui, dataChan chan []byte) {
 					return err1
 				}
 				fmt.Fprintln(v, "------")
-				fmt.Fprintf(v, "Receive|From:%s|Tp:%v|Content:%s", msg.GetFromUser(), msg.GetContentType(), msg.GetContent())
+				fmt.Fprintf(v, "Receive|From:%s|Tp:%v|Content:%s|Seq:%s\n", msg.GetFromUser(), msg.GetContentType(), msg.GetContent(), msg.GetMsgSeq())
 				return nil
 			})
 

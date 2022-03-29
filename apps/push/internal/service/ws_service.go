@@ -22,6 +22,7 @@ func HandleWsConn(c *websocket.Conn, uid string) {
 
 	})
 
+	go ww.Daemon()
 	pool.Add(ww)
 
 	err := app.GetApplication().Redis.Set(context.Background(), data.GetUserOnlineAgentKey(uid), app.GetAgentID(), data.UserOnlineAgentKeyExpire).Err()

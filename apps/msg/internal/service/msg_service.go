@@ -84,6 +84,7 @@ func (s *MqMessageService) handleSingleMsg(ctx context.Context, msg *primitive.M
 		ContentType:     req.GetContentType(),
 		Content:         req.GetContent(),
 		AgentId:         agentID,
+		MsgSeq:          msg.MsgId,
 	}
 
 	out, err := messagev1.NewPushMessagerClient(cc).PushMessage(ctx, in)

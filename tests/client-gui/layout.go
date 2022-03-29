@@ -8,6 +8,7 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/jroimartin/gocui"
 )
@@ -51,7 +52,7 @@ func resetInput(g *gocui.Gui, v *gocui.View) error {
 		"from_user":    uid,
 		"to_user":      toUid,
 		"content_type": 1,
-		"content":      buf.String(),
+		"content":      strings.TrimSuffix(buf.String(), "\n"),
 	}
 	b, err := json.Marshal(&m)
 	if err != nil {
@@ -86,7 +87,7 @@ func resetInput(g *gocui.Gui, v *gocui.View) error {
 			return err1
 		}
 		fmt.Fprintln(v, "------")
-		fmt.Fprintf(v, "Send|From:%v|Tp:%v|Content:%v", m["from_user"], m["content_type"], m["content"])
+		fmt.Fprintf(v, "Send|From:%v|Tp:%v|Content:%v\n", m["from_user"], m["content_type"], m["content"])
 		return nil
 	})
 	return nil

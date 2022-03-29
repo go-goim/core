@@ -44,8 +44,16 @@ func (p *PushMessager) PushMessage(ctx context.Context, req *messagev1.PushMessa
 	return
 }
 
-func PushMessage(ww *goimwebsocket.WebsocketWrapper, message *messagev1.PushMessageReq) error {
-	b, err := json.Marshal(message)
+func PushMessage(ww *goimwebsocket.WebsocketWrapper, req *messagev1.PushMessageReq) error {
+	brief := &messagev1.BriefMessage{
+		FromUser:    req.GetFromUser(),
+		ToUser:      req.GetToUser(),
+		ContentType: req.GetContentType(),
+		Content:     req.GetContent(),
+		MsgSeq:      req.GetMsgSeq(),
+	}
+
+	b, err := json.Marshal(brief)
 	if err != nil {
 		return err
 	}

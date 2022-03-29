@@ -31,7 +31,7 @@ func main() {
 	// register grpc
 	messagev1.RegisterSendMessagerServer(application.GrpcSrv, &service.SendMessageService{})
 
-	g := gin.New()
+	g := gin.Default()
 	router.RegisterRouter(g.Group("/gateway/service"))
 	application.HTTPSrv.HandlePrefix("/", g)
 
