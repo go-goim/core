@@ -18,3 +18,4 @@
 .idea
 bin/
 *.log
+.hugo_build.lock

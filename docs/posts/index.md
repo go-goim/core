@@ -1,3 +1,0 @@
-# posts
-
-hello world.

@@ -1,5 +1,7 @@
 # GoIM
 
+> Instant Messaging system written by Go.
+
 ## How to run
 
 ```shell
@@ -68,11 +70,3 @@ make run Srv=msg
 IM 数据将在 HBASE 上存储，关系型数据存在 MySQL
 
 ![msg](https://raw.githubusercontent.com/yusank/goim/main/static/images/send_rec_msg.png)
-
-## Jekyll Themes
-
-Your Pages site will use the layout and styles from the Jekyll theme you have selected in your [repository settings](https://github.com/yusank/goim/settings/pages). The name of this theme is saved in the Jekyll `_config.yml` configuration file.
-
-## Support or Contact
-
-Having trouble with Pages? Check out our [documentation](https://docs.github.com/categories/github-pages-basics/) or [contact support](https://support.github.com/contact) and we’ll help you sort it out.
