@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"time"
 
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/gorilla/websocket"
@@ -9,23 +10,27 @@ import (
 	"github.com/yusank/goim/apps/push/internal/app"
 	"github.com/yusank/goim/apps/push/internal/data"
 	"github.com/yusank/goim/pkg/pool"
-	goimwebsocket "github.com/yusank/goim/pkg/pool/wrapper"
+	"github.com/yusank/goim/pkg/pool/wrapper"
 )
 
-func HandleWsConn(c *websocket.Conn, uid string) {
-	ww := goimwebsocket.WrapWs(c, uid)
+func HandleWsConn(ctx context.Context, c *websocket.Conn, uid string) {
+	ww := wrapper.WrapWs(ctx, c, uid)
 	ww.AddPingAction(func() error {
 		return app.GetApplication().Redis.SetEX(context.Background(), data.GetUserOnlineAgentKey(uid), app.GetAgentID(), data.UserOnlineAgentKeyExpire).Err()
 	})
 	ww.AddCloseAction(func() error {
-		return app.GetApplication().Redis.Del(context.Background(), data.GetUserOnlineAgentKey(uid)).Err()
+		ctx2, cancel := context.WithTimeout(ctx, time.Second)
+		defer cancel()
+		return app.GetApplication().Redis.Del(ctx2, data.GetUserOnlineAgentKey(uid)).Err()
 
 	})
 
 	go ww.Daemon()
 	pool.Add(ww)
 
-	err := app.GetApplication().Redis.Set(context.Background(), data.GetUserOnlineAgentKey(uid), app.GetAgentID(), data.UserOnlineAgentKeyExpire).Err()
+	ctx2, cancel := context.WithTimeout(ctx, time.Second)
+	defer cancel()
+	err := app.GetApplication().Redis.Set(ctx2, data.GetUserOnlineAgentKey(uid), app.GetAgentID(), data.UserOnlineAgentKeyExpire).Err()
 	if err != nil {
 		log.Info(err)
 	}

@@ -12,8 +12,8 @@ func Get(key string) Conn {
 	return dp.get(key)
 }
 
-func Delete(key string) {
-	dp.delete(key)
+func CloseAndDelete(key string) {
+	dp.closeAndDelete(key)
 }
 
 type namedPool struct {
@@ -31,8 +31,13 @@ func newNamedPool() *namedPool {
 }
 
 func (p *namedPool) add(c Conn) {
-	if c.IsClosed() {
+	select {
+	case <-c.Done():
 		return
+	default:
+		if c.Err() != nil {
+			return
+		}
 	}
 
 	p.Lock()
@@ -44,7 +49,7 @@ func (p *namedPool) add(c Conn) {
 
 	i = &idleConn{
 		c:        c,
-		stopChan: make(chan struct{}, 1),
+		stopChan: make(chan struct{}),
 		p:        p,
 	}
 
@@ -58,20 +63,35 @@ func (p *namedPool) get(key string) Conn {
 	p.RUnlock()
 
 	if ok {
-		if !i.c.IsClosed() {
+		select {
+		case <-i.c.Done():
+			i.stop()
+		default:
+			if i.c.Err() != nil {
+				i.stop()
+				return nil
+			}
 			return i.c
 		}
-
-		go i.stop()
-		p.delete(key)
 	}
 
 	return nil
 }
 
+func (p *namedPool) closeAndDelete(key string) {
+	p.RLock()
+	i, ok := p.m[key]
+	p.RUnlock()
+	if !ok {
+		return
+	}
+
+	// delete conn after close
+	i.stop()
+}
+
 func (p *namedPool) delete(key string) {
 	p.Lock()
 	defer p.Unlock()
-
 	delete(p.m, key)
 }

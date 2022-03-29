@@ -146,10 +146,7 @@ func (s *MqMessageService) loadGrpcConn(ctx context.Context, agentID string) (cc
 		return
 	}
 
-	pool.Add(&wrapper.GrpcWrapper{
-		ClientConn: cc,
-		ConnKey:    ck,
-	})
+	pool.Add(wrapper.WrapGrpc(context.Background(), cc, ck))
 	return
 }
 

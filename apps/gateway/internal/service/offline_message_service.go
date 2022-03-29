@@ -46,10 +46,7 @@ func (s *OfflineMessageService) loadConn(ctx context.Context) (*ggrpc.ClientConn
 		return nil, err
 	}
 
-	pool.Add(&wrapper.GrpcWrapper{
-		ClientConn: cc,
-		ConnKey:    ck,
-	})
+	pool.Add(wrapper.WrapGrpc(context.Background(), cc, ck))
 
 	return cc, nil
 }

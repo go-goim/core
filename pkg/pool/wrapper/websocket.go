@@ -1,7 +1,7 @@
 package wrapper
 
 import (
-	"fmt"
+	"context"
 	"net"
 	"time"
 
@@ -10,22 +10,29 @@ import (
 )
 
 type WebsocketWrapper struct {
+	context.Context
 	*websocket.Conn
-	closed bool
 	UID    string
+	cancel context.CancelFunc
+	err    error
 }
 
-func WrapWs(c *websocket.Conn, uid string) *WebsocketWrapper {
+func WrapWs(ctx context.Context, c *websocket.Conn, uid string) *WebsocketWrapper {
+	if ctx == nil {
+		ctx = context.Background()
+	}
+	ctx2, cancel := context.WithCancel(ctx)
 	ww := &WebsocketWrapper{
-		Conn:   c,
-		UID:    uid,
-		closed: false,
+		Context: ctx2,
+		Conn:    c,
+		UID:     uid,
+		cancel:  cancel,
 	}
 
 	ww.SetCloseHandler(func(code int, text string) error {
+		ww.cancelWithError(nil)
 		message := websocket.FormatCloseMessage(code, "")
 		_ = ww.WriteControl(websocket.CloseMessage, message, time.Now().Add(time.Second))
-		ww.closed = true
 		return nil
 	})
 
@@ -68,19 +75,31 @@ func (w *WebsocketWrapper) AddPingAction(f func() error) {
 	})
 }
 
+func (w *WebsocketWrapper) cancelWithError(e error) {
+	w.err = e
+	w.cancel()
+}
+
 func (w *WebsocketWrapper) Key() string {
 	return w.UID
 }
 
-func (w *WebsocketWrapper) IsClosed() bool {
-	return w.closed
+func (w *WebsocketWrapper) Err() error {
+	if w.err != nil {
+		return w.err
+	}
+
+	if w.Context.Err() != nil {
+		return w.Context.Err()
+	}
+
+	return nil
 }
 
 func (w *WebsocketWrapper) Close() error {
-	if w.closed {
-		return fmt.Errorf("already closed")
-	}
-
+	// cancel context
+	w.cancel()
+	// close connection
 	return w.Conn.Close()
 }
 
@@ -90,6 +109,8 @@ func (w *WebsocketWrapper) Daemon() {
 		mt, message, err := w.ReadMessage()
 		if err != nil {
 			log.Infof("wrpappedws|reconcile|uid=%s,err=%s", w.UID, err)
+
+			w.cancelWithError(err)
 			return
 		}
 		log.Infof("receiveType=%v, msg=%s", mt, message)

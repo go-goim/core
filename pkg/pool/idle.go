@@ -7,9 +7,10 @@ import (
 )
 
 type Conn interface {
-	Key() string
-	IsClosed() bool
-	Close() error
+	Key() string           // connection unique key in pool
+	Close() error          // close the connection
+	Done() <-chan struct{} // check if ctx is canceled
+	Err() error            // return error if conn has any internal error
 }
 
 type idleConn struct {
@@ -41,10 +42,17 @@ loop:
 		case <-timer.C:
 			timer.Reset(time.Second * 5)
 			log.Infof("tick for conn=%s", i.c.Key())
+			if i.c.Err() != nil {
+				break loop
+			}
 		case <-i.stopChan:
+			break loop
+		case <-i.c.Done():
+			log.Infof("conn done, err=%v", i.c.Err())
 			break loop
 		}
 	}
 
+	log.Infof("closing conn, key=%s", i.c.Key())
 	i.close()
 }
