@@ -1,0 +1,4 @@
+baseURL = 'http://yusank.github.io/goim/'
+languageCode = 'en-us'
+title = 'GoIM'
+theme = "hugo-book"
