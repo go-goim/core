@@ -20,6 +20,8 @@ const _ = grpc.SupportPackageIsVersion7
 type SendMessagerClient interface {
 	// SendMessage send message to one or multi users/channels
 	SendMessage(ctx context.Context, in *SendMessageReq, opts ...grpc.CallOption) (*SendMessageResp, error)
+	// Broadcast send message to all online user
+	Broadcast(ctx context.Context, in *SendMessageReq, opts ...grpc.CallOption) (*SendMessageResp, error)
 }
 
 type sendMessagerClient struct {
@@ -39,12 +41,23 @@ func (c *sendMessagerClient) SendMessage(ctx context.Context, in *SendMessageReq
 	return out, nil
 }
 
+func (c *sendMessagerClient) Broadcast(ctx context.Context, in *SendMessageReq, opts ...grpc.CallOption) (*SendMessageResp, error) {
+	out := new(SendMessageResp)
+	err := c.cc.Invoke(ctx, "/api.message.v1.SendMessager/Broadcast", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // SendMessagerServer is the server API for SendMessager service.
 // All implementations must embed UnimplementedSendMessagerServer
 // for forward compatibility
 type SendMessagerServer interface {
 	// SendMessage send message to one or multi users/channels
 	SendMessage(context.Context, *SendMessageReq) (*SendMessageResp, error)
+	// Broadcast send message to all online user
+	Broadcast(context.Context, *SendMessageReq) (*SendMessageResp, error)
 	mustEmbedUnimplementedSendMessagerServer()
 }
 
@@ -54,6 +67,9 @@ type UnimplementedSendMessagerServer struct {
 
 func (UnimplementedSendMessagerServer) SendMessage(context.Context, *SendMessageReq) (*SendMessageResp, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SendMessage not implemented")
+}
+func (UnimplementedSendMessagerServer) Broadcast(context.Context, *SendMessageReq) (*SendMessageResp, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Broadcast not implemented")
 }
 func (UnimplementedSendMessagerServer) mustEmbedUnimplementedSendMessagerServer() {}
 
@@ -86,6 +102,24 @@ func _SendMessager_SendMessage_Handler(srv interface{}, ctx context.Context, dec
 	return interceptor(ctx, in, info, handler)
 }
 
+func _SendMessager_Broadcast_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SendMessageReq)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(SendMessagerServer).Broadcast(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/api.message.v1.SendMessager/Broadcast",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SendMessagerServer).Broadcast(ctx, req.(*SendMessageReq))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // SendMessager_ServiceDesc is the grpc.ServiceDesc for SendMessager service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -96,6 +130,10 @@ var SendMessager_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "SendMessage",
 			Handler:    _SendMessager_SendMessage_Handler,
+		},
+		{
+			MethodName: "Broadcast",
+			Handler:    _SendMessager_Broadcast_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

@@ -9,7 +9,7 @@ import (
 	"github.com/yusank/goim/pkg/util"
 )
 
-func handleSendMsg(c *gin.Context) {
+func handleSendSingleUserMsg(c *gin.Context) {
 	req := new(messagev1.SendMessageReq)
 	if err := c.ShouldBindJSON(req); err != nil {
 		util.ErrorResp(c, err)
@@ -17,6 +17,22 @@ func handleSendMsg(c *gin.Context) {
 	}
 
 	rsp, err := service.GetSendMessageService().SendMessage(mid.GetContext(c), req)
+	if err != nil {
+		util.ErrorResp(c, err)
+		return
+	}
+
+	util.Success(c, rsp)
+}
+
+func handleSendBroadcastMsg(c *gin.Context) {
+	req := new(messagev1.SendMessageReq)
+	if err := c.ShouldBindJSON(req); err != nil {
+		util.ErrorResp(c, err)
+		return
+	}
+
+	rsp, err := service.GetSendMessageService().Broadcast(mid.GetContext(c), req)
 	if err != nil {
 		util.ErrorResp(c, err)
 		return

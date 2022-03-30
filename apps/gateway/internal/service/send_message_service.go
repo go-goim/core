@@ -29,14 +29,51 @@ func GetSendMessageService() *SendMessageService {
 	return sendMessageService
 }
 
-func (s *SendMessageService) SendMessage(ctx context.Context, msg *messagev1.SendMessageReq) (*messagev1.SendMessageResp, error) {
+func (s *SendMessageService) SendMessage(ctx context.Context, req *messagev1.SendMessageReq) (*messagev1.SendMessageResp, error) {
 	// check req params
 
-	b, err := json.Marshal(msg)
+	mm := &messagev1.MqMessage{
+		FromUser:        req.GetFromUser(),
+		ToUser:          req.GetToUser(),
+		PushMessageType: messagev1.PushMessageType_User,
+		ContentType:     req.GetContentType(),
+		Content:         req.GetContent(),
+	}
+
+	b, err := json.Marshal(mm)
 	if err != nil {
 		return err2Resp(err), err
 	}
 
+	rs, err := app.GetApplication().Producer.SendSync(ctx, mq.NewMessage("def_topic", b))
+	if err != nil {
+		return err2Resp(err), err
+	}
+
+	log.Info(rs.String())
+	rsp := err2Resp(nil)
+	rsp.MsgSeq = rs.MsgID
+
+	return rsp, nil
+}
+
+func (s *SendMessageService) Broadcast(ctx context.Context, req *messagev1.SendMessageReq) (*messagev1.SendMessageResp, error) {
+	// check req params
+
+	mm := &messagev1.MqMessage{
+		FromUser:        req.GetFromUser(),
+		ToUser:          req.GetToUser(),
+		PushMessageType: messagev1.PushMessageType_Broadcast,
+		ContentType:     req.GetContentType(),
+		Content:         req.GetContent(),
+	}
+
+	b, err := json.Marshal(mm)
+	if err != nil {
+		return err2Resp(err), err
+	}
+
+	// todo: maybe use another topic for all broadcast messages
 	rs, err := app.GetApplication().Producer.SendSync(ctx, mq.NewMessage("def_topic", b))
 	if err != nil {
 		return err2Resp(err), err

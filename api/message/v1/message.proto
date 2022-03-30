@@ -30,6 +30,8 @@ message SendMessageResp {
 service SendMessager {
   // SendMessage send message to one or multi users/channels
   rpc SendMessage(SendMessageReq) returns (SendMessageResp);
+  // Broadcast send message to all online user
+  rpc Broadcast(SendMessageReq) returns (SendMessageResp);
 }
 
 enum PushMessageType {
@@ -40,6 +42,15 @@ enum PushMessageType {
   Group = 2;
   // global broadcast
   Broadcast = 3;
+}
+
+// MqMessage is message protocol when pub/sub msg to mq
+message MqMessage {
+  string from_user = 1;
+  string to_user = 2;
+  PushMessageType push_message_type = 3;
+  MessageContentType content_type = 4;
+  string content = 5;
 }
 
 // PushMessage use for push a message to persistence connection server

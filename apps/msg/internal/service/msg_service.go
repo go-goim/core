@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"strings"
 	"sync"
 
 	redisv8 "github.com/go-redis/redis/v8"
@@ -59,9 +60,14 @@ func (s *MqMessageService) Consume(ctx context.Context, msg ...*primitive.Messag
 }
 
 func (s *MqMessageService) handleSingleMsg(ctx context.Context, msg *primitive.MessageExt) error {
+	// PushMessageReq contains all MqMessage fields.
 	req := &messagev1.PushMessageReq{}
 	if err := json.Unmarshal(msg.Body, req); err != nil {
 		return err
+	}
+
+	if req.GetPushMessageType() == messagev1.PushMessageType_Broadcast {
+		return s.broadcast(ctx, req)
 	}
 
 	var agentID string
@@ -98,6 +104,45 @@ func (s *MqMessageService) handleSingleMsg(ctx context.Context, msg *primitive.M
 
 	if out.GetStatus() != messagev1.PushMessageRespStatus_OK {
 		return fmt.Errorf(out.GetReason())
+	}
+
+	return nil
+}
+
+func (s *MqMessageService) broadcast(ctx context.Context, req *messagev1.PushMessageReq) error {
+	list, err := app.GetApplication().Register.GetService(ctx, "goim.push.service")
+	if err != nil {
+		return err
+	}
+
+	for _, instance := range list {
+		for _, ep := range instance.Endpoints {
+			if !strings.HasPrefix(ep, "grpc://") {
+				continue
+			}
+
+			if err = s.broadcastToEndpoint(ctx, req, strings.TrimPrefix(ep, "grpc://")); err != nil {
+				log.Info("broadcastToEndpoint err=", err)
+			}
+		}
+	}
+
+	return nil
+}
+
+func (s *MqMessageService) broadcastToEndpoint(ctx context.Context, req *messagev1.PushMessageReq, ep string) error {
+	cc, err := grpc.DialInsecure(ctx, grpc.WithEndpoint(ep))
+	if err != nil {
+		return err
+	}
+
+	rsp, err := messagev1.NewPushMessagerClient(cc).PushMessage(ctx, req)
+	if err != nil {
+		return err
+	}
+
+	if rsp.GetStatus() != messagev1.PushMessageRespStatus_OK {
+		return fmt.Errorf("push message status=%d, reason=%s", rsp.GetStatus(), rsp.GetReason())
 	}
 
 	return nil
