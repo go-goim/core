@@ -22,7 +22,9 @@ import (
 	"github.com/yusank/goim/pkg/pool/wrapper"
 )
 
-type MqMessageService struct{}
+type MqMessageService struct {
+	rdb *redisv8.Client
+}
 
 var (
 	mqMessageService *MqMessageService
@@ -32,6 +34,7 @@ var (
 func GetMqMessageService() *MqMessageService {
 	once.Do(func() {
 		mqMessageService = new(MqMessageService)
+		mqMessageService.rdb = app.GetApplication().Redis
 	})
 
 	return mqMessageService
@@ -62,7 +65,7 @@ func (s *MqMessageService) handleSingleMsg(ctx context.Context, msg *primitive.M
 	}
 
 	var agentID string
-	str, err := app.GetApplication().Redis.Get(ctx, data.GetUserOnlineAgentKey(req.GetToUser())).Result()
+	str, err := s.rdb.Get(ctx, data.GetUserOnlineAgentKey(req.GetToUser())).Result()
 	if err != nil {
 		if err == redisv8.Nil {
 			log.Infof("user=%s not online, put to offline queue", req.GetToUser())
@@ -121,10 +124,25 @@ func (s *MqMessageService) putToRedis(ctx context.Context, ext *primitive.Messag
 		return err
 	}
 
-	return app.GetApplication().Redis.ZAdd(ctx, data.GetUserOfflineQueueKey(req.GetToUser()), &redisv8.Z{
+	key := data.GetUserOfflineQueueKey(req.GetToUser())
+
+	// add to queue
+	pp := s.rdb.Pipeline()
+	_ = pp.Process(ctx, s.rdb.ZAdd(ctx, key, &redisv8.Z{
 		Score:  float64(msgID.Offset),
 		Member: string(body),
-	}).Err()
+	}))
+	// set key expire
+	_ = pp.Process(ctx, s.rdb.Expire(ctx, key, data.UserOfflineQueueKeyExpire))
+	// trim old messages
+	_ = pp.Process(ctx, s.rdb.ZRemRangeByRank(ctx, key, 0, -int64(data.UserOfflineQueueMemberMax+1)))
+
+	_, err = pp.Exec(ctx)
+	if err != nil {
+		log.Info("Exec pipeline err=", err)
+	}
+
+	return nil
 }
 
 func (s *MqMessageService) loadGrpcConn(ctx context.Context, agentID string) (cc *ggrpc.ClientConn, err error) {

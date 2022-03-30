@@ -7,8 +7,9 @@ import (
 
 var (
 	UserOnlineAgentKeyPrefix  = "userOnlineAgent:%s"  // userOnlineAgent:uid
-	UserOfflineQueueKeyPrefix = "userOfflineQueue:%s" // userOnlineAgent:uid
-	UserOnlineAgentKeyExpire  = time.Second * 15      // default expire time
+	UserOfflineQueueKeyPrefix = "userOfflineQueue:%s" // userOfflineQueue:uid
+	UserOfflineQueueKeyExpire = time.Hour * 24 * 7
+	UserOfflineQueueMemberMax = 1000 // only store latest 1000 offline messages
 )
 
 func GetUserOnlineAgentKey(uid string) string {
