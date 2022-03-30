@@ -9,7 +9,7 @@ import (
 
 	messagev1 "github.com/yusank/goim/api/message/v1"
 	"github.com/yusank/goim/pkg/pool"
-	goimwebsocket "github.com/yusank/goim/pkg/pool/wrapper"
+	"github.com/yusank/goim/pkg/pool/wrapper"
 )
 
 type PushMessager struct {
@@ -17,7 +17,12 @@ type PushMessager struct {
 }
 
 func (p *PushMessager) PushMessage(ctx context.Context, req *messagev1.PushMessageReq) (resp *messagev1.PushMessageResp, err error) {
-	log.Info("PUSH receive msg|", req.GetContent())
+	log.Info("PUSH receive msg|", req.String())
+	if req.GetPushMessageType() == messagev1.PushMessageType_Broadcast {
+		go p.handleBroadcastAsync(ctx, req)
+		resp = &messagev1.PushMessageResp{Status: messagev1.PushMessageRespStatus_OK}
+		return
+	}
 	c := pool.Get(req.GetToUser())
 	if c == nil {
 		log.Info("PUSH| user conn not found=", req.GetToUser())
@@ -29,7 +34,7 @@ func (p *PushMessager) PushMessage(ctx context.Context, req *messagev1.PushMessa
 		return
 	}
 
-	err1 := PushMessage(c.(*goimwebsocket.WebsocketWrapper), req)
+	err1 := PushMessage(c.(*wrapper.WebsocketWrapper), req)
 	if err1 == nil {
 		resp = &messagev1.PushMessageResp{Status: messagev1.PushMessageRespStatus_OK}
 		return
@@ -44,7 +49,20 @@ func (p *PushMessager) PushMessage(ctx context.Context, req *messagev1.PushMessa
 	return
 }
 
-func PushMessage(ww *goimwebsocket.WebsocketWrapper, req *messagev1.PushMessageReq) error {
+func (p *PushMessager) handleBroadcastAsync(ctx context.Context, req *messagev1.PushMessageReq) {
+	_ = pool.Range(func(c pool.Conn) error {
+		// todo use queued worker
+		go func() {
+			if err := PushMessage(c.(*wrapper.WebsocketWrapper), req); err != nil {
+				log.Info("PushMessage err=", err)
+			}
+		}()
+
+		return nil
+	})
+}
+
+func PushMessage(ww *wrapper.WebsocketWrapper, req *messagev1.PushMessageReq) error {
 	brief := &messagev1.BriefMessage{
 		FromUser:    req.GetFromUser(),
 		ToUser:      req.GetToUser(),
