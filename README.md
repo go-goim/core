@@ -1,6 +1,10 @@
 # goim
 
-IM Server written by golang.
+> Instant Messaging Server written by golang.
+
+[![goliangci-lint](https://github.com/yusank/goim/actions/workflows/golangci-lint.yml/badge.svg)](https://github.com/yusank/goim/actions/workflows/golangci-lint.yml)
+[![github pages](https://github.com/yusank/goim/actions/workflows/gh-pages.yml/badge.svg)](https://github.com/yusank/goim/actions/workflows/gh-pages.yml)
+[![Semgrep](https://github.com/yusank/goim/actions/workflows/semgrep.yml/badge.svg)](https://github.com/yusank/goim/actions/workflows/semgrep.yml)
 
 > 选型参考：[https://zhuanlan.zhihu.com/p/31377253](https://zhuanlan.zhihu.com/p/31377253)
 
