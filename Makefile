@@ -27,6 +27,10 @@ vet: ## Run go vet against code.
 lint: ## Run go lint against code.
 	golangci-lint run ./... -v
 
+.PHONEY: test
+test: ## Run test against code.
+	go test -v ./...
+
 ##################################################
 # Generate                                          #
 ##################################################
