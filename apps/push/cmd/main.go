@@ -27,7 +27,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	messagev1.RegisterPushMessagerServer(application.GrpcSrv, &service.PushMessager{})
+	messagev1.RegisterPushMessagerServer(application.GrpcSrv, service.GetPushMessager())
 	g := gin.Default()
 	router.RegisterRouter(g.Group("/push/service"))
 	application.HTTPSrv.HandlePrefix("/", g)
