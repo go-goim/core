@@ -186,7 +186,7 @@ func (p *Pool) consumeQueue() {
 			p.lock.Lock()
 			if p.tryRunTask(context.Background(), t) {
 				p.enqueuedTaskCount.Sub(1)
-				continue
+				goto unlock
 			}
 
 			// put it back
@@ -197,6 +197,7 @@ func (p *Pool) consumeQueue() {
 			// sleep little while if try to run task failed
 			time.Sleep(time.Millisecond * 20)
 
+		unlock:
 			p.lock.Unlock()
 		case <-p.stop:
 			// taskQueue closed
