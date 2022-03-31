@@ -3,8 +3,6 @@ title: Introduction
 type: docs
 ---
 
-# GoIM
-
 > Instant Messaging system written by Go.
 
 ## How to run
