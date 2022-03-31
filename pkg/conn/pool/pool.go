@@ -12,8 +12,8 @@ func Get(key string) Conn {
 	return dp.get(key)
 }
 
-func Range(f func(conn Conn) error) error {
-	return dp.rangeWithCallback(f)
+func LoadAllConn() chan Conn {
+	return dp.loadAllConns()
 }
 
 func CloseAndDelete(key string) {
@@ -82,17 +82,17 @@ func (p *namedPool) get(key string) Conn {
 	return nil
 }
 
-func (p *namedPool) rangeWithCallback(f func(c Conn) error) error {
-	p.RLock()
-	defer p.RUnlock()
+func (p *namedPool) loadAllConns() chan Conn {
+	p.Lock()
+	defer p.Unlock()
 
+	ch := make(chan Conn, len(p.m))
 	for _, i := range p.m {
-		if err := f(i.c); err != nil {
-			return err
-		}
+		ch <- i.c
 	}
 
-	return nil
+	close(ch)
+	return ch
 }
 
 func (p *namedPool) closeAndDelete(key string) {

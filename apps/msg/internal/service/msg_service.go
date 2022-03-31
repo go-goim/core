@@ -19,8 +19,8 @@ import (
 	messagev1 "github.com/yusank/goim/api/message/v1"
 	"github.com/yusank/goim/apps/msg/internal/app"
 	"github.com/yusank/goim/apps/msg/internal/data"
-	"github.com/yusank/goim/pkg/pool"
-	"github.com/yusank/goim/pkg/pool/wrapper"
+	"github.com/yusank/goim/pkg/conn/pool"
+	"github.com/yusank/goim/pkg/conn/wrapper"
 )
 
 type MqMessageService struct {

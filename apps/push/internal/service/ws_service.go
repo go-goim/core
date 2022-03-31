@@ -9,8 +9,8 @@ import (
 
 	"github.com/yusank/goim/apps/push/internal/app"
 	"github.com/yusank/goim/apps/push/internal/data"
-	"github.com/yusank/goim/pkg/pool"
-	"github.com/yusank/goim/pkg/pool/wrapper"
+	"github.com/yusank/goim/pkg/conn/pool"
+	"github.com/yusank/goim/pkg/conn/wrapper"
 )
 
 func HandleWsConn(ctx context.Context, c *websocket.Conn, uid string) {
