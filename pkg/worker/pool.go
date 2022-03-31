@@ -192,7 +192,7 @@ func (p *Pool) consumeQueue() {
 			// put it back
 			if !p.enqueueTask(t, false) {
 				// channel is closed
-				continue
+				goto unlock
 			}
 			// sleep little while if try to run task failed
 			time.Sleep(time.Millisecond * 20)
