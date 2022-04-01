@@ -1,17 +1,15 @@
 package worker
 
-import "sync"
-
 type TaskFunc func() error
 
 type task struct {
-	wg          *sync.WaitGroup // store waitGroup passed from task submiter.
-	tf          TaskFunc        // task function
-	concurrence int             // concurrence of task
-	ws          *workerSet      // assign value after task distrubute to worker.
-	status      TaskStatus      // store task status.
+	tf          TaskFunc   // task function
+	concurrence int        // concurrence of task
+	ws          *workerSet // assign value after task distribute to worker.
+	status      TaskStatus // store task status.
 }
 
+// TaskResult is a manager of submitted task.
 type TaskResult interface {
 	// get error if task failed.
 	Err() error
@@ -23,11 +21,10 @@ type TaskResult interface {
 	Kill()
 }
 
-func newTask(tf TaskFunc, concurrence int, wg *sync.WaitGroup) *task {
+func newTask(tf TaskFunc, concurrence int) *task {
 	return &task{
 		tf:          tf,
 		concurrence: concurrence,
-		wg:          wg,
 	}
 }
 
