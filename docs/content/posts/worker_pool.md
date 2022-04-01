@@ -1,5 +1,5 @@
 ---
-weight: 3
+weight: 2
 bookFlatSection: true
 title: "实现异步并发 worker 队列"
 date: 2022-04-01
@@ -523,7 +523,7 @@ func TestPool_SubmitOrEnqueue(t *testing.T) {
 到这里这篇文章内容全部结束了，下面做一个简单的总结：
 
 - 介绍背景和需求
-- 根绝需求定义了一组概念：`task`, `worker`, `workerSet`, `pool`
+- 根据需求定义了一组概念：`task`, `worker`, `workerSet`, `pool`
 - 各个结构之前的关系以及如何实现
 - 最终给出使用的 test case.
 
