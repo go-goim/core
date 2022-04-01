@@ -2,15 +2,13 @@ package worker
 
 // worker run tasks
 type worker struct {
-	ws   *workerSet
-	task TaskFunc
-	err  error
+	ws  *workerSet
+	err error
 }
 
-func newWorker(ws *workerSet, t TaskFunc) *worker {
+func newWorker(ws *workerSet) *worker {
 	return &worker{
-		ws:   ws,
-		task: t,
+		ws: ws,
 	}
 }
 
@@ -20,7 +18,7 @@ func (w *worker) run() {
 	var ec = make(chan error, 1)
 	defer close(ec)
 	go func() {
-		ec <- w.task()
+		ec <- w.ws.task.tf()
 	}()
 
 	select {

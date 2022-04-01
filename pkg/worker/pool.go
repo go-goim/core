@@ -2,6 +2,7 @@ package worker
 
 import (
 	"context"
+	"log"
 	"sync"
 	"time"
 
@@ -16,16 +17,7 @@ type Pool struct {
 	maxWorker         int          // count of how many worker run in concurrence
 	workerSets        []*workerSet
 	lock              *sync.Mutex
-	stop              chan struct{}
 	stopFlag          atomic.Bool
-}
-
-type TaskFunc func() error
-
-type task struct {
-	wg          *sync.WaitGroup // store waitGroup passed from task submiter.
-	tf          TaskFunc
-	concurrence int
 }
 
 const (
@@ -40,7 +32,6 @@ func NewPool(workerSize, queueSize int) *Pool {
 		maxWorker:         defaultWorkerSize,
 		lock:              new(sync.Mutex),
 		workerSets:        make([]*workerSet, 0),
-		stop:              make(chan struct{}, 1),
 		stopFlag:          atomic.Bool{},
 	}
 
@@ -58,49 +49,34 @@ func NewPool(workerSize, queueSize int) *Pool {
 	return p
 }
 
-type SubmitResult int
-
-const (
-	SubmitResultStarted SubmitResult = iota
-	SubmitResultEnqueue
-	SubmitResultBufferFull
-	SubmitResultOutOfSize
-	SubmitResultClosed
-)
-
-func (p *Pool) SubmitOrEnqueue(ctx context.Context, tf TaskFunc, concurrence int, wg *sync.WaitGroup) SubmitResult {
+func (p *Pool) Submit(ctx context.Context, tf TaskFunc, concurrence int) TaskResult {
 	if p.stopFlag.Load() {
-		return SubmitResultClosed
+		return TaskStatusPoolClosed
 	}
 
 	if concurrence > p.maxWorker {
-		return SubmitResultOutOfSize
+		return TaskStatusTooManyWorker
 	}
 
 	// check if there has any worker place left
 	p.lock.Lock()
 	defer p.lock.Unlock()
-	t := &task{
-		tf:          tf,
-		concurrence: concurrence,
-		wg:          wg,
-	}
 
+	t := newTask(tf, concurrence, new(sync.WaitGroup))
 	if p.tryRunTask(ctx, t) {
-		return SubmitResultStarted
+		return t
 	}
 
 	if p.enqueueTask(t, true) {
-		return SubmitResultEnqueue
+		return t
 	}
 
-	return SubmitResultBufferFull
+	return TaskStatusQueueFull
 }
 
 func (p *Pool) Stop() {
 	p.stopFlag.Store(true)
 	// stop queue daemon
-	p.stop <- struct{}{}
 	close(p.taskQueue)
 	// stop all workers
 	for _, ws := range p.workerSets {
@@ -180,9 +156,15 @@ func (p *Pool) enqueueTask(t *task, isNewTask bool) bool {
 }
 
 func (p *Pool) consumeQueue() {
+	var ticker = time.NewTicker(time.Second)
 	for {
 		select {
-		case t := <-p.taskQueue:
+		case t, ok := <-p.taskQueue:
+			if !ok {
+				// channel closed
+				return
+			}
+
 			p.lock.Lock()
 			if p.tryRunTask(context.Background(), t) {
 				p.enqueuedTaskCount.Sub(1)
@@ -199,81 +181,13 @@ func (p *Pool) consumeQueue() {
 
 		unlock:
 			p.lock.Unlock()
-		case <-p.stop:
-			// taskQueue closed
-			return
+		case <-ticker.C:
+			// check if there has any worker place left
+			// TODO: check if there is any workerSet is idle and remove it
+			// TODO: try to run enqueued tasks even if there is no enough worker to run.
+			log.Printf("current running worker num: %d", p.curRunningWorkerNum())
 		}
 	}
-}
 
-// workerSet represent a group of task handle workers
-type workerSet struct {
-	runningWorker atomic.Int32
-	workers       []*worker
-	ctx           context.Context
-	cancel        context.CancelFunc
-	wg            *sync.WaitGroup
-}
-
-func newWorkerSet(ctx context.Context, t *task) *workerSet {
-	if t.wg == nil {
-		t.wg = new(sync.WaitGroup)
-	}
-
-	if ctx == nil {
-		ctx = context.Background()
-	}
-
-	ws := &workerSet{
-		workers: make([]*worker, t.concurrence),
-		wg:      t.wg,
-	}
-	ws.ctx, ws.cancel = context.WithCancel(ctx)
-
-	for i := 0; i < t.concurrence; i++ {
-		ws.workers[i] = newWorker(ws, t.tf)
-	}
-
-	return ws
-}
-
-func (ws *workerSet) run() {
-	for _, w := range ws.workers {
-		ws.addOne()
-		go w.run()
-	}
-}
-
-func (ws *workerSet) stopAll() {
-	ws.cancel()
-}
-
-func (ws *workerSet) getRunningWorker() int {
-	return int(ws.runningWorker.Load())
-}
-
-// done called when worker stop.
-func (ws *workerSet) done() {
-	ws.addRunningWorker(-1)
-	ws.wg.Done()
-}
-
-// addOne called when worker start running.
-func (ws *workerSet) addOne() {
-	ws.addRunningWorker(1)
-	ws.wg.Add(1)
-}
-
-func (ws *workerSet) wait() {
-	ws.wg.Wait()
-}
-
-func (ws *workerSet) addRunningWorker(delta int) {
-	if delta > 0 {
-		ws.runningWorker.Add(int32(delta))
-	}
-
-	if delta < 0 {
-		ws.runningWorker.Sub(-int32(delta))
-	}
+	// never reach here
 }

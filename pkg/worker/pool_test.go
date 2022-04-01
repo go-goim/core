@@ -3,7 +3,6 @@ package worker
 import (
 	"context"
 	"log"
-	"sync"
 	"testing"
 	"time"
 )
@@ -22,34 +21,34 @@ func TestPool_SubmitOrEnqueue(t *testing.T) {
 		return nil
 	}
 
-	wg := new(sync.WaitGroup)
-	if got := p.SubmitOrEnqueue(context.Background(), tf, concurrence, wg); got != SubmitResultStarted {
-		t.Errorf("SubmitOrEnqueue() = %v, want %v", got, SubmitResultStarted)
+	got := p.Submit(context.Background(), tf, concurrence)
+	if got.Status() != TaskStatusRunning {
+		t.Errorf("SubmitOrEnqueue() = %v, want %v", got.Status(), TaskStatusRunning)
 		return
 	}
-	wg.Wait()
+	got.Wait()
 	if cnt != concurrence {
 		t.Errorf("cnt = %v, want %v", cnt, concurrence)
 	}
-	if got := p.SubmitOrEnqueue(context.Background(), tf, concurrence, nil); got != SubmitResultStarted {
-		t.Errorf("SubmitOrEnqueue() = %v, want %v", got, SubmitResultStarted)
+	if got := p.Submit(context.Background(), tf, concurrence); got.Status() != TaskStatusRunning {
+		t.Errorf("SubmitOrEnqueue() = %v, want %v", got, TaskStatusRunning)
 		return
 	}
-	if got := p.SubmitOrEnqueue(context.Background(), tf, concurrence, nil); got != SubmitResultEnqueue {
-		t.Errorf("SubmitOrEnqueue() = %v, want %v", got, SubmitResultEnqueue)
+	if got := p.Submit(context.Background(), tf, concurrence); got.Status() != TaskStatusEnqueue {
+		t.Errorf("SubmitOrEnqueue() = %v, want %v", got.Status(), TaskStatusEnqueue)
 		return
 	}
-	if got := p.SubmitOrEnqueue(context.Background(), tf, 6, nil); got != SubmitResultOutOfSize {
-		t.Errorf("SubmitOrEnqueue() = %v, want %v", got, SubmitResultOutOfSize)
+	if got := p.Submit(context.Background(), tf, 6); got.Status() != TaskStatusTooManyWorker {
+		t.Errorf("SubmitOrEnqueue() = %v, want %v", got.Status(), TaskStatusTooManyWorker)
 		return
 	}
-	if got := p.SubmitOrEnqueue(context.Background(), tf, concurrence, nil); got != SubmitResultBufferFull {
-		t.Errorf("SubmitOrEnqueue() = %v, want %v", got, SubmitResultBufferFull)
+	if got := p.Submit(context.Background(), tf, concurrence); got.Status() != TaskStatusQueueFull {
+		t.Errorf("SubmitOrEnqueue() = %v, want %v", got.Status(), TaskStatusQueueFull)
 		return
 	}
 	p.Stop()
-	if got := p.SubmitOrEnqueue(context.Background(), tf, 1, nil); got != SubmitResultClosed {
-		t.Errorf("SubmitOrEnqueue() = %v, want %v", got, SubmitResultClosed)
+	if got := p.Submit(context.Background(), tf, 1); got.Status() != TaskStatusPoolClosed {
+		t.Errorf("SubmitOrEnqueue() = %v, want %v", got.Status(), TaskStatusPoolClosed)
 		return
 	}
 }

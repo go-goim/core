@@ -89,7 +89,9 @@ func (p *PushMessager) handleBroadcastAsync(ctx context.Context, req *messagev1.
 		return nil
 	}
 
-	if p.workerPool.SubmitOrEnqueue(ctx, wf, 5, nil) == worker.SubmitResultBufferFull {
+	result := p.workerPool.Submit(ctx, wf, 5)
+	log.Info("PUSH| broadcast result=", result, "| status=", result.Status(), "| err=", result.Err())
+	if result.Status() == worker.TaskStatusQueueFull {
 		log.Info("worker queue buffer is full, should set more buffer")
 	}
 }
