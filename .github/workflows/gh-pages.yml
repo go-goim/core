@@ -2,9 +2,10 @@ name: github pages
 
 on:
   push:
-    branches:
-      - main  # Set a branch to deploy
+    branches: [ main, dev]
   pull_request:
+    branches: [ main ]
+  
 
 jobs:
   deploy:
