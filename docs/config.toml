@@ -3,6 +3,9 @@ title = 'GoIM'
 theme = "hugo-book"
 # (Optional) Set this to true if you use capital letters in file names
 disablePathToLower = true
+# (Optional) Set this to true to enable 'Last Modified by' date and git author
+#  information on 'doc' type pages.
+enableGitInfo = true
 
 # Needed for mermaid/katex shortcodes
 [markup]
@@ -11,10 +14,8 @@ disablePathToLower = true
 
 [markup.tableOfContents]
   startLevel = 1
+  endLevel = 4
 
-# (Optional) Set this to true to enable 'Last Modified by' date and git author
-#  information on 'doc' type pages.
-enableGitInfo = true
 
 # (Optional) Theme is intended for documentation use, therefore it doesn't render taxonomy.
 # You can remove related files with config below
@@ -50,7 +51,7 @@ enableGitInfo = true
   # Required if 'BookRepo' param is set.
   # Value used to construct a URL consisting of BookRepo/BookCommitPath/<commit-hash>
   # Github uses 'commit', Bitbucket uses 'commits'
-  BookCommitPath = 'commit'
+  # BookCommitPath = 'commit'
 
   # Enable 'Edit this page' links for 'doc' page type.
   # Disabled by default. Uncomment to enable. Requires 'BookRepo' param.

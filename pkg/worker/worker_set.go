@@ -18,10 +18,6 @@ type workerSet struct {
 }
 
 func newWorkerSet(ctx context.Context, t *task) *workerSet {
-	if t.wg == nil {
-		t.wg = new(sync.WaitGroup)
-	}
-
 	if ctx == nil {
 		ctx = context.Background()
 	}
@@ -29,7 +25,7 @@ func newWorkerSet(ctx context.Context, t *task) *workerSet {
 	ws := &workerSet{
 		task:    t,
 		workers: make([]*worker, t.concurrence),
-		wg:      t.wg,
+		wg:      new(sync.WaitGroup),
 	}
 	t.assignWorkerSet(ws)
 	ws.ctx, ws.cancel = context.WithCancel(ctx)
