@@ -12,7 +12,6 @@ require (
 	github.com/gorilla/websocket v1.5.0
 	github.com/hashicorp/consul/api v1.12.0
 	github.com/jroimartin/gocui v0.5.0
-	github.com/panjf2000/ants/v2 v2.4.8
 	go.etcd.io/etcd/client/v3 v3.5.0
 	go.uber.org/atomic v1.7.0
 	google.golang.org/grpc v1.44.0
