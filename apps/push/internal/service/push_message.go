@@ -11,6 +11,7 @@ import (
 	messagev1 "github.com/yusank/goim/api/message/v1"
 	"github.com/yusank/goim/pkg/conn/pool"
 	"github.com/yusank/goim/pkg/conn/wrapper"
+	"github.com/yusank/goim/pkg/graceful"
 	"github.com/yusank/goim/pkg/worker"
 )
 
@@ -28,6 +29,7 @@ func GetPushMessager() *PushMessager {
 	pmOnce.Do(func() {
 		pm = new(PushMessager)
 		pm.workerPool = worker.NewPool(100, 20)
+		graceful.Register(pm.workerPool.Shutdown)
 	})
 
 	return pm

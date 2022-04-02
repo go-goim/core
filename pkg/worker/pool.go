@@ -2,7 +2,6 @@ package worker
 
 import (
 	"context"
-	"log"
 	"sync"
 	"time"
 
@@ -77,15 +76,22 @@ func (p *Pool) Submit(ctx context.Context, tf TaskFunc, concurrence int) TaskRes
 	return TaskStatusQueueFull
 }
 
-func (p *Pool) Stop() {
+func (p *Pool) Shutdown(ctx context.Context) error {
 	p.stopFlag.Store(true)
 	// stop queue daemon
 	close(p.taskQueue)
 	// stop all workers
 	for _, ws := range p.workerSets {
-		ws.stopAll()
-		ws.wait()
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+		default:
+			ws.stopAll()
+			ws.wait()
+		}
 	}
+
+	return nil
 }
 
 // tryRunTask try to put task into workerSet and run it.Return false if capacity not enough.
@@ -188,7 +194,7 @@ func (p *Pool) consumeQueue() {
 			// check if there has any worker place left
 			// TODO: check if there is any workerSet is idle and remove it
 			// TODO: try to run enqueued tasks even if there is no enough worker to run.
-			log.Printf("current running worker num: %d", p.curRunningWorkerNum())
+			// log.Printf("current running worker num: %d", p.curRunningWorkerNum())
 		}
 	}
 

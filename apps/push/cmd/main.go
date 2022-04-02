@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"flag"
 
 	"github.com/gin-gonic/gin"
@@ -10,6 +11,7 @@ import (
 	"github.com/yusank/goim/apps/push/internal/app"
 	"github.com/yusank/goim/apps/push/internal/router"
 	"github.com/yusank/goim/apps/push/internal/service"
+	"github.com/yusank/goim/pkg/graceful"
 )
 
 var (
@@ -27,12 +29,21 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	// register grpc
 	messagev1.RegisterPushMessagerServer(application.GrpcSrv, service.GetPushMessager())
+
+	// register router
 	g := gin.Default()
 	router.RegisterRouter(g.Group("/push/service"))
 	application.HTTPSrv.HandlePrefix("/", g)
 
 	if err = application.Run(); err != nil {
 		log.Fatal(err)
+	}
+
+	graceful.Register(application.Shutdown)
+	if err = graceful.Shutdown(context.TODO()); err != nil {
+		log.Infof("graceful shutdown error: %s", err)
 	}
 }

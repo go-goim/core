@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"flag"
 
 	"github.com/gin-gonic/gin"
@@ -9,6 +10,7 @@ import (
 	"github.com/yusank/goim/apps/gateway/internal/app"
 	"github.com/yusank/goim/apps/gateway/internal/router"
 	"github.com/yusank/goim/apps/gateway/internal/service"
+	"github.com/yusank/goim/pkg/graceful"
 
 	"github.com/go-kratos/kratos/v2/log"
 )
@@ -39,5 +41,8 @@ func main() {
 		log.Info(err)
 	}
 
-	application.Stop()
+	graceful.Register(application.Shutdown)
+	if err = graceful.Shutdown(context.TODO()); err != nil {
+		log.Infof("graceful shutdown error: %v", err)
+	}
 }
