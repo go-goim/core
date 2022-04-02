@@ -9,18 +9,12 @@ title: "Terminal CLI"
 在 `goim/test` 目录下执行如下命令：
 
 ```shell
+# 支持参数
+# ADDR ?= 127.0.0.1:18071
+# UID ?= user1
+# TOUID ?= user2
+
 make run-gui UID=user3 TOUID=user2
-```
-
-**支持参数:**
-
-```shell
-  -s string
-        gateway server addr (default "127.0.0.1:18071")
-  -t string
-        to user id
-  -u string
-        from user id
 ```
 
 界面如下：

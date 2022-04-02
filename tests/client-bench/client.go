@@ -93,7 +93,10 @@ func (c *client) readMsgFromConn() {
 			log.Println("read msg err:", err)
 			return
 		}
-		log.Printf("Client=%s|data:%s\n", c.uid, string(data))
+		str := string(data)
+		str = strings.Replace(str, "\n", "", -1)
+		str = strings.Replace(str, "\r", "", -1)
+		log.Printf("Client=%s|data:%s\n", c.uid, str)
 	}
 }
 
