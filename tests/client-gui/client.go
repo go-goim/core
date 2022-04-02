@@ -151,7 +151,10 @@ func readMsgFromConn(conn *websocket.Conn) (chan []byte, chan error) {
 				errChan <- err
 				return
 			}
-			logger.Println("data:", string(data))
+			str := string(data)
+			str = strings.Replace(str, "\n", "", -1)
+			str = strings.Replace(str, "\r", "", -1)
+			logger.Println("data:", str)
 			dataChan <- data
 		}
 	}()
