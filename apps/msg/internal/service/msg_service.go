@@ -7,13 +7,12 @@ import (
 	"strings"
 	"sync"
 
-	redisv8 "github.com/go-redis/redis/v8"
-
 	"github.com/apache/rocketmq-client-go/v2/consumer"
 	"github.com/apache/rocketmq-client-go/v2/primitive"
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/go-kratos/kratos/v2/selector"
 	"github.com/go-kratos/kratos/v2/transport/grpc"
+	redisv8 "github.com/go-redis/redis/v8"
 	ggrpc "google.golang.org/grpc"
 
 	messagev1 "github.com/yusank/goim/api/message/v1"
@@ -61,39 +60,37 @@ func (s *MqMessageService) Consume(ctx context.Context, msg ...*primitive.Messag
 
 func (s *MqMessageService) handleSingleMsg(ctx context.Context, msg *primitive.MessageExt) error {
 	// PushMessageReq contains all MqMessage fields.
-	req := &messagev1.PushMessageReq{}
+	req := &messagev1.MqMessage{}
 	if err := json.Unmarshal(msg.Body, req); err != nil {
-		return err
-	}
-
-	if req.GetPushMessageType() == messagev1.PushMessageType_Broadcast {
-		return s.broadcast(ctx, req)
-	}
-
-	var agentID string
-	str, err := s.rdb.Get(ctx, data.GetUserOnlineAgentKey(req.GetToUser())).Result()
-	if err != nil {
-		if err == redisv8.Nil {
-			log.Infof("user=%s not online, put to offline queue", req.GetToUser())
-			return s.putToRedis(ctx, msg, req)
-		}
-		return err
-	}
-	agentID = str
-
-	cc, err := s.loadGrpcConn(ctx, agentID)
-	if err != nil {
 		return err
 	}
 
 	in := &messagev1.PushMessageReq{
 		FromUser:        req.GetFromUser(),
 		ToUser:          req.GetToUser(),
-		PushMessageType: messagev1.PushMessageType_User,
+		PushMessageType: req.GetPushMessageType(),
 		ContentType:     req.GetContentType(),
 		Content:         req.GetContent(),
-		AgentId:         agentID,
 		MsgSeq:          msg.MsgId,
+	}
+
+	if req.GetPushMessageType() == messagev1.PushMessageType_Broadcast {
+		return s.broadcast(ctx, in)
+	}
+
+	str, err := s.rdb.Get(ctx, data.GetUserOnlineAgentKey(req.GetToUser())).Result()
+	if err != nil {
+		if err == redisv8.Nil {
+			log.Infof("user=%s not online, put to offline queue", req.GetToUser())
+			return s.putToRedis(ctx, msg, in)
+		}
+		return err
+	}
+
+	in.AgentId = str
+	cc, err := s.loadGrpcConn(ctx, in.AgentId)
+	if err != nil {
+		return err
 	}
 
 	out, err := messagev1.NewPushMessagerClient(cc).PushMessage(ctx, in)
