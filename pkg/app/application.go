@@ -1,8 +1,8 @@
 package app
 
 import (
+	"context"
 	"fmt"
-	"log"
 
 	"go.uber.org/atomic"
 
@@ -14,6 +14,7 @@ import (
 	redisv8 "github.com/go-redis/redis/v8"
 
 	"github.com/yusank/goim/pkg/db/redis"
+	"github.com/yusank/goim/pkg/errors"
 	"github.com/yusank/goim/pkg/mq"
 	"github.com/yusank/goim/pkg/registry"
 )
@@ -141,18 +142,53 @@ func (a *Application) Run() error {
 	return a.Core.Run()
 }
 
-func (a *Application) Stop() {
-	if a.Producer != nil {
-		if err := a.Producer.Shutdown(); err != nil {
-			log.Println("stop producer err=", err)
+func (a *Application) Shutdown(ctx context.Context) error {
+	var (
+		es                 = make(errors.ErrorSet, 0)
+		checkCtxAndExecute = func(f func() error) {
+			select {
+			case <-ctx.Done():
+				es = append(es, ctx.Err())
+				return
+			default:
+			}
+
+			if err := f(); err != nil {
+				es = append(es, err)
+			}
 		}
+	)
+
+	if a.Producer != nil {
+		checkCtxAndExecute(func() error {
+			if err := a.Producer.Shutdown(); err != nil {
+				return fmt.Errorf("shutdown producer error: %w", err)
+			}
+
+			return nil
+		})
 	}
 
 	for _, consumer := range a.Consumer {
-		if err := consumer.Shutdown(); err != nil {
-			log.Println("stop consumer err=", err)
-		}
+		checkCtxAndExecute(func() error {
+			if err := consumer.Shutdown(); err != nil {
+				return fmt.Errorf("shutdown consumer error: %w", err)
+			}
+
+			return nil
+		})
 	}
+
+	if a.Redis != nil {
+		checkCtxAndExecute(func() error {
+			if err := a.Redis.Close(); err != nil {
+				return fmt.Errorf("close redis error: %w", err)
+			}
+			return nil
+		})
+	}
+
+	return es.Err()
 }
 
 func (a *Application) AddConsumer(c mq.Consumer) {

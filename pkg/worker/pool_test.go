@@ -46,7 +46,7 @@ func TestPool_SubmitOrEnqueue(t *testing.T) {
 		t.Errorf("SubmitOrEnqueue() = %v, want %v", got.Status(), TaskStatusQueueFull)
 		return
 	}
-	p.Stop()
+	_ = p.Shutdown(context.TODO())
 	if got := p.Submit(context.Background(), tf, 1); got.Status() != TaskStatusPoolClosed {
 		t.Errorf("SubmitOrEnqueue() = %v, want %v", got.Status(), TaskStatusPoolClosed)
 		return
