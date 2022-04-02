@@ -63,7 +63,7 @@ func resetInput(g *gocui.Gui, v *gocui.View) error {
 	r := bytes.NewReader(b)
 	size := r.Size()
 
-	req, err := http.NewRequest(http.MethodPost, fmt.Sprintf("http://%s/gateway/service/v1/send_msg", serverAddr), r)
+	req, err := http.NewRequest(http.MethodPost, fmt.Sprintf("http://%s/gateway/service/v1/msg", serverAddr), r)
 	if err != nil {
 		logger.Println(err)
 		return err
