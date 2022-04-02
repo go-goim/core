@@ -1,3 +1,0 @@
-# Example
-
-> hello world.

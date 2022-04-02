@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"flag"
 
 	"github.com/go-kratos/kratos/v2/log"
@@ -8,6 +9,7 @@ import (
 	messagev1 "github.com/yusank/goim/api/message/v1"
 	"github.com/yusank/goim/apps/msg/internal/app"
 	"github.com/yusank/goim/apps/msg/internal/service"
+	"github.com/yusank/goim/pkg/graceful"
 	"github.com/yusank/goim/pkg/mq"
 )
 
@@ -44,5 +46,8 @@ func main() {
 		log.Info(err)
 	}
 
-	application.Stop()
+	graceful.Register(application.Shutdown)
+	if err = graceful.Shutdown(context.TODO()); err != nil {
+		log.Infof("graceful shutdown error: %v", err)
+	}
 }
