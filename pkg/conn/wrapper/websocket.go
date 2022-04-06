@@ -2,7 +2,6 @@ package wrapper
 
 import (
 	"context"
-	"net"
 	"time"
 
 	"github.com/go-kratos/kratos/v2/log"
@@ -42,9 +41,6 @@ func WrapWs(ctx context.Context, c *websocket.Conn, uid string) *WebsocketWrappe
 			return nil
 		}
 
-		if e, ok := err.(net.Error); ok && e.Temporary() {
-			return nil
-		}
 		return err
 	})
 
