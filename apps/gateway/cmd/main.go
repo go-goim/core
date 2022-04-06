@@ -30,6 +30,8 @@ func main() {
 		log.Fatal(err)
 	}
 
+	log.Infow("gateway start", "addr", application.Config.SrvConfig.Http.Addr, "version", application.Config.SrvConfig.Version)
+
 	// register grpc
 	messagev1.RegisterSendMessagerServer(application.GrpcSrv, &service.SendMessageService{})
 
