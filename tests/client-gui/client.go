@@ -34,11 +34,6 @@ func init() {
 		panic(err)
 	}
 	logger = log.New(f, "[log]", log.Lshortfile)
-	u, _ := url.Parse("discovery://goim.push.service")
-	logger.Println(u.Scheme)
-	logger.Println(u.Host)
-	logger.Println(u.Path)
-	logger.Println(u.Opaque)
 	flag.Parse()
 }
 func assert(b bool, msg string) {
