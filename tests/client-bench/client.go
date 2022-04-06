@@ -16,15 +16,6 @@ import (
 
 var clientMap = sync.Map{}
 
-func loadClient(uid string) *client {
-	v, ok := clientMap.Load(uid)
-	if !ok {
-		return nil
-	}
-
-	return v.(*client)
-}
-
 func initAndStoreClient(uid string) error {
 	c, err := newClient(gatewayAddr, uid)
 	if err != nil {
