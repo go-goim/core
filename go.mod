@@ -17,6 +17,7 @@ require (
 	go.uber.org/zap v1.17.0
 	google.golang.org/grpc v1.44.0
 	google.golang.org/protobuf v1.27.1
+	gopkg.in/natefinch/lumberjack.v2 v2.0.0
 )
 
 require (
