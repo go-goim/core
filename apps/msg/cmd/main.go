@@ -43,7 +43,7 @@ func main() {
 	application.AddConsumer(c)
 
 	if err = application.Run(); err != nil {
-		log.Info(err)
+		log.Error("application run error: %v", err)
 	}
 
 	graceful.Register(application.Shutdown)
