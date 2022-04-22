@@ -19,3 +19,4 @@
 bin/
 *.log
 .hugo_build.lock
+logs/

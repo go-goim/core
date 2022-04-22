@@ -32,7 +32,7 @@ enum Level {
 
 message Log {
 	optional string log_path = 1;
-	repeated Level level = 2;
+	Level level = 2;
 }
 
 message Redis {

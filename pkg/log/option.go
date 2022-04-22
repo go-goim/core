@@ -1,23 +1,35 @@
 package log
 
 import (
-	"io"
-
 	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
+
+	configv1 "github.com/yusank/goim/api/config/v1"
 )
 
 type option struct {
-	prefix string
-	level  Level
-	config zap.Config
-	writer io.Writer
+	prefix     string
+	level      configv1.Level
+	config     zap.Config
+	outputPath string
 }
 
 func newOption() *option {
+	encoderConfig := zap.NewProductionEncoderConfig()
+	encoderConfig.EncodeTime = zapcore.RFC3339TimeEncoder
+	encoderConfig.EncodeLevel = zapcore.CapitalLevelEncoder
+	encoderConfig.EncodeCaller = zapcore.ShortCallerEncoder
+	config := zap.Config{
+		Level:         zap.NewAtomicLevelAt(zap.InfoLevel),
+		Development:   false,
+		Encoding:      "json",
+		EncoderConfig: encoderConfig,
+	}
 	return &option{
-		prefix: "",
-		level:  LevelDebug,
-		config: zap.NewProductionConfig(),
+		outputPath: "./logs",
+		prefix:     "",
+		level:      configv1.Level_DEBUG,
+		config:     config,
 	}
 }
 
@@ -35,14 +47,14 @@ func WithPrefix(prefix string) Option {
 	}
 }
 
-func WithLevel(level Level) Option {
+func WithLevel(level configv1.Level) Option {
 	return func(option *option) {
 		option.level = level
 	}
 }
 
-func WithWriter(writer io.Writer) Option {
+func WithOutputPath(path string) Option {
 	return func(option *option) {
-		option.writer = writer
+		option.outputPath = path
 	}
 }

@@ -1,9 +1,15 @@
 package log
 
+import (
+	kraoslogger "github.com/go-kratos/kratos/v2/log"
+
+	configv1 "github.com/yusank/goim/api/config/v1"
+)
+
 // define log api and implement
 
 type Logger interface {
-	Log(level Level, msg string, keyvals ...interface{})
+	Log(level configv1.Level, msg string, keyvals ...interface{})
 }
 
 var global = newHelper(NewStdLogger())
@@ -19,7 +25,7 @@ func newHelper(logger ...Logger) *helper {
 }
 
 // Log print log by level and keyvals.
-func (h *helper) Log(level Level, msg string, keyvals ...interface{}) {
+func (h *helper) Log(level configv1.Level, msg string, keyvals ...interface{}) {
 	for _, l := range h.logger {
 		l.Log(level, msg, keyvals...)
 	}
@@ -27,27 +33,27 @@ func (h *helper) Log(level Level, msg string, keyvals ...interface{}) {
 
 // Debug logs a message at debug level.
 func (h *helper) Debug(msg string, keyvals ...interface{}) {
-	h.Log(LevelDebug, msg, keyvals...)
+	h.Log(configv1.Level_DEBUG, msg, keyvals...)
 }
 
 // Info logs a message at info level.
 func (h *helper) Info(msg string, keyvals ...interface{}) {
-	h.Log(LevelInfo, msg, keyvals...)
+	h.Log(configv1.Level_INFO, msg, keyvals...)
 }
 
 // Warn logs a message at warn level.
 func (h *helper) Warn(msg string, keyvals ...interface{}) {
-	h.Log(LevelWarn, msg, keyvals...)
+	h.Log(configv1.Level_WARING, msg, keyvals...)
 }
 
 // Error logs a message at error level.
 func (h *helper) Error(msg string, keyvals ...interface{}) {
-	h.Log(LevelError, msg, keyvals...)
+	h.Log(configv1.Level_ERROR, msg, keyvals...)
 }
 
 // Fatal logs a message at fatal level.
 func (h *helper) Fatal(msg string, keyvals ...interface{}) {
-	h.Log(LevelFatal, msg, keyvals...)
+	h.Log(configv1.Level_FATAL, msg, keyvals...)
 }
 
 // Debug logs a message at debug level.
@@ -77,4 +83,31 @@ func Fatal(msg string, keyvals ...interface{}) {
 
 func SetLogger(logger ...Logger) {
 	global = newHelper(logger...)
+	kraoslogger.SetLogger(Logger2KratosLogger(NewStdLogger()))
+}
+
+func GetLogger() Logger {
+	return global
+}
+
+func Logger2KratosLogger(l Logger) kraoslogger.Logger {
+	return &loggerConvert{l}
+}
+
+type loggerConvert struct {
+	l Logger
+}
+
+func (l *loggerConvert) Log(level kraoslogger.Level, keyvals ...interface{}) error {
+	if len(keyvals) < 2 {
+		return nil
+	}
+
+	msg, ok := keyvals[1].(string)
+	if !ok {
+		return nil
+	}
+
+	l.l.Log(configv1.Level(level)+1, msg, keyvals[2:]...)
+	return nil
 }

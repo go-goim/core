@@ -1,13 +1,12 @@
 package app
 
 import (
-	"log"
-
 	"github.com/go-kratos/kratos/v2/config"
 	"github.com/go-kratos/kratos/v2/config/file"
 
 	registryv1 "github.com/yusank/goim/api/config/registry/v1"
 	configv1 "github.com/yusank/goim/api/config/v1"
+	"github.com/yusank/goim/pkg/log"
 )
 
 // Config contains service config.
@@ -61,18 +60,30 @@ func ParseConfig(fp string) *Config {
 		panic(err)
 	}
 	cfg.FilePath = fp
-	log.Printf("%+v", cfg)
+	log.Debug("config content", "config", cfg)
 
 	reg := NewRegistry()
 	if err := c.Scan(reg); err != nil {
 		panic(err)
 	}
 	reg.FilePath = fp
-	log.Printf("%+v", reg)
+	log.Debug("registry content", "registry", reg)
 	reg.Name = cfg.GetName()
 
+	setLogger(cfg.Log)
 	return &Config{
 		SrvConfig: cfg,
 		RegConfig: reg,
 	}
+}
+
+func setLogger(logConf *configv1.Log) {
+	var (
+		logPath = "./logs"
+	)
+	if logConf != nil && logConf.LogPath != nil {
+		logPath = *logConf.LogPath
+	}
+
+	log.SetLogger(log.NewZapLogger(log.WithLevel(logConf.Level), log.WithOutputPath(logPath)))
 }

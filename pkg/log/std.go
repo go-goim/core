@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"log"
 	"strings"
+
+	configv1 "github.com/yusank/goim/api/config/v1"
 )
 
 type stdLogger struct {
@@ -24,8 +26,8 @@ func NewStdLogger(opts ...Option) Logger {
 	return s
 }
 
-func (s *stdLogger) Log(level Level, msg string, keyvals ...interface{}) {
-	if level > s.option.level {
+func (s *stdLogger) Log(level configv1.Level, msg string, keyvals ...interface{}) {
+	if level < s.option.level {
 		return
 	}
 
@@ -33,7 +35,7 @@ func (s *stdLogger) Log(level Level, msg string, keyvals ...interface{}) {
 		keyvals = append(keyvals, "UNPAIRED_KEY")
 	}
 
-	s.logger.Printf("[%s] %s | %s", level.String(), msg, kvs2String(keyvals...))
+	s.logger.Printf("[%-5s] %s | %s", level.String(), msg, kvs2String(keyvals...))
 }
 
 func kvs2String(kvs ...interface{}) string {

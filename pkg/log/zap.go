@@ -1,8 +1,13 @@
 package log
 
 import (
+	"path/filepath"
+	"time"
+
+	configv1 "github.com/yusank/goim/api/config/v1"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
+	"gopkg.in/natefinch/lumberjack.v2"
 )
 
 type zapLogger struct {
@@ -18,31 +23,50 @@ func NewZapLogger(opts ...Option) Logger {
 
 	core := zapcore.NewCore(
 		zapcore.NewJSONEncoder(options.config.EncoderConfig),
-		zapcore.AddSync(options.writer),
+		zapcore.AddSync(getLogWriter(options.outputPath)),
 		zapcore.Level(int8(options.level-1)),
 	)
 
 	return &zapLogger{
-		logger: zap.New(core),
+		logger: zap.New(core, zap.AddCaller(), zap.AddCallerSkip(4)),
 		option: options,
 	}
 }
 
-func (z *zapLogger) Log(level Level, msg string, kvs ...interface{}) {
+func getLogWriter(outputPath string) zapcore.WriteSyncer {
+	// fileName is log file name contains current date
+	fileName := getCurrentDate() + ".log"
+	if outputPath != "" {
+		fileName = filepath.Join(outputPath, fileName)
+	}
+
+	return zapcore.AddSync(&lumberjack.Logger{
+		Filename:   fileName,
+		MaxSize:    1024 * 1024 * 1024, // 1G
+		MaxBackups: 5,
+		MaxAge:     30,
+	})
+}
+
+// getCurrentDate returns current date in format of YYYY-MM-DD
+func getCurrentDate() string {
+	return time.Now().Format("2006-01-02")
+}
+func (z *zapLogger) Log(level configv1.Level, msg string, kvs ...interface{}) {
 	if len(kvs)%2 != 0 {
 		kvs = append(kvs, "UNPAIRED_KEY")
 	}
 
 	switch level {
-	case LevelDebug:
+	case configv1.Level_DEBUG:
 		z.logger.Debug(msg, kv2ZapFields(kvs...)...)
-	case LevelInfo:
+	case configv1.Level_INFO:
 		z.logger.Info(msg, kv2ZapFields(kvs...)...)
-	case LevelWarn:
+	case configv1.Level_WARING:
 		z.logger.Warn(msg, kv2ZapFields(kvs...)...)
-	case LevelError:
+	case configv1.Level_ERROR:
 		z.logger.Error(msg, kv2ZapFields(kvs...)...)
-	case LevelFatal:
+	case configv1.Level_FATAL:
 		z.logger.Fatal(msg, kv2ZapFields(kvs...)...)
 	}
 }
