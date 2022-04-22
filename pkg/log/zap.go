@@ -28,7 +28,7 @@ func NewZapLogger(opts ...Option) Logger {
 	)
 
 	return &zapLogger{
-		logger: zap.New(core, zap.AddCaller(), zap.AddCallerSkip(4)),
+		logger: zap.New(core, zap.AddCaller(), zap.AddCallerSkip(options.callerDepth)),
 		option: options,
 	}
 }
