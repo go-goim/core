@@ -11,8 +11,7 @@ import (
 	"github.com/yusank/goim/apps/gateway/internal/router"
 	"github.com/yusank/goim/apps/gateway/internal/service"
 	"github.com/yusank/goim/pkg/graceful"
-
-	"github.com/go-kratos/kratos/v2/log"
+	"github.com/yusank/goim/pkg/log"
 )
 
 var (
@@ -28,10 +27,10 @@ func main() {
 	flag.Parse()
 	application, err := app.InitApplication(flagconf)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("initApplication got err", "error", err)
 	}
 
-	log.Infow("gateway start", "addr", application.Config.SrvConfig.Http.Addr, "version", application.Config.SrvConfig.Version)
+	log.Info("gateway start", "addr", application.Config.SrvConfig.Http.Addr, "version", application.Config.SrvConfig.Version)
 
 	// register grpc
 	messagev1.RegisterSendMessagerServer(application.GrpcSrv, &service.SendMessageService{})
@@ -41,11 +40,11 @@ func main() {
 	application.HTTPSrv.HandlePrefix("/", g)
 
 	if err = application.Run(); err != nil {
-		log.Errorf("application run error: %v", err)
+		log.Error("application run got error", "error", err)
 	}
 
 	graceful.Register(application.Shutdown)
 	if err = graceful.Shutdown(context.TODO()); err != nil {
-		log.Infof("graceful shutdown error: %v", err)
+		log.Error("graceful shutdown got error", "error", err)
 	}
 }

@@ -83,14 +83,17 @@ func Fatal(msg string, keyvals ...interface{}) {
 
 func SetLogger(logger ...Logger) {
 	global = newHelper(logger...)
-	kraoslogger.SetLogger(Logger2KratosLogger(NewStdLogger()))
 }
 
 func GetLogger() Logger {
 	return global
 }
 
-func Logger2KratosLogger(l Logger) kraoslogger.Logger {
+func SetKratosLogger(logger Logger) {
+	kraoslogger.SetLogger(logger2KratosLogger(logger))
+}
+
+func logger2KratosLogger(l Logger) kraoslogger.Logger {
 	return &loggerConvert{l}
 }
 
