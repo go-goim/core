@@ -40,7 +40,7 @@ func main() {
 	application.HTTPSrv.HandlePrefix("/", g)
 
 	if err = application.Run(); err != nil {
-		log.Info(err)
+		log.Error("application run error: %v", err)
 	}
 
 	graceful.Register(application.Shutdown)
