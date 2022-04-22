@@ -16,7 +16,6 @@ import (
 
 var (
 	flagconf string
-	logPath  string
 )
 
 func init() {
