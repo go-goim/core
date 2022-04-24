@@ -13,7 +13,7 @@ type Logger interface {
 }
 
 var (
-	global Logger = newDefaultLogger()
+	global = newDefaultLogger()
 )
 
 // Debug logs a message at debug level.
