@@ -12,12 +12,13 @@ import (
 	"github.com/go-kratos/kratos/v2/selector"
 	"github.com/go-kratos/kratos/v2/transport/grpc"
 	redisv8 "github.com/go-redis/redis/v8"
-	"github.com/yusank/goim/pkg/log"
 	ggrpc "google.golang.org/grpc"
+
+	"github.com/yusank/goim/pkg/consts"
+	"github.com/yusank/goim/pkg/log"
 
 	messagev1 "github.com/yusank/goim/api/message/v1"
 	"github.com/yusank/goim/apps/msg/internal/app"
-	"github.com/yusank/goim/apps/msg/internal/data"
 	"github.com/yusank/goim/pkg/conn/pool"
 	"github.com/yusank/goim/pkg/conn/wrapper"
 )
@@ -78,7 +79,7 @@ func (s *MqMessageService) handleSingleMsg(ctx context.Context, msg *primitive.M
 		return s.broadcast(ctx, in)
 	}
 
-	str, err := s.rdb.Get(ctx, data.GetUserOnlineAgentKey(req.GetToUser())).Result()
+	str, err := s.rdb.Get(ctx, consts.GetUserOnlineAgentKey(req.GetToUser())).Result()
 	if err != nil {
 		if err == redisv8.Nil {
 			log.Info("user offline, put to offline queue", "user_id", req.GetToUser())
@@ -166,7 +167,7 @@ func (s *MqMessageService) putToRedis(ctx context.Context, ext *primitive.Messag
 		return err
 	}
 
-	key := data.GetUserOfflineQueueKey(req.GetToUser())
+	key := consts.GetUserOfflineQueueKey(req.GetToUser())
 
 	// add to queue
 	pp := s.rdb.Pipeline()
@@ -175,9 +176,9 @@ func (s *MqMessageService) putToRedis(ctx context.Context, ext *primitive.Messag
 		Member: string(body),
 	}))
 	// set key expire
-	_ = pp.Process(ctx, s.rdb.Expire(ctx, key, data.UserOfflineQueueKeyExpire))
+	_ = pp.Process(ctx, s.rdb.Expire(ctx, key, consts.UserOfflineQueueKeyExpire))
 	// trim old messages
-	_ = pp.Process(ctx, s.rdb.ZRemRangeByRank(ctx, key, 0, -int64(data.UserOfflineQueueMemberMax+1)))
+	_ = pp.Process(ctx, s.rdb.ZRemRangeByRank(ctx, key, 0, -int64(consts.UserOfflineQueueMemberMax+1)))
 
 	_, err = pp.Exec(ctx)
 	if err != nil {

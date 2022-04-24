@@ -23,6 +23,10 @@ export ROCKETMQ_GO_LOG_LEVEL=warn
 lint: ## Run go lint against code.
 	golangci-lint run ./... -v
 
+.PHONY: vet
+vet: ## Run go vet against code.
+	go vet ./... -v
+
 .PHONEY: test
 test: ## Run test against code.
 	go test -v ./...

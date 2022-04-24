@@ -12,14 +12,12 @@ import (
 
 	"github.com/yusank/goim/apps/user/internal/app"
 	"github.com/yusank/goim/apps/user/internal/data"
+	"github.com/yusank/goim/pkg/consts"
 	"github.com/yusank/goim/pkg/db"
 	"github.com/yusank/goim/pkg/util"
 )
 
 var (
-	// ErrNotFound is returned when a resource cannot be found.
-	ErrNotFound = fmt.Errorf("resource not found")
-
 	userDao     *UserDao
 	userDaoOnce sync.Once
 )
@@ -43,13 +41,13 @@ func (u *UserDao) GetUser(ctx context.Context, id int64) (*data.User, error) {
 	tx := db.GetDBFromCtx(ctx).Where("id = ?", id).First(user)
 	if tx.Error != nil {
 		if tx.Error == gorm.ErrRecordNotFound {
-			return nil, ErrNotFound
+			return nil, nil
 		}
 		return nil, tx.Error
 	}
 
 	if user.IsDeleted() {
-		return nil, ErrNotFound
+		return nil, nil
 	}
 
 	return user, nil
@@ -61,7 +59,7 @@ func (u *UserDao) getUserFromRedis(ctx context.Context, uid string) (*data.User,
 	val, err := u.rdb.Get(ctx, key).Result()
 	if err != nil {
 		if err == redisv8.Nil {
-			return nil, ErrNotFound
+			return nil, nil
 		}
 		return nil, err
 	}
@@ -72,7 +70,7 @@ func (u *UserDao) getUserFromRedis(ctx context.Context, uid string) (*data.User,
 	}
 
 	if user.IsDeleted() {
-		return nil, ErrNotFound
+		return nil, nil
 	}
 
 	return user, nil
@@ -85,7 +83,7 @@ func (u *UserDao) GetUserByUID(ctx context.Context, uid string) (*data.User, err
 		return user, nil
 	}
 
-	if err != ErrNotFound {
+	if err != nil {
 		return nil, err
 	}
 
@@ -93,13 +91,13 @@ func (u *UserDao) GetUserByUID(ctx context.Context, uid string) (*data.User, err
 	tx := db.GetDBFromCtx(ctx).Where("uid = ?", uid).First(user)
 	if tx.Error != nil {
 		if tx.Error == gorm.ErrRecordNotFound {
-			return nil, ErrNotFound
+			return nil, nil
 		}
 		return nil, tx.Error
 	}
 
 	if user.IsDeleted() {
-		return nil, ErrNotFound
+		return nil, nil
 	}
 
 	// put data to redis
@@ -114,4 +112,54 @@ func (u *UserDao) GetUserByUID(ctx context.Context, uid string) (*data.User, err
 	}
 
 	return user, nil
+}
+
+// GetUserByEmail get user by email directly from db
+func (u *UserDao) GetUserByEmail(ctx context.Context, email string) (*data.User, error) {
+	user := &data.User{}
+	tx := db.GetDBFromCtx(ctx).Where("email = ?", email).First(user)
+	if tx.Error != nil {
+		if tx.Error == gorm.ErrRecordNotFound {
+			return nil, nil
+		}
+		return nil, tx.Error
+	}
+
+	if user.IsDeleted() {
+		return nil, nil
+	}
+
+	return user, nil
+}
+
+// GetUserByPhone get user by phone directly from db
+func (u *UserDao) GetUserByPhone(ctx context.Context, phone string) (*data.User, error) {
+	user := &data.User{}
+	tx := db.GetDBFromCtx(ctx).Where("phone = ?", phone).First(user)
+	if tx.Error != nil {
+		if tx.Error == gorm.ErrRecordNotFound {
+			return nil, nil
+		}
+		return nil, tx.Error
+	}
+
+	if user.IsDeleted() {
+		return nil, nil
+	}
+
+	return user, nil
+}
+
+// GetUserOnlineAgent get user online agent from redis
+func (u *UserDao) GetUserOnlineAgent(ctx context.Context, uid string) (string, error) {
+	key := consts.GetUserOnlineAgentKey(uid)
+	val, err := u.rdb.Get(ctx, key).Result()
+	if err != nil {
+		if err == redisv8.Nil {
+			return "", nil
+		}
+		return "", err
+	}
+
+	return val, nil
 }

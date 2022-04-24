@@ -7,11 +7,12 @@ import (
 
 	"github.com/apache/rocketmq-client-go/v2/primitive"
 	redisv8 "github.com/go-redis/redis/v8"
+
+	"github.com/yusank/goim/pkg/consts"
 	"github.com/yusank/goim/pkg/log"
 
 	messagev1 "github.com/yusank/goim/api/message/v1"
 	"github.com/yusank/goim/apps/msg/internal/app"
-	"github.com/yusank/goim/apps/msg/internal/data"
 )
 
 type OfflineMessageService struct {
@@ -37,7 +38,7 @@ func (o *OfflineMessageService) QueryOfflineMessage(ctx context.Context, req *me
 	log.Info("unmarshal msg", "host", msgID.Addr, "port", msgID.Port, "offset", msgID.Offset)
 
 	cnt, err := app.GetApplication().Redis.ZCount(ctx,
-		data.GetUserOfflineQueueKey(req.GetUserId()),
+		consts.GetUserOfflineQueueKey(req.GetUserId()),
 		// offset add 1 to skip the message user last online msg
 		strconv.FormatInt(msgID.Offset+1, 10),
 		"+inf").Result()
@@ -53,7 +54,7 @@ func (o *OfflineMessageService) QueryOfflineMessage(ctx context.Context, req *me
 	}
 
 	results, err := app.GetApplication().Redis.ZRangeByScoreWithScores(ctx,
-		data.GetUserOfflineQueueKey(req.GetUserId()), &redisv8.ZRangeBy{
+		consts.GetUserOfflineQueueKey(req.GetUserId()), &redisv8.ZRangeBy{
 			// offset add 1 to skip the message user last online msg
 			Min:    strconv.FormatInt(msgID.Offset+1, 10),
 			Max:    "+inf",
