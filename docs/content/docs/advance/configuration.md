@@ -59,7 +59,7 @@ message MQ {
 }
 ```
 
-## registry config definition 
+## registry config definition
 
 ```proto
 message RegistryInfo {

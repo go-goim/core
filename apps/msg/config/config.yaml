@@ -4,9 +4,7 @@ grpc:
   scheme: grpc
   port: 18063
 log:
-  level:
-  - INFO
-  - DEBUG
+  level: DEBUG
 metadata:
   grpcSrv: yes
 redis:

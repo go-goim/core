@@ -4,7 +4,7 @@ import (
 	"context"
 	"flag"
 
-	"github.com/go-kratos/kratos/v2/log"
+	"github.com/yusank/goim/pkg/log"
 
 	messagev1 "github.com/yusank/goim/api/message/v1"
 	"github.com/yusank/goim/apps/msg/internal/app"
@@ -25,7 +25,7 @@ func main() {
 	flag.Parse()
 	application, err := app.InitApplication(flagconf)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("InitApplication got err", "error", err)
 	}
 
 	// register grpc
@@ -38,16 +38,16 @@ func main() {
 		Subscriber:  service.GetMqMessageService(),
 	})
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("NewConsumer got err", "error", err)
 	}
 	application.AddConsumer(c)
 
 	if err = application.Run(); err != nil {
-		log.Info(err)
+		log.Error("application run error", "error", err)
 	}
 
 	graceful.Register(application.Shutdown)
 	if err = graceful.Shutdown(context.TODO()); err != nil {
-		log.Infof("graceful shutdown error: %v", err)
+		log.Error("graceful shutdown error", "error", err)
 	}
 }

@@ -2,11 +2,10 @@ package wrapper
 
 import (
 	"context"
-	"net"
 	"time"
 
-	"github.com/go-kratos/kratos/v2/log"
 	"github.com/gorilla/websocket"
+	"github.com/yusank/goim/pkg/log"
 )
 
 type WebsocketWrapper struct {
@@ -42,9 +41,6 @@ func WrapWs(ctx context.Context, c *websocket.Conn, uid string) *WebsocketWrappe
 			return nil
 		}
 
-		if e, ok := err.(net.Error); ok && e.Temporary() {
-			return nil
-		}
 		return err
 	})
 
@@ -108,11 +104,10 @@ func (w *WebsocketWrapper) Daemon() {
 	for {
 		mt, message, err := w.ReadMessage()
 		if err != nil {
-			log.Infof("wrpappedws|reconcile|uid=%s,err=%s", w.UID, err)
-
+			log.Error("websocket read message error", "error", err, "uid", w.UID)
 			w.cancelWithError(err)
 			return
 		}
-		log.Infof("receiveType=%v, msg=%s", mt, message)
+		log.Info("websocket read message", "uid", w.UID, "mt", mt, "message", string(message))
 	}
 }

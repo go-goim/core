@@ -7,9 +7,7 @@ grpc:
   scheme: grpc
   port: 18083
 log:
-  level:
-  - INFO
-  - DEBUG
+  level: DEBUG
 metadata:
   httpSrv: yes
   grpcSrv: yes
