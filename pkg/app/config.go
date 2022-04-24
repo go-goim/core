@@ -1,6 +1,7 @@
 package app
 
 import (
+	"flag"
 	"strings"
 
 	"github.com/go-kratos/kratos/v2/config"
@@ -47,10 +48,19 @@ func NewRegistry() *RegistryConfig {
 	}
 }
 
-func ParseConfig(fp string) *Config {
+var (
+	confPath string
+)
+
+func init() {
+	flag.StringVar(&confPath, "conf", "./configs", "set config path")
+	flag.Parse()
+}
+
+func ParseConfig() *Config {
 	c := config.New(
 		config.WithSource(
-			file.NewSource(fp),
+			file.NewSource(confPath),
 		),
 	)
 	if err := c.Load(); err != nil {
@@ -62,7 +72,7 @@ func ParseConfig(fp string) *Config {
 	if err := c.Scan(cfg); err != nil {
 		panic(err)
 	}
-	cfg.FilePath = fp
+	cfg.FilePath = confPath
 	slice := strings.Split(cfg.GetName(), ".")
 	if len(slice) < 3 {
 		log.Fatal("invalid service name=", cfg.GetName())
@@ -75,7 +85,7 @@ func ParseConfig(fp string) *Config {
 	if err := c.Scan(reg); err != nil {
 		panic(err)
 	}
-	reg.FilePath = fp
+	reg.FilePath = confPath
 	log.Debug("registry content", "registry", reg)
 	reg.Name = cfg.GetName()
 

@@ -170,6 +170,7 @@ func (a *Application) Shutdown(ctx context.Context) error {
 	}
 
 	for _, consumer := range a.Consumer {
+		consumer := consumer
 		checkCtxAndExecute(func() error {
 			if err := consumer.Shutdown(); err != nil {
 				return fmt.Errorf("shutdown consumer error: %w", err)

@@ -15,8 +15,8 @@ var (
 	application *Application
 )
 
-func InitApplication(confPath string) (*Application, error) {
-	cfg := app.ParseConfig(confPath)
+func InitApplication() (*Application, error) {
+	cfg := app.ParseConfig()
 	// do some own biz logic if needed
 	application = &Application{agentID: uuid.NewString()}
 

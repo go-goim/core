@@ -16,7 +16,7 @@ var upgrader = websocket.Upgrader{
 }
 
 func wsConnHandler(c *gin.Context) {
-	//todo use check uid/token middleware before this handler
+	// todo use check uid/token middleware before this handler
 	uid := c.GetHeader("uid")
 	if uid == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"err": "uid not found"})

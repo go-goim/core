@@ -5,7 +5,7 @@ SHELL:=/usr/bin/env bash
 Srv ?= push
 BinPath ?= bin/$(Srv)
 CmdPath ?= apps/$(Srv)/cmd/main.go
-CfgPath ?= apps/$(Srv)/config
+CfgPath ?= apps/$(Srv)/configs
 ProtoFile ?= api/config/v1/config.proto
 IMAGE ?= goim/$(Srv)
 VERSION ?= $(shell git describe --exact-match --tags 2> /dev/null || git rev-parse --abbrev-ref HEAD)
@@ -18,10 +18,6 @@ export ROCKETMQ_GO_LOG_LEVEL=warn
 ##################################################
 
 ##@ Development
-
-.PHONY: vet
-vet: ## Run go vet against code.
-	go vet -v ./...
 
 .PHONY: lint
 lint: ## Run go lint against code.

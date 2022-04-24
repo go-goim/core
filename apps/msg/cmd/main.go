@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"flag"
 
 	"github.com/yusank/goim/pkg/log"
 
@@ -13,17 +12,8 @@ import (
 	"github.com/yusank/goim/pkg/mq"
 )
 
-var (
-	flagconf string
-)
-
-func init() {
-	flag.StringVar(&flagconf, "conf", "../config", "config path, eg: --conf config.yaml")
-}
-
 func main() {
-	flag.Parse()
-	application, err := app.InitApplication(flagconf)
+	application, err := app.InitApplication()
 	if err != nil {
 		log.Fatal("InitApplication got err", "error", err)
 	}
