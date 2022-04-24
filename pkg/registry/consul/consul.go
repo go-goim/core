@@ -169,6 +169,11 @@ func (c *Client) Register(_ context.Context, svc *registry.ServiceInstance, enab
 			for {
 				select {
 				case <-ticker.C:
+					if c.ctx.Err() != nil {
+						log.Info("consul heartbeat canceled")
+						continue
+					}
+
 					err = c.cli.Agent().UpdateTTL("service:"+svc.ID, "pass", "pass")
 					if err != nil {
 						log.Error("consul update ttl heartbeat to consul failed", "err", err)
