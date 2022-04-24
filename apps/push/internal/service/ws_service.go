@@ -16,7 +16,8 @@ import (
 func HandleWsConn(ctx context.Context, c *websocket.Conn, uid string) {
 	ww := wrapper.WrapWs(ctx, c, uid)
 	ww.AddPingAction(func() error {
-		return app.GetApplication().Redis.SetEX(context.Background(), data.GetUserOnlineAgentKey(uid), app.GetAgentID(), data.UserOnlineAgentKeyExpire).Err()
+		return app.GetApplication().Redis.SetEX(context.Background(),
+			data.GetUserOnlineAgentKey(uid), app.GetAgentID(), data.UserOnlineAgentKeyExpire).Err()
 	})
 	ww.AddCloseAction(func() error {
 		ctx2, cancel := context.WithTimeout(ctx, time.Second)

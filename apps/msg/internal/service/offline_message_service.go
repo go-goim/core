@@ -18,7 +18,8 @@ type OfflineMessageService struct {
 	messagev1.UnimplementedOfflineMessageServer
 }
 
-func (o *OfflineMessageService) QueryOfflineMessage(ctx context.Context, req *messagev1.QueryOfflineMessageReq) (*messagev1.QueryOfflineMessageResp, error) {
+func (o *OfflineMessageService) QueryOfflineMessage(ctx context.Context, req *messagev1.QueryOfflineMessageReq) (
+	*messagev1.QueryOfflineMessageResp, error) {
 	var rsp = &messagev1.QueryOfflineMessageResp{
 		Status:   -1,
 		Page:     req.GetPage(),

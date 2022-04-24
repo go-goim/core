@@ -12,7 +12,8 @@ import (
 type Pool struct {
 	// TODO: taskQueue should be a linked list, so that we can get the task from the head of the list and put it back to the head.
 	// If we use a channel as taskQueue, we can't get the task from the head of the list and put it back to the head.
-	// But make sure that before change it to linked list, we should have the ability run the task in min(taskQueue length, concurrence) goroutines.
+	// But make sure that before change it to linked list, we should have the ability run the task in
+	// min(taskQueue length, concurrence) goroutines.
 	taskQueue         chan *task
 	enqueuedTaskCount atomic.Int32 // count of unhandled tasks
 	bufferSize        int          // size of taskQueue buffer, means can count of bufferSize task can wait to be handled

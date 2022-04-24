@@ -21,7 +21,8 @@ func GetOfflineMessageService() *OfflineMessageService {
 	return offlineMsgSrc
 }
 
-func (s *OfflineMessageService) QueryOfflineMsg(ctx context.Context, req *messagev1.QueryOfflineMessageReq) (*messagev1.QueryOfflineMessageResp, error) {
+func (s *OfflineMessageService) QueryOfflineMsg(ctx context.Context, req *messagev1.QueryOfflineMessageReq) (
+	*messagev1.QueryOfflineMessageResp, error) {
 	// todo check params
 	cc, err := s.loadConn(ctx)
 	if err != nil {

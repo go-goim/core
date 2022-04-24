@@ -33,5 +33,5 @@ func LoadMatchedPushServer(ctx context.Context) (string, error) {
 		return "", fmt.Errorf("no matched service")
 	}
 
-	return eps[rand.Int()%len(eps)], nil
+	return eps[rand.Int()%len(eps)], nil // nolint:gosec
 }

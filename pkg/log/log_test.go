@@ -12,5 +12,4 @@ func TestZapLog(t *testing.T) {
 	Info("hello", "name", "world")
 	Error("hello", "name", "world")
 	Warn("hello", "name", "world")
-	Fatal("hello", "name", "world")
 }
