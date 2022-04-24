@@ -20,6 +20,7 @@ message Service {
 	map<string, string> metadata = 6;
 	Redis redis = 7;
 	MQ mq = 8;
+	MySQL mysql = 9;
 }
 
 enum Level {
@@ -48,4 +49,15 @@ message Redis {
 message MQ {
 	repeated string addr = 1;
 	int32 max_retry = 2;
+}
+
+message MySQL {
+	string addr = 1;
+	string user = 2;
+	string password = 3;
+	string db = 4;
+	int32 max_idle_conns = 5;
+	int32 max_open_conns = 6;
+	google.protobuf.Duration idle_timeout = 7;
+	google.protobuf.Duration open_timeout = 8;
 }

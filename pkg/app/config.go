@@ -23,6 +23,11 @@ func (c *Config) Validate() error {
 	return nil
 }
 
+// Debug returns true if service is running in debug mode.
+func (c *Config) Debug() bool {
+	return c.SrvConfig.Log.Level == configv1.Level_DEBUG
+}
+
 // ServiceConfig contains service config
 type ServiceConfig struct {
 	*configv1.Service `json:",inline"`
