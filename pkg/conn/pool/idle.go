@@ -3,7 +3,7 @@ package pool
 import (
 	"time"
 
-	"github.com/go-kratos/kratos/v2/log"
+	"github.com/yusank/goim/pkg/log"
 )
 
 type Conn interface {
@@ -41,18 +41,18 @@ loop:
 		select {
 		case <-timer.C:
 			timer.Reset(time.Second * 5)
-			log.Infof("tick for conn=%s", i.c.Key())
+			log.Info("tick for conn", "key", i.c.Key())
 			if i.c.Err() != nil {
 				break loop
 			}
 		case <-i.stopChan:
 			break loop
 		case <-i.c.Done():
-			log.Infof("conn done, err=%v", i.c.Err())
+			log.Error("conn done", "key", i.c.Key())
 			break loop
 		}
 	}
 
-	log.Infof("closing conn, key=%s", i.c.Key())
+	log.Info("conn daemon exit", "key", i.c.Key())
 	i.close()
 }

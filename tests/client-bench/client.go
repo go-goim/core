@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
-	"net"
 	"net/http"
 	"net/url"
 	"strings"
@@ -16,15 +15,6 @@ import (
 )
 
 var clientMap = sync.Map{}
-
-func loadClient(uid string) *client {
-	v, ok := clientMap.Load(uid)
-	if !ok {
-		return nil
-	}
-
-	return v.(*client)
-}
 
 func initAndStoreClient(uid string) error {
 	c, err := newClient(gatewayAddr, uid)
@@ -109,9 +99,8 @@ func (c *client) ping() error {
 
 	if err == websocket.ErrCloseSent {
 		return nil
-	} else if e, ok := err.(net.Error); ok && e.Temporary() {
-		return nil
 	}
+
 	return err
 }
 

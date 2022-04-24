@@ -5,7 +5,6 @@ RUN apk add --no-cache vim
 RUN apk add --no-cache net-tools
 RUN apk add --no-cache procps
 RUN apk add --no-cache curl
-RUN apk add --no-cache procps
 RUN apk add --no-cache iputils
 
 WORKDIR /app

@@ -46,12 +46,9 @@ func runClient(uid string) {
 	time.Sleep(time.Second)
 
 	var ticker = time.NewTicker(time.Millisecond * 50)
-	for {
-		select {
-		case <-ticker.C:
-			if err = messageToRandomClient(uid); err != nil {
-				log.Println("messageToRandomClient got err=", err)
-			}
+	for range ticker.C {
+		if err = messageToRandomClient(uid); err != nil {
+			log.Println("messageToRandomClient got err=", err)
 		}
 	}
 }

@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/go-kratos/kratos/v2/log"
+	"github.com/yusank/goim/pkg/log"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/connectivity"
 )
@@ -36,7 +36,7 @@ func (w *GrpcWrapper) Key() string {
 
 func (w *GrpcWrapper) Err() error {
 	state := w.GetState()
-	log.Infof("grpwrapper|grpc conn status=%v", state)
+	log.Debug("grpc connect state", "state", state)
 	if state != connectivity.Idle && state != connectivity.Connecting && state != connectivity.Ready {
 		w.cancel()
 		return fmt.Errorf("connection invalid, cur state=%v. closing connection", state)

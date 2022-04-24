@@ -1,13 +1,14 @@
 package app
 
 import (
-	"log"
+	"strings"
 
 	"github.com/go-kratos/kratos/v2/config"
 	"github.com/go-kratos/kratos/v2/config/file"
 
 	registryv1 "github.com/yusank/goim/api/config/registry/v1"
 	configv1 "github.com/yusank/goim/api/config/v1"
+	"github.com/yusank/goim/pkg/log"
 )
 
 // Config contains service config.
@@ -25,6 +26,7 @@ func (c *Config) Validate() error {
 type ServiceConfig struct {
 	*configv1.Service `json:",inline"`
 	FilePath          string
+	SimpleName        string
 }
 
 func NewConfig() *ServiceConfig {
@@ -61,18 +63,56 @@ func ParseConfig(fp string) *Config {
 		panic(err)
 	}
 	cfg.FilePath = fp
-	log.Printf("%+v", cfg)
+	slice := strings.Split(cfg.GetName(), ".")
+	if len(slice) < 3 {
+		log.Fatal("invalid service name=", cfg.GetName())
+	}
+
+	cfg.SimpleName = slice[1]
+	log.Debug("config content", "config", cfg)
 
 	reg := NewRegistry()
 	if err := c.Scan(reg); err != nil {
 		panic(err)
 	}
 	reg.FilePath = fp
-	log.Printf("%+v", reg)
+	log.Debug("registry content", "registry", reg)
 	reg.Name = cfg.GetName()
 
+	setLogger(cfg.SimpleName, cfg.Log)
 	return &Config{
 		SrvConfig: cfg,
 		RegConfig: reg,
 	}
+}
+
+func setLogger(serviceName string, logConf *configv1.Log) {
+	var (
+		logPath = "./logs/" + serviceName
+		level   = configv1.Level_INFO
+	)
+
+	if logConf != nil && logConf.LogPath != nil && len(*logConf.LogPath) != 0 {
+		logPath = *logConf.LogPath
+	}
+
+	if logConf != nil {
+		level = logConf.Level
+	}
+
+	log.SetLogger(log.NewZapLogger(
+		log.Level(level),
+		log.OutputPath(logPath),
+		log.FilenamePrefix("app."),
+		log.EnableConsole(logConf != nil && logConf.EnableConsole),
+		log.CallerDepth(2),
+	))
+
+	log.SetKratosLogger(log.NewZapLogger(
+		log.Level(level),
+		log.OutputPath(logPath),
+		log.FilenamePrefix("kratos."),
+		log.EnableConsole(logConf != nil && logConf.EnableConsole),
+		log.CallerDepth(6),
+	))
 }

@@ -5,8 +5,8 @@ import (
 	"encoding/json"
 	"sync"
 
-	"github.com/go-kratos/kratos/v2/log"
 	"github.com/gorilla/websocket"
+	"github.com/yusank/goim/pkg/log"
 
 	messagev1 "github.com/yusank/goim/api/message/v1"
 	"github.com/yusank/goim/pkg/conn/pool"
