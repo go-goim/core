@@ -65,3 +65,13 @@ weight: 1
 
 - 列出详细的对比、使用场景
 - 根据需求实现读写扩散
+
+### 监控
+
+> optional
+
+- 添加 Prometheus， open tracing，方便监控和追踪问题
+
+## 其他
+
+- 应把 connection 抽象出来，并支持 tcp 方式的长链接
