@@ -9,8 +9,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/go-kratos/kratos/v2/log"
 	"github.com/go-kratos/kratos/v2/registry"
+	"github.com/yusank/goim/pkg/log"
 
 	"github.com/hashicorp/consul/api"
 )
@@ -81,7 +81,7 @@ func (c *Client) Service(ctx context.Context, service string, passingOnly bool) 
 	opts = opts.WithContext(ctx)
 	entries, _, err := c.cli.Health().Service(service, "", passingOnly, opts)
 	if err != nil {
-		log.Errorf("[consul] get svc err:%v", err)
+		log.Error("consul get service error", "err", err, "service", service)
 		return nil, err
 	}
 	return c.resolver(ctx, entries), nil
@@ -162,7 +162,7 @@ func (c *Client) Register(_ context.Context, svc *registry.ServiceInstance, enab
 			time.Sleep(time.Second)
 			err = c.cli.Agent().UpdateTTL("service:"+svc.ID, "pass", "pass")
 			if err != nil {
-				log.Errorf("[Consul]update ttl heartbeat to consul failed!err:=%v", err)
+				log.Error("consul update ttl heartbeat to consul failed", "err", err)
 			}
 			ticker := time.NewTicker(time.Second * time.Duration(c.healthcheckInterval))
 			defer ticker.Stop()
@@ -171,7 +171,7 @@ func (c *Client) Register(_ context.Context, svc *registry.ServiceInstance, enab
 				case <-ticker.C:
 					err = c.cli.Agent().UpdateTTL("service:"+svc.ID, "pass", "pass")
 					if err != nil {
-						log.Errorf("[Consul]update ttl heartbeat to consul failed!err:=%v", err)
+						log.Error("consul update ttl heartbeat to consul failed", "err", err)
 					}
 				case <-c.ctx.Done():
 					return

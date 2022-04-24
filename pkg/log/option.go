@@ -8,11 +8,13 @@ import (
 )
 
 type option struct {
-	prefix      string
-	level       configv1.Level
-	config      zap.Config
-	outputPath  string
-	callerDepth int
+	filenamePrefix string
+	level          configv1.Level
+	encoderConfig  zapcore.EncoderConfig
+	outputPath     string
+	callerDepth    int
+	enableConsole  bool
+	onlyConsole    bool
 }
 
 func newOption() *option {
@@ -20,49 +22,70 @@ func newOption() *option {
 	encoderConfig.EncodeTime = zapcore.RFC3339TimeEncoder
 	encoderConfig.EncodeLevel = zapcore.CapitalLevelEncoder
 	encoderConfig.EncodeCaller = zapcore.ShortCallerEncoder
-	config := zap.Config{
-		Level:         zap.NewAtomicLevelAt(zap.InfoLevel),
-		Development:   false,
-		Encoding:      "json",
-		EncoderConfig: encoderConfig,
-	}
+
 	return &option{
-		outputPath:  "./logs",
-		prefix:      "",
-		level:       configv1.Level_DEBUG,
-		config:      config,
-		callerDepth: 4,
+		outputPath:     "./logs",
+		filenamePrefix: "",
+		level:          configv1.Level_DEBUG,
+		encoderConfig:  encoderConfig,
 	}
+}
+
+func (o *option) apply(opts ...Option) {
+	for _, opt := range opts {
+		opt(o)
+	}
+}
+
+func (o *option) getEncoderConfigForConsole() zapcore.EncoderConfig {
+	encoderConfig := zap.NewDevelopmentEncoderConfig()
+	encoderConfig.EncodeTime = zapcore.RFC3339TimeEncoder
+	encoderConfig.EncodeLevel = zapcore.CapitalColorLevelEncoder
+	encoderConfig.EncodeCaller = zapcore.ShortCallerEncoder
+
+	return encoderConfig
 }
 
 type Option func(*option)
 
-func WithZapConfig(config zap.Config) Option {
+func EncodeConfig(config zapcore.EncoderConfig) Option {
 	return func(option *option) {
-		option.config = config
+		option.encoderConfig = config
 	}
 }
 
-func WithPrefix(prefix string) Option {
+func FilenamePrefix(prefix string) Option {
 	return func(option *option) {
-		option.prefix = prefix
+		option.filenamePrefix = prefix
 	}
 }
 
-func WithLevel(level configv1.Level) Option {
+func Level(level configv1.Level) Option {
 	return func(option *option) {
 		option.level = level
 	}
 }
 
-func WithOutputPath(path string) Option {
+func OutputPath(path string) Option {
 	return func(option *option) {
 		option.outputPath = path
 	}
 }
 
-func WithCallerDepth(d int) Option {
+func CallerDepth(d int) Option {
 	return func(o *option) {
 		o.callerDepth = d
+	}
+}
+
+func EnableConsole(enable bool) Option {
+	return func(o *option) {
+		o.enableConsole = enable
+	}
+}
+
+func OnlyConsole(only bool) Option {
+	return func(o *option) {
+		o.onlyConsole = only
 	}
 }

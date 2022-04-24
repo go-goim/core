@@ -6,8 +6,8 @@ import (
 	"strconv"
 
 	"github.com/apache/rocketmq-client-go/v2/primitive"
-	"github.com/go-kratos/kratos/v2/log"
 	redisv8 "github.com/go-redis/redis/v8"
+	"github.com/yusank/goim/pkg/log"
 
 	messagev1 "github.com/yusank/goim/api/message/v1"
 	"github.com/yusank/goim/apps/msg/internal/app"
@@ -33,7 +33,7 @@ func (o *OfflineMessageService) QueryOfflineMessage(ctx context.Context, req *me
 		return rsp, nil
 	}
 
-	log.Infof("unmarshal msg|host=%s, port=%d, offset=%d", msgID.Addr, msgID.Port, msgID.Offset)
+	log.Info("unmarshal msg", "host", msgID.Addr, "port", msgID.Port, "offset", msgID.Offset)
 
 	cnt, err := app.GetApplication().Redis.ZCount(ctx,
 		data.GetUserOfflineQueueKey(req.GetUserId()),

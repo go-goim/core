@@ -4,8 +4,8 @@ import (
 	"context"
 	"time"
 
-	"github.com/go-kratos/kratos/v2/log"
 	"github.com/gorilla/websocket"
+	"github.com/yusank/goim/pkg/log"
 
 	"github.com/yusank/goim/apps/push/internal/app"
 	"github.com/yusank/goim/apps/push/internal/data"
@@ -32,7 +32,7 @@ func HandleWsConn(ctx context.Context, c *websocket.Conn, uid string) {
 	defer cancel()
 	err := app.GetApplication().Redis.Set(ctx2, data.GetUserOnlineAgentKey(uid), app.GetAgentID(), data.UserOnlineAgentKeyExpire).Err()
 	if err != nil {
-		log.Info(err)
+		log.Error("redis set error", "key", data.GetUserOnlineAgentKey(uid), "error", err)
 	}
 
 	go func() {

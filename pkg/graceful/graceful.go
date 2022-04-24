@@ -5,8 +5,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/go-kratos/kratos/v2/log"
 	"github.com/yusank/goim/pkg/errors"
+	"github.com/yusank/goim/pkg/log"
 )
 
 var (

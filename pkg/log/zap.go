@@ -4,6 +4,7 @@ import (
 	"path/filepath"
 	"time"
 
+	"github.com/mattn/go-colorable"
 	configv1 "github.com/yusank/goim/api/config/v1"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
@@ -16,28 +17,49 @@ type zapLogger struct {
 }
 
 func NewZapLogger(opts ...Option) Logger {
-	options := newOption()
-	for _, o := range opts {
-		o(options)
+	o := newOption()
+	o.apply(opts...)
+
+	var consoleCore zapcore.Core
+	if o.enableConsole {
+		consoleCore = zapcore.NewCore(
+			zapcore.NewConsoleEncoder(o.getEncoderConfigForConsole()),
+			zapcore.AddSync(colorable.NewColorableStdout()),
+			zapcore.Level(int8(o.level-1)))
+
+		if o.onlyConsole {
+			return &zapLogger{
+				logger: zap.New(consoleCore),
+				option: o,
+			}
+		}
 	}
 
 	core := zapcore.NewCore(
-		zapcore.NewJSONEncoder(options.config.EncoderConfig),
-		zapcore.AddSync(getLogWriter(options.outputPath)),
-		zapcore.Level(int8(options.level-1)),
+		zapcore.NewJSONEncoder(o.encoderConfig),
+		zapcore.AddSync(getLogWriter(o)),
+		zapcore.Level(int8(o.level-1)),
 	)
 
+	if o.enableConsole {
+		core = zapcore.NewTee(core, consoleCore)
+	}
+
 	return &zapLogger{
-		logger: zap.New(core, zap.AddCaller(), zap.AddCallerSkip(options.callerDepth)),
-		option: options,
+		logger: zap.New(core, zap.AddCaller(), zap.AddCallerSkip(o.callerDepth)),
+		option: o,
 	}
 }
 
-func getLogWriter(outputPath string) zapcore.WriteSyncer {
+func newDefaultLogger() Logger {
+	return NewZapLogger(EnableConsole(true), OnlyConsole(true))
+}
+
+func getLogWriter(o *option) zapcore.WriteSyncer {
 	// fileName is log file name contains current date
-	fileName := getCurrentDate() + ".log"
-	if outputPath != "" {
-		fileName = filepath.Join(outputPath, fileName)
+	fileName := o.filenamePrefix + getCurrentDate() + ".log"
+	if o.outputPath != "" {
+		fileName = filepath.Join(o.outputPath, fileName)
 	}
 
 	return zapcore.AddSync(&lumberjack.Logger{

@@ -25,7 +25,7 @@ message Service {
 enum Level {
 	DEBUG = 0;
 	INFO = 1;
-	WARING = 2;
+	WARNING = 2;
 	ERROR = 3;
 	FATAL = 4;
 }
@@ -33,6 +33,7 @@ enum Level {
 message Log {
 	optional string log_path = 1;
 	Level level = 2;
+	bool enable_console = 3;
 }
 
 message Redis {

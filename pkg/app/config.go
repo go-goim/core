@@ -1,7 +1,6 @@
 package app
 
 import (
-	"path/filepath"
 	"strings"
 
 	"github.com/go-kratos/kratos/v2/config"
@@ -90,11 +89,30 @@ func ParseConfig(fp string) *Config {
 func setLogger(serviceName string, logConf *configv1.Log) {
 	var (
 		logPath = "./logs/" + serviceName
+		level   = configv1.Level_INFO
 	)
+
 	if logConf != nil && logConf.LogPath != nil && len(*logConf.LogPath) != 0 {
 		logPath = *logConf.LogPath
 	}
 
-	log.SetLogger(log.NewZapLogger(log.WithLevel(logConf.Level), log.WithOutputPath(logPath)))
-	log.SetKratosLogger(log.NewZapLogger(log.WithLevel(logConf.Level), log.WithOutputPath(filepath.Join(logPath, "kratos")), log.WithCallerDepth(6)))
+	if logConf != nil {
+		level = logConf.Level
+	}
+
+	log.SetLogger(log.NewZapLogger(
+		log.Level(level),
+		log.OutputPath(logPath),
+		log.FilenamePrefix("app."),
+		log.EnableConsole(logConf != nil && logConf.EnableConsole),
+		log.CallerDepth(2),
+	))
+
+	log.SetKratosLogger(log.NewZapLogger(
+		log.Level(level),
+		log.OutputPath(logPath),
+		log.FilenamePrefix("kratos."),
+		log.EnableConsole(logConf != nil && logConf.EnableConsole),
+		log.CallerDepth(6),
+	))
 }
