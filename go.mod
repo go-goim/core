@@ -12,6 +12,7 @@ require (
 	github.com/gorilla/websocket v1.5.0
 	github.com/hashicorp/consul/api v1.12.0
 	github.com/jroimartin/gocui v0.5.0
+	github.com/mattn/go-colorable v0.1.6
 	go.etcd.io/etcd/client/v3 v3.5.0
 	go.uber.org/atomic v1.7.0
 	go.uber.org/zap v1.17.0
@@ -48,7 +49,6 @@ require (
 	github.com/json-iterator/go v1.1.11 // indirect
 	github.com/konsorten/go-windows-terminal-sequences v1.0.3 // indirect
 	github.com/leodido/go-urn v1.2.0 // indirect
-	github.com/mattn/go-colorable v0.1.6 // indirect
 	github.com/mattn/go-isatty v0.0.12 // indirect
 	github.com/mattn/go-runewidth v0.0.9 // indirect
 	github.com/mitchellh/go-homedir v1.1.0 // indirect

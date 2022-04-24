@@ -9,10 +9,10 @@ import (
 
 	"github.com/apache/rocketmq-client-go/v2/consumer"
 	"github.com/apache/rocketmq-client-go/v2/primitive"
-	"github.com/go-kratos/kratos/v2/log"
 	"github.com/go-kratos/kratos/v2/selector"
 	"github.com/go-kratos/kratos/v2/transport/grpc"
 	redisv8 "github.com/go-redis/redis/v8"
+	"github.com/yusank/goim/pkg/log"
 	ggrpc "google.golang.org/grpc"
 
 	messagev1 "github.com/yusank/goim/api/message/v1"
@@ -52,7 +52,7 @@ func (s *MqMessageService) Consume(ctx context.Context, msg ...*primitive.Messag
 	// msg 实际上只有一条
 	err := s.handleSingleMsg(ctx, msg[0])
 	if err != nil {
-		log.Infof("consumer error. msg:%s,err:%v", string(msg[0].Body), err)
+		log.Info("consumer error", "msg", string(msg[0].Body), "error", err)
 	}
 
 	return consumer.ConsumeSuccess, nil
@@ -81,7 +81,7 @@ func (s *MqMessageService) handleSingleMsg(ctx context.Context, msg *primitive.M
 	str, err := s.rdb.Get(ctx, data.GetUserOnlineAgentKey(req.GetToUser())).Result()
 	if err != nil {
 		if err == redisv8.Nil {
-			log.Infof("user=%s not online, put to offline queue", req.GetToUser())
+			log.Info("user offline, put to offline queue", "user_id", req.GetToUser())
 			return s.putToRedis(ctx, msg, in)
 		}
 		return err
@@ -151,7 +151,7 @@ func (s *MqMessageService) putToRedis(ctx context.Context, ext *primitive.Messag
 		log.Info("unmarshal ext id err=", err)
 		return err
 	}
-	log.Infof("unmarshal ext|host=%s, port=%d, offset=%d", msgID.Addr, msgID.Port, msgID.Offset)
+	log.Info("unmarshal ext", "host", msgID.Addr, "port", msgID.Port, "offset", msgID.Offset)
 
 	msg := &messagev1.BriefMessage{
 		FromUser:    req.GetFromUser(),

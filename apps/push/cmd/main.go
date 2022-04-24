@@ -5,7 +5,7 @@ import (
 	"flag"
 
 	"github.com/gin-gonic/gin"
-	"github.com/go-kratos/kratos/v2/log"
+	"github.com/yusank/goim/pkg/log"
 
 	messagev1 "github.com/yusank/goim/api/message/v1"
 	"github.com/yusank/goim/apps/push/internal/app"
@@ -27,7 +27,7 @@ func main() {
 
 	application, err := app.InitApplication(flagconf)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("InitApplication got err", "error", err)
 	}
 
 	// register grpc
@@ -39,11 +39,11 @@ func main() {
 	application.HTTPSrv.HandlePrefix("/", g)
 
 	if err = application.Run(); err != nil {
-		log.Errorf("application run error: %v", err)
+		log.Error("application run got error", "error", err)
 	}
 
 	graceful.Register(application.Shutdown)
 	if err = graceful.Shutdown(context.TODO()); err != nil {
-		log.Infof("graceful shutdown error: %s", err)
+		log.Error("graceful shutdown got error", "error", err)
 	}
 }
