@@ -3,12 +3,22 @@ syntax = "proto3";
 package api.user.v1;
 option go_package = "api/user/v1;v1";
 
+enum LoginStatus {
+  LOGIN_STATUS_LOGIN = 0;
+  LOGIN_STATUS_ALREADY_LOGIN = 1;
+  LOGIN_STATUS_LOGOUT = 2;
+}
+
 message User {
   string uid = 1;
   string name = 2;
   string email = 3;
   string phone = 4;
   string avatar = 5;
+  string agent_id = 6;
+  // 0: login, need connect to push server
+  // 1: login, no need connect to push server
+  LoginStatus login_status = 7;
 }
 
 message UserList {
@@ -25,4 +35,21 @@ message GetUserResponse {
 
 service UserService {
   rpc GetUser(GetUserRequest) returns (GetUserResponse);
+}
+
+message UserLoginRequest {
+  oneof user {
+    string email = 1;
+    string phone = 2;
+  }
+
+  string password = 3;
+  // 0: try login , do nothing if already login
+  // 1: force login , logout if already login
+  LoginType login_type = 4;
+}
+
+enum LoginType {
+  LOGIN_TYPE_TRY = 0;
+  LOGIN_TYPE_FORCE = 1;
 }

@@ -14,5 +14,7 @@ create table if not exists goim.user (
 	`create_at` int not null,
 	`update_at` int not null,
 	primary key (`id`),
-	unique key (`uid`)
+	unique key (`uid`),
+    unique key (`email`),
+    unique key (`phone`)
 ) auto_increment = 10000 engine = innodb charset = utf8mb4;
