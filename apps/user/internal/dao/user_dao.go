@@ -14,6 +14,7 @@ import (
 	"github.com/yusank/goim/apps/user/internal/data"
 	"github.com/yusank/goim/pkg/consts"
 	"github.com/yusank/goim/pkg/db"
+	"github.com/yusank/goim/pkg/log"
 	"github.com/yusank/goim/pkg/util"
 )
 
@@ -54,6 +55,7 @@ func (u *UserDao) GetUser(ctx context.Context, id int64) (*data.User, error) {
 }
 
 func (u *UserDao) getUserFromRedis(ctx context.Context, uid string) (*data.User, error) {
+	log.Debug("getUserFromRedis", "uid", uid)
 	user := &data.User{}
 	key := fmt.Sprintf("user:%s", uid)
 	val, err := u.rdb.Get(ctx, key).Result()
@@ -69,22 +71,19 @@ func (u *UserDao) getUserFromRedis(ctx context.Context, uid string) (*data.User,
 		return nil, err
 	}
 
-	if user.IsDeleted() {
-		return nil, nil
-	}
-
 	return user, nil
 }
 
 // GetUserByUID get user by uid
 func (u *UserDao) GetUserByUID(ctx context.Context, uid string) (*data.User, error) {
 	user, err := u.getUserFromRedis(ctx, uid)
-	if err == nil {
+	log.Debug("getUserFromRedis result", "user", user, "err", err)
+	if err != nil {
 		return user, nil
 	}
 
-	if err != nil {
-		return nil, err
+	if user != nil {
+		return user, nil
 	}
 
 	user = &data.User{}
@@ -94,10 +93,6 @@ func (u *UserDao) GetUserByUID(ctx context.Context, uid string) (*data.User, err
 			return nil, nil
 		}
 		return nil, tx.Error
-	}
-
-	if user.IsDeleted() {
-		return nil, nil
 	}
 
 	// put data to redis

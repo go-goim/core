@@ -1,13 +1,17 @@
 package mysql
 
 import (
-	"log"
+	"context"
+	sysLog "log"
 	"os"
 	"time"
 
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
+
+	"github.com/yusank/goim/pkg/graceful"
+	"github.com/yusank/goim/pkg/log"
 )
 
 var (
@@ -26,6 +30,14 @@ func InitDB(opts ...Option) error {
 	}
 
 	SetDefaultDB(gdb)
+	graceful.Register(func(ctx context.Context) error {
+		err := Close()
+		if err != nil {
+			log.Error("mysql close error", "err", err)
+		}
+
+		return err
+	})
 	return nil
 }
 
@@ -49,7 +61,7 @@ func NewMySQL(opts ...Option) (*gorm.DB, error) {
 	}
 
 	slowLogger := logger.New(
-		log.New(os.Stdout, "[MYSQL]", log.LstdFlags),
+		sysLog.New(os.Stdout, "[MYSQL]", sysLog.LstdFlags),
 		loggerConfig,
 	)
 

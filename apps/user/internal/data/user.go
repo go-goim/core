@@ -11,8 +11,8 @@ type User struct {
 	UID        string `gorm:"type:varchar(64);unique_index;not null"`
 	Name       string `gorm:"type:varchar(32);not null"`
 	Password   string `gorm:"type:varchar(32);not null"`
-	Email      string `gorm:"type:varchar(32);unique_index;not null"`
-	Phone      string `gorm:"type:varchar(32);unique_index;not null"`
+	Email      string `gorm:"type:varchar(32);index;not null"`
+	Phone      string `gorm:"type:varchar(32);index;not null"`
 	Avatar     string `gorm:"type:varchar(128);not null"`
 	Status     int    `gorm:"type:tinyint(1);not null"`
 	CreateTime int64  `gorm:"type:bigint(20);not null"`
