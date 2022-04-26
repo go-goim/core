@@ -35,6 +35,10 @@ func (s *UserService) GetUser(ctx context.Context, req *userv1.GetUserRequest) (
 		return nil, err
 	}
 
+	if user == nil || user.IsDeleted() {
+		return nil, fmt.Errorf("user not found")
+	}
+
 	return &userv1.GetUserResponse{
 		User: user.ToProtoUser(),
 	}, nil
