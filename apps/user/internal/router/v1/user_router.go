@@ -1,8 +1,6 @@
 package v1
 
 import (
-	"fmt"
-
 	"github.com/gin-gonic/gin"
 
 	userv1 "github.com/yusank/goim/api/user/v1"
@@ -24,14 +22,16 @@ func (r *UserRouter) Register(router *gin.RouterGroup) {
 
 func (r *UserRouter) GetUser(c *gin.Context) {
 	// get uid from query
-	uid := c.Query("uid")
-	if uid == "" {
-		util.ErrorResp(c, fmt.Errorf("uid is empty"))
+	req := &userv1.GetUserRequest{
+		Uid: c.Query("uid"),
+	}
+	if err := req.ValidateAll(); err != nil {
+		util.ErrorResp(c, err)
 		return
 	}
 
 	// get user info from service
-	req := &userv1.GetUserRequest{Uid: uid}
+
 	resp, err := service.GetUserService().GetUser(mid.GetContext(c), req)
 	if err != nil {
 		util.ErrorResp(c, err)

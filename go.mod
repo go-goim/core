@@ -5,6 +5,7 @@ go 1.17
 require (
 	github.com/apache/rocketmq-client-go/v2 v2.1.0
 	github.com/btcsuite/btcd/btcutil v1.1.1
+	github.com/envoyproxy/protoc-gen-validate v0.1.0
 	github.com/gin-gonic/gin v1.7.7
 	github.com/go-kratos/kratos/contrib/registry/etcd/v2 v2.0.0-20220301040457-03ad2b663624
 	github.com/go-kratos/kratos/v2 v2.2.0

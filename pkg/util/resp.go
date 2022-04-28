@@ -6,12 +6,16 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/go-kratos/kratos/v2/errors"
 	"google.golang.org/protobuf/proto"
+
+	"github.com/yusank/goim/pkg/log"
 )
 
 func ErrorResp(c *gin.Context, err error) {
 	e := new(errors.Error)
 	e.Code = errors.UnknownCode
 	e.Message = err.Error()
+
+	log.Debug("ErrorResp", "err", err, "route", c.Request.URL.Path)
 
 	c.JSON(http.StatusOK, e)
 }
