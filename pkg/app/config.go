@@ -77,6 +77,12 @@ func ParseConfig() *Config {
 	if err := c.Scan(cfg); err != nil {
 		panic(err)
 	}
+
+	// validate config
+	if err := cfg.ValidateAll(); err != nil {
+		panic(err)
+	}
+
 	cfg.FilePath = confPath
 	slice := strings.Split(cfg.GetName(), ".")
 	if len(slice) < 3 {
@@ -90,6 +96,12 @@ func ParseConfig() *Config {
 	if err := c.Scan(reg); err != nil {
 		panic(err)
 	}
+
+	// validate config
+	if err := reg.ValidateAll(); err != nil {
+		panic(err)
+	}
+
 	reg.FilePath = confPath
 	log.Debug("registry content", "registry", reg)
 	reg.Name = cfg.GetName()
