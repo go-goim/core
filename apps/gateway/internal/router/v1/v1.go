@@ -9,4 +9,7 @@ func Register(g *gin.RouterGroup) {
 	msg := g.Group("/msg")
 	msg.POST("", handleSendSingleUserMsg)
 	msg.POST("/broadcast", handleSendBroadcastMsg)
+
+	// user
+	NewUserRouter().Register(g.Group("/user"))
 }

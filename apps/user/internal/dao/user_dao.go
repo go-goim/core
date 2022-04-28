@@ -158,3 +158,35 @@ func (u *UserDao) GetUserOnlineAgent(ctx context.Context, uid string) (string, e
 
 	return val, nil
 }
+
+func (u *UserDao) CreateUser(ctx context.Context, user *data.User) error {
+	tx := db.GetDBFromCtx(ctx).Create(user)
+	if tx.Error != nil {
+		return tx.Error
+	}
+
+	return nil
+}
+
+func (u *UserDao) UpdateUser(ctx context.Context, user *data.User) error {
+	tx := db.GetDBFromCtx(ctx).Save(user)
+	if tx.Error != nil {
+		return tx.Error
+	}
+
+	return nil
+}
+
+// UndoDelete undo delete user with new password
+func (u *UserDao) UndoDelete(ctx context.Context, user *data.User) error {
+	tx := db.GetDBFromCtx(ctx).Model(user).UpdateColumns(map[string]interface{}{
+		"password":   user.Password,
+		"updated_at": time.Now(),
+		"status":     data.UserStatusNormal,
+	})
+	if tx.Error != nil {
+		return tx.Error
+	}
+
+	return nil
+}
