@@ -76,10 +76,10 @@ func (s *UserService) Login(ctx context.Context, req *userv1.UserLoginRequest) (
 
 	if len(agentID) == 0 {
 		// not login
-		protoUser.LoginStatus = userv1.LoginStatus_LOGIN_STATUS_LOGIN
+		protoUser.LoginStatus = userv1.LoginStatus_LOGIN
 	} else {
 		// already login
-		protoUser.LoginStatus = userv1.LoginStatus_LOGIN_STATUS_ALREADY_LOGIN
+		protoUser.LoginStatus = userv1.LoginStatus_ALREADY_LOGIN
 		protoUser.AgentId = agentID
 	}
 

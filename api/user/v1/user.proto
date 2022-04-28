@@ -3,10 +3,12 @@ syntax = "proto3";
 package api.user.v1;
 option go_package = "api/user/v1;v1";
 
+import "validate/validate.proto";
+
 enum LoginStatus {
-  LOGIN_STATUS_LOGIN = 0;
-  LOGIN_STATUS_ALREADY_LOGIN = 1;
-  LOGIN_STATUS_LOGOUT = 2;
+  LOGIN = 0;
+  ALREADY_LOGIN = 1;
+  LOGOUT = 2;
 }
 
 message User {
@@ -26,7 +28,7 @@ message UserList {
 }
 
 message GetUserRequest {
-  string uid = 1;
+  string uid = 1 [(validate.rules).string = {min_len: 20, max_len: 24}];
 }
 
 message GetUserResponse {
@@ -39,7 +41,8 @@ service UserService {
 
 message UserLoginRequest {
   oneof user {
-    string email = 1;
+    option (validate.required) = true;
+    string email = 1 [(validate.rules).string.email = true];
     string phone = 2;
   }
 

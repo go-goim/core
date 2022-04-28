@@ -9,6 +9,7 @@ CfgPath ?= apps/$(Srv)/configs
 ProtoFile ?= api/config/v1/config.proto
 IMAGE ?= goim/$(Srv)
 VERSION ?= $(shell git describe --exact-match --tags 2> /dev/null || git rev-parse --abbrev-ref HEAD)
+Validate ?= false
 
 ## env
 export ROCKETMQ_GO_LOG_LEVEL=warn
@@ -37,9 +38,24 @@ test: ## Run test against code.
 
 ##@ Generate
 
-.PHONY: protoc
-protoc: ## Run protoc command to generate pb code.
-	protoc -I. --go_out=. --go-grpc_out=. $(ProtoFile)
+.PHONY: gen-protoc
+gen-protoc: ## Run protoc command to generate pb code.
+ifeq ($(Validate), true)
+	protoc --proto_path=. --proto_path=./third_party  \
+		--go_out==paths=source_relative:. \
+		--go-grpc_out==paths=source_relative:. \
+		--validate_out=lang=go,paths==paths=source_relative:. \
+		$(ProtoFile)
+else
+	protoc --proto_path=. --proto_path=./third_party  \
+    		--go_out==paths=source_relative:. \
+    		--go-grpc_out==paths=source_relative:. \
+    		$(ProtoFile)
+endif
+
+.PHONY: tools-install
+tools-install: ## Install tools.
+	go get -u github.com/golang/protobuf/protoc-gen-go
 
 ##################################################
 # Build                                          #
