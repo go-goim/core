@@ -22,7 +22,7 @@ func (r *UserRouter) Register(router *gin.RouterGroup) {
 
 func (r *UserRouter) GetUser(c *gin.Context) {
 	// get uid from query
-	req := &userv1.GetUserRequest{
+	req := &userv1.GetUserInfoRequest{
 		Uid: c.Query("uid"),
 	}
 	if err := req.ValidateAll(); err != nil {

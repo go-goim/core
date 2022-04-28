@@ -26,7 +26,7 @@ lint: ## Run go lint against code.
 
 .PHONY: vet
 vet: ## Run go vet against code.
-	go vet ./... -v
+	go vet -v ./...
 
 .PHONEY: test
 test: ## Run test against code.
