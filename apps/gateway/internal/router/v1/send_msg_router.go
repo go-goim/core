@@ -16,6 +16,11 @@ func handleSendSingleUserMsg(c *gin.Context) {
 		return
 	}
 
+	if err := req.ValidateAll(); err != nil {
+		util.ErrorResp(c, err)
+		return
+	}
+
 	rsp, err := service.GetSendMessageService().SendMessage(mid.GetContext(c), req)
 	if err != nil {
 		util.ErrorResp(c, err)

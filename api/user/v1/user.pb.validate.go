@@ -563,7 +563,17 @@ func (m *UserLoginRequest) validate(all bool) error {
 		}
 
 	case *UserLoginRequest_Phone:
-		// no validation rules for Phone
+
+		if !_UserLoginRequest_Phone_Pattern.MatchString(m.GetPhone()) {
+			err := UserLoginRequestValidationError{
+				field:  "Phone",
+				reason: "value does not match regex pattern \"^1[3-9]\\\\d{9}$\"",
+			}
+			if !all {
+				return err
+			}
+			errors = append(errors, err)
+		}
 
 	default:
 		err := UserLoginRequestValidationError{
@@ -704,3 +714,5 @@ var _ interface {
 	Cause() error
 	ErrorName() string
 } = UserLoginRequestValidationError{}
+
+var _UserLoginRequest_Phone_Pattern = regexp.MustCompile("^1[3-9]\\d{9}$")

@@ -5,11 +5,20 @@ option go_package = "api/config/registry/v1;v1";
 
 import "google/protobuf/duration.proto";
 
+import "validate/validate.proto";
+
 // todo: add validation
 message RegistryInfo {
-	repeated string addr = 1;
-	string scheme = 2;
-	google.protobuf.Duration dial_timeout_sec = 3;
+	repeated string addr = 1 [(validate.rules).repeated = {
+		min_items: 1,
+		unique: true,
+	}];
+	string scheme = 2 [(validate.rules).string = {in: ["http", "grpc"]}];
+	// range [10ms, 10s]
+	google.protobuf.Duration dial_timeout_sec = 3 [(validate.rules).duration = {
+		gte: {nanos: 1000000, seconds: 0},
+		lte:  {seconds: 10}
+	}];
 	google.protobuf.Duration dial_keep_alive_time_sec = 4;
 	google.protobuf.Duration dial_keep_alive_timeout_sec = 5;
 }

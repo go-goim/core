@@ -3,6 +3,8 @@ syntax = "proto3";
 package api.message.v1;
 option go_package = "api/message/v1;v1";
 
+import "validate/validate.proto";
+
 enum MessageContentType {
   UnknownContentType = 0;
   Text = 1;
@@ -12,10 +14,10 @@ enum MessageContentType {
 
 // SendMessageReq receive data from gateway
 message SendMessageReq {
-  string from_user = 1;
-  string to_user = 2;
-  MessageContentType content_type = 3;
-  string content = 4;
+  string from_user = 1 [(validate.rules).string.min_len = 20];
+  string to_user = 2 [(validate.rules).string.min_len = 20];
+  MessageContentType content_type = 3 [(validate.rules).enum.defined_only = true];
+  string content = 4 [(validate.rules).string = {min_len: 1, max_len: 1024}];
 }
 
 // SendMessageResp is response body for sendMessage
@@ -93,11 +95,11 @@ message BriefMessage {
 }
 
 message QueryOfflineMessageReq {
-  string user_id = 1;
-  string last_msg_seq = 2;
+  string user_id = 1 [(validate.rules).string.min_len = 20];
+  string last_msg_seq = 2 [(validate.rules).string.min_len = 10];
   bool onlyCount  = 3;
   int32 page = 4;
-  int32 page_size = 5;
+  int32 page_size = 5 [(validate.rules).int32 = {gte: 1, lte: 100}];
 }
 
 message QueryOfflineMessageResp {
