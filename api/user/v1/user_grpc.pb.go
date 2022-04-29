@@ -19,13 +19,13 @@ const _ = grpc.SupportPackageIsVersion7
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type UserServiceClient interface {
 	// GetUser get user info by uid, called when uid is known.
-	GetUser(ctx context.Context, in *GetUserInfoRequest, opts ...grpc.CallOption) (*User, error)
+	GetUser(ctx context.Context, in *GetUserInfoRequest, opts ...grpc.CallOption) (*UserInternal, error)
 	// QueryUser query user info by email or phone, called when uid is unknown.
-	QueryUser(ctx context.Context, in *QueryUserRequest, opts ...grpc.CallOption) (*User, error)
+	QueryUser(ctx context.Context, in *QueryUserRequest, opts ...grpc.CallOption) (*UserInternal, error)
 	// CreateUser create user.
-	CreateUser(ctx context.Context, in *CreateUserRequest, opts ...grpc.CallOption) (*User, error)
+	CreateUser(ctx context.Context, in *CreateUserRequest, opts ...grpc.CallOption) (*UserInternal, error)
 	// UpdateUser update user info.
-	UpdateUser(ctx context.Context, in *UpdateUserRequest, opts ...grpc.CallOption) (*User, error)
+	UpdateUser(ctx context.Context, in *UpdateUserRequest, opts ...grpc.CallOption) (*UserInternal, error)
 }
 
 type userServiceClient struct {
@@ -36,8 +36,8 @@ func NewUserServiceClient(cc grpc.ClientConnInterface) UserServiceClient {
 	return &userServiceClient{cc}
 }
 
-func (c *userServiceClient) GetUser(ctx context.Context, in *GetUserInfoRequest, opts ...grpc.CallOption) (*User, error) {
-	out := new(User)
+func (c *userServiceClient) GetUser(ctx context.Context, in *GetUserInfoRequest, opts ...grpc.CallOption) (*UserInternal, error) {
+	out := new(UserInternal)
 	err := c.cc.Invoke(ctx, "/api.user.v1.UserService/GetUser", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -45,8 +45,8 @@ func (c *userServiceClient) GetUser(ctx context.Context, in *GetUserInfoRequest,
 	return out, nil
 }
 
-func (c *userServiceClient) QueryUser(ctx context.Context, in *QueryUserRequest, opts ...grpc.CallOption) (*User, error) {
-	out := new(User)
+func (c *userServiceClient) QueryUser(ctx context.Context, in *QueryUserRequest, opts ...grpc.CallOption) (*UserInternal, error) {
+	out := new(UserInternal)
 	err := c.cc.Invoke(ctx, "/api.user.v1.UserService/QueryUser", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -54,8 +54,8 @@ func (c *userServiceClient) QueryUser(ctx context.Context, in *QueryUserRequest,
 	return out, nil
 }
 
-func (c *userServiceClient) CreateUser(ctx context.Context, in *CreateUserRequest, opts ...grpc.CallOption) (*User, error) {
-	out := new(User)
+func (c *userServiceClient) CreateUser(ctx context.Context, in *CreateUserRequest, opts ...grpc.CallOption) (*UserInternal, error) {
+	out := new(UserInternal)
 	err := c.cc.Invoke(ctx, "/api.user.v1.UserService/CreateUser", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -63,8 +63,8 @@ func (c *userServiceClient) CreateUser(ctx context.Context, in *CreateUserReques
 	return out, nil
 }
 
-func (c *userServiceClient) UpdateUser(ctx context.Context, in *UpdateUserRequest, opts ...grpc.CallOption) (*User, error) {
-	out := new(User)
+func (c *userServiceClient) UpdateUser(ctx context.Context, in *UpdateUserRequest, opts ...grpc.CallOption) (*UserInternal, error) {
+	out := new(UserInternal)
 	err := c.cc.Invoke(ctx, "/api.user.v1.UserService/UpdateUser", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -77,13 +77,13 @@ func (c *userServiceClient) UpdateUser(ctx context.Context, in *UpdateUserReques
 // for forward compatibility
 type UserServiceServer interface {
 	// GetUser get user info by uid, called when uid is known.
-	GetUser(context.Context, *GetUserInfoRequest) (*User, error)
+	GetUser(context.Context, *GetUserInfoRequest) (*UserInternal, error)
 	// QueryUser query user info by email or phone, called when uid is unknown.
-	QueryUser(context.Context, *QueryUserRequest) (*User, error)
+	QueryUser(context.Context, *QueryUserRequest) (*UserInternal, error)
 	// CreateUser create user.
-	CreateUser(context.Context, *CreateUserRequest) (*User, error)
+	CreateUser(context.Context, *CreateUserRequest) (*UserInternal, error)
 	// UpdateUser update user info.
-	UpdateUser(context.Context, *UpdateUserRequest) (*User, error)
+	UpdateUser(context.Context, *UpdateUserRequest) (*UserInternal, error)
 	mustEmbedUnimplementedUserServiceServer()
 }
 
@@ -91,16 +91,16 @@ type UserServiceServer interface {
 type UnimplementedUserServiceServer struct {
 }
 
-func (UnimplementedUserServiceServer) GetUser(context.Context, *GetUserInfoRequest) (*User, error) {
+func (UnimplementedUserServiceServer) GetUser(context.Context, *GetUserInfoRequest) (*UserInternal, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetUser not implemented")
 }
-func (UnimplementedUserServiceServer) QueryUser(context.Context, *QueryUserRequest) (*User, error) {
+func (UnimplementedUserServiceServer) QueryUser(context.Context, *QueryUserRequest) (*UserInternal, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method QueryUser not implemented")
 }
-func (UnimplementedUserServiceServer) CreateUser(context.Context, *CreateUserRequest) (*User, error) {
+func (UnimplementedUserServiceServer) CreateUser(context.Context, *CreateUserRequest) (*UserInternal, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateUser not implemented")
 }
-func (UnimplementedUserServiceServer) UpdateUser(context.Context, *UpdateUserRequest) (*User, error) {
+func (UnimplementedUserServiceServer) UpdateUser(context.Context, *UpdateUserRequest) (*UserInternal, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateUser not implemented")
 }
 func (UnimplementedUserServiceServer) mustEmbedUnimplementedUserServiceServer() {}

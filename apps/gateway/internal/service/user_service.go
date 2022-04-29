@@ -78,7 +78,7 @@ func (s *UserService) Login(ctx context.Context, req *userv1.UserLoginRequest) (
 		user.AgentId = &agentID
 	}
 
-	return user, nil
+	return user.ToUser(), nil
 }
 
 // Register register user.
@@ -92,26 +92,13 @@ func (s *UserService) Register(ctx context.Context, req *userv1.CreateUserReques
 		return nil, err
 	}
 
-	var createReq = &userv1.CreateUserRequest{
-		Name:     req.GetName(),
-		Password: util.Md5String(req.GetPassword()),
-	}
-	switch {
-	case req.GetEmail() != "":
-		createReq.User = &userv1.CreateUserRequest_Email{Email: req.GetEmail()}
-	case req.GetPhone() != "":
-		createReq.User = &userv1.CreateUserRequest_Phone{Phone: req.GetPhone()}
-	default:
-		return nil, fmt.Errorf("invalid user register request")
-	}
-
 	// do check user exist and create.
-	user, err := userv1.NewUserServiceClient(cc).CreateUser(ctx, createReq)
+	user, err := userv1.NewUserServiceClient(cc).CreateUser(ctx, req)
 	if err != nil {
 		return nil, err
 	}
 
-	return user, nil
+	return user.ToUser(), nil
 }
 
 // UpdateUser update user info.
@@ -131,7 +118,7 @@ func (s *UserService) UpdateUser(ctx context.Context, req *userv1.UpdateUserRequ
 		return nil, err
 	}
 
-	return user, nil
+	return user.ToUser(), nil
 }
 
 func (s *UserService) loadConn(ctx context.Context) (*ggrpc.ClientConn, error) {

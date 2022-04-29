@@ -11,6 +11,7 @@ import (
 	"github.com/yusank/goim/apps/user/internal/service"
 	"github.com/yusank/goim/pkg/graceful"
 	"github.com/yusank/goim/pkg/log"
+	"github.com/yusank/goim/pkg/mid"
 )
 
 func main() {
@@ -22,7 +23,8 @@ func main() {
 	// TODO: add registered grpc services to metadata in service registry.
 	userv1.RegisterUserServiceServer(application.GrpcSrv, service.GetUserService())
 
-	g := gin.Default()
+	g := gin.New()
+	g.Use(gin.Recovery(), mid.Logger)
 	router.RegisterRouter(g.Group("/user/service"))
 	application.HTTPSrv.HandlePrefix("/", g)
 

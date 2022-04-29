@@ -11,6 +11,7 @@ import (
 	"github.com/yusank/goim/apps/push/internal/router"
 	"github.com/yusank/goim/apps/push/internal/service"
 	"github.com/yusank/goim/pkg/graceful"
+	"github.com/yusank/goim/pkg/mid"
 )
 
 func main() {
@@ -23,7 +24,8 @@ func main() {
 	messagev1.RegisterPushMessagerServer(application.GrpcSrv, service.GetPushMessager())
 
 	// register router
-	g := gin.Default()
+	g := gin.New()
+	g.Use(gin.Recovery(), mid.Logger)
 	router.RegisterRouter(g.Group("/push/service"))
 	application.HTTPSrv.HandlePrefix("/", g)
 

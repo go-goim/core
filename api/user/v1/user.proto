@@ -11,6 +11,24 @@ enum LoginStatus {
   LOGOUT = 2;
 }
 
+// UserInternal is the internal representation of a user.
+message UserInternal {
+  string uid = 1;
+  string name = 2;
+  string email = 3;
+  string phone = 4;
+  string avatar = 5;
+  // AgentID only valid when user already login.
+  optional string agent_id = 6;
+  string password = 7;
+  // 0: first time login, need connect to push server
+  // 1: already login, no need connect to push server
+  LoginStatus login_status = 8;
+  int64 create_at = 9;
+  int64 update_at = 10;
+}
+
+// User use for return user info to client.
 message User {
   string uid = 1;
   string name = 2;
@@ -19,8 +37,6 @@ message User {
   string avatar = 5;
   // AgentID only valid when user already login.
   optional string agent_id = 6;
-  // Password only valid when user login.
-  optional string password = 7;
   // 0: first time login, need connect to push server
   // 1: already login, no need connect to push server
   LoginStatus login_status = 8;
@@ -64,13 +80,13 @@ message UpdateUserRequest {
 
 service UserService {
   // GetUser get user info by uid, called when uid is known.
-  rpc GetUser(GetUserInfoRequest) returns (User);
+  rpc GetUser(GetUserInfoRequest) returns (UserInternal);
   // QueryUser query user info by email or phone, called when uid is unknown.
-  rpc QueryUser(QueryUserRequest) returns (User);
+  rpc QueryUser(QueryUserRequest) returns (UserInternal);
   // CreateUser create user.
-  rpc CreateUser(CreateUserRequest) returns (User);
+  rpc CreateUser(CreateUserRequest) returns (UserInternal);
   // UpdateUser update user info.
-  rpc UpdateUser(UpdateUserRequest) returns (User);
+  rpc UpdateUser(UpdateUserRequest) returns (UserInternal);
 }
 
 
