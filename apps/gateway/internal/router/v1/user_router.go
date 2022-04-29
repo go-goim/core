@@ -28,7 +28,7 @@ func (r *UserRouter) Load(router *gin.RouterGroup) {
 
 func (r *UserRouter) login(c *gin.Context) {
 	var req = &userv1.UserLoginRequest{}
-	if err := c.ShouldBind(req); err != nil {
+	if err := c.ShouldBindWith(req, &util.PbJsonBinding{}); err != nil {
 		util.ErrorResp(c, err)
 		return
 	}
@@ -44,12 +44,12 @@ func (r *UserRouter) login(c *gin.Context) {
 		return
 	}
 
-	util.Success(c, gin.H{"user": user})
+	util.Success(c, user)
 }
 
 func (r *UserRouter) register(c *gin.Context) {
 	var req = &userv1.CreateUserRequest{}
-	if err := c.ShouldBind(req); err != nil {
+	if err := c.ShouldBindWith(req, &util.PbJsonBinding{}); err != nil {
 		util.ErrorResp(c, err)
 		return
 	}
@@ -65,12 +65,12 @@ func (r *UserRouter) register(c *gin.Context) {
 		return
 	}
 
-	util.Success(c, gin.H{"user": user})
+	util.Success(c, user)
 }
 
 func (r *UserRouter) updateUserInfo(c *gin.Context) {
 	var req = &userv1.UpdateUserRequest{}
-	if err := c.ShouldBind(req); err != nil {
+	if err := c.ShouldBindWith(req, &util.PbJsonBinding{}); err != nil {
 		util.ErrorResp(c, err)
 		return
 	}
@@ -86,5 +86,5 @@ func (r *UserRouter) updateUserInfo(c *gin.Context) {
 		return
 	}
 
-	util.Success(c, gin.H{"user": user})
+	util.Success(c, user)
 }

@@ -41,7 +41,6 @@ loop:
 		select {
 		case <-timer.C:
 			timer.Reset(time.Second * 5)
-			log.Info("tick for conn", "key", i.c.Key())
 			if i.c.Err() != nil {
 				break loop
 			}

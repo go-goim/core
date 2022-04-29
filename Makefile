@@ -3,7 +3,7 @@ SHELL:=/usr/bin/env bash
 .DEFAULT_GOAL:=help
 
 Srv ?= push
-BinPath ?= bin/$(Srv)
+BinPath ?= bin/service.goim.$(Srv)
 CmdPath ?= apps/$(Srv)/cmd/main.go
 CfgPath ?= apps/$(Srv)/configs
 ProtoFile ?= api/config/v1/config.proto
@@ -72,6 +72,7 @@ build-all: ## build all apps
 	make build Srv=push
 	make build Srv=gateway
 	make build Srv=msg
+	make build Srv=user
 ##################################################
 # Docker                                         #
 ##################################################
@@ -93,6 +94,20 @@ docker-build: ## build docker image
 .PHONY: run
 run: build ## run provided server
 	./$(BinPath) --conf $(CfgPath)
+
+.PHONY: run-all
+run-all: build-all ## run all apps
+	nohup make run Srv=push > push.stderr.log 2>&1 & \
+	nohup make run Srv=gateway > gateway.stderr.log 2>&1 & \
+	nohup make run Srv=msg > msg.stderr.log 2>&1 & \
+	nohup make run Srv=user > user.stderr.log 2>&1 &
+
+.PHONY: stop
+stop: ## stop all apps
+	ps -ef | grep -v grep | grep 'service.goim' | awk '{print $$2}' | xargs kill -15
+
+.PHONY: restart
+restart: stop run-all
 
 ##################################################
 # General                                        #

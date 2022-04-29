@@ -2,6 +2,7 @@ package util
 
 import (
 	"crypto/md5" // nolint: gosec
+	"encoding/hex"
 )
 
 // Md5 returns the MD5 checksum of the given data.
@@ -13,5 +14,5 @@ func Md5(data []byte) []byte {
 
 // Md5String returns the MD5 checksum of the given data as a hex string.
 func Md5String(str string) string {
-	return string(Md5([]byte(str)))
+	return hex.EncodeToString(Md5([]byte(str)))
 }

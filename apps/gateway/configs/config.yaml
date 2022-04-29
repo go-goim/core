@@ -11,6 +11,8 @@ log:
   enable_console: true
 metadata:
   httpSrv: yes
+redis:
+  addr: 127.0.0.1:6379
 mq:
   addr:
     - http://127.0.0.1:9876

@@ -11,6 +11,7 @@ import (
 	"github.com/yusank/goim/apps/gateway/internal/service"
 	"github.com/yusank/goim/pkg/graceful"
 	"github.com/yusank/goim/pkg/log"
+	"github.com/yusank/goim/pkg/mid"
 )
 
 func main() {
@@ -24,7 +25,8 @@ func main() {
 	// register grpc
 	messagev1.RegisterSendMessagerServer(application.GrpcSrv, &service.SendMessageService{})
 
-	g := gin.Default()
+	g := gin.New()
+	g.Use(gin.Recovery(), mid.Logger)
 	router.RegisterRouter(g.Group("/gateway/service"))
 	application.HTTPSrv.HandlePrefix("/", g)
 
