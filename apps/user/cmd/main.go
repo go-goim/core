@@ -23,7 +23,7 @@ func main() {
 	userv1.RegisterUserServiceServer(application.GrpcSrv, service.GetUserService())
 
 	g := gin.Default()
-	router.RegisterRouters(g.Group("/user/service"))
+	router.RegisterRouter(g.Group("/user/service"))
 	application.HTTPSrv.HandlePrefix("/", g)
 
 	if err = application.Run(); err != nil {

@@ -6,10 +6,29 @@ import (
 	messagev1 "github.com/yusank/goim/api/message/v1"
 	"github.com/yusank/goim/apps/gateway/internal/service"
 	"github.com/yusank/goim/pkg/mid"
+	"github.com/yusank/goim/pkg/router"
 	"github.com/yusank/goim/pkg/util"
 )
 
-func handleSendSingleUserMsg(c *gin.Context) {
+type MsgRouter struct {
+	router.Router
+}
+
+func NewMsgRouter() *MsgRouter {
+	return &MsgRouter{
+		Router: &router.BaseRouter{},
+	}
+}
+
+func (r *MsgRouter) Load(g *gin.RouterGroup) {
+	offline := NewOfflineMessageRouter()
+	offline.Load(g.Group("/offline_msg"))
+
+	g.POST("/send_msg", r.handleSendSingleUserMsg)
+	g.POST("/broadcast", r.handleSendBroadcastMsg)
+}
+
+func (r *MsgRouter) handleSendSingleUserMsg(c *gin.Context) {
 	req := new(messagev1.SendMessageReq)
 	if err := c.ShouldBindJSON(req); err != nil {
 		util.ErrorResp(c, err)
@@ -30,7 +49,7 @@ func handleSendSingleUserMsg(c *gin.Context) {
 	util.Success(c, rsp)
 }
 
-func handleSendBroadcastMsg(c *gin.Context) {
+func (r *MsgRouter) handleSendBroadcastMsg(c *gin.Context) {
 	req := new(messagev1.SendMessageReq)
 	if err := c.ShouldBindJSON(req); err != nil {
 		util.ErrorResp(c, err)

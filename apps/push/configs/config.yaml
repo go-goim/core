@@ -8,6 +8,7 @@ grpc:
   port: 18083
 log:
   level: DEBUG
+  enable_console: true
 metadata:
   httpSrv: yes
   grpcSrv: yes

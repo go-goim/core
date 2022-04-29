@@ -67,17 +67,21 @@ func (m *Server) validate(all bool) error {
 		errors = append(errors, err)
 	}
 
-	if err := m._validateHostname(m.GetAddr()); err != nil {
-		if ip := net.ParseIP(m.GetAddr()); ip == nil {
-			err := ServerValidationError{
-				field:  "Addr",
-				reason: "value must be a valid hostname, or ip address",
+	if m.GetAddr() != "" {
+
+		if err := m._validateHostname(m.GetAddr()); err != nil {
+			if ip := net.ParseIP(m.GetAddr()); ip == nil {
+				err := ServerValidationError{
+					field:  "Addr",
+					reason: "value must be a valid hostname, or ip address",
+				}
+				if !all {
+					return err
+				}
+				errors = append(errors, err)
 			}
-			if !all {
-				return err
-			}
-			errors = append(errors, err)
 		}
+
 	}
 
 	if val := m.GetPort(); val <= 10000 || val >= 60535 {
