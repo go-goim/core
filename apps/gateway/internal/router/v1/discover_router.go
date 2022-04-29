@@ -8,9 +8,24 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"github.com/yusank/goim/apps/gateway/internal/service"
+	"github.com/yusank/goim/pkg/router"
 )
 
-func handleDiscoverPushServer(c *gin.Context) {
+type DiscoverRouter struct {
+	router.Router
+}
+
+func NewDiscoverRouter() *DiscoverRouter {
+	return &DiscoverRouter{
+		Router: &router.BaseRouter{},
+	}
+}
+
+func (r *DiscoverRouter) Load(g *gin.RouterGroup) {
+	g.GET("/discover", r.handleDiscoverPushServer)
+}
+
+func (r *DiscoverRouter) handleDiscoverPushServer(c *gin.Context) {
 	uid := c.GetHeader("uid")
 	if uid == "" {
 		log.Println("uid not found")

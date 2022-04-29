@@ -6,17 +6,21 @@ import (
 	userv1 "github.com/yusank/goim/api/user/v1"
 	"github.com/yusank/goim/apps/gateway/internal/service"
 	"github.com/yusank/goim/pkg/mid"
+	"github.com/yusank/goim/pkg/router"
 	"github.com/yusank/goim/pkg/util"
 )
 
 type UserRouter struct {
+	router.Router
 }
 
 func NewUserRouter() *UserRouter {
-	return &UserRouter{}
+	return &UserRouter{
+		Router: &router.BaseRouter{},
+	}
 }
 
-func (r *UserRouter) Register(router *gin.RouterGroup) {
+func (r *UserRouter) Load(router *gin.RouterGroup) {
 	router.POST("/login", r.login)
 	router.POST("/register", r.register)
 	router.POST("/update", r.updateUserInfo)

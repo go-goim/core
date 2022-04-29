@@ -1,9 +1,21 @@
 package v1
 
 import (
-	"github.com/gin-gonic/gin"
+	"github.com/yusank/goim/pkg/router"
 )
 
-func RegisterRoutes(g *gin.RouterGroup) {
-	NewUserRouter().Register(g.Group("/user"))
+type Router struct {
+	router.Router
+}
+
+func NewRouter() *Router {
+	r := &Router{
+		Router: &router.BaseRouter{},
+	}
+	r.Init()
+	return r
+}
+
+func (r *Router) Init() {
+	r.Register("/user", NewUserRouter())
 }
