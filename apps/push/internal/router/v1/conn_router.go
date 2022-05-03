@@ -30,7 +30,7 @@ func NewConnRouter() *ConnRouter {
 }
 
 func (r *ConnRouter) Load(g *gin.RouterGroup) {
-	g.GET("/ws", mid.Auth, r.wsHandler)
+	g.GET("/ws", mid.AuthJwtCookie, r.wsHandler)
 }
 
 func (r *ConnRouter) wsHandler(c *gin.Context) {

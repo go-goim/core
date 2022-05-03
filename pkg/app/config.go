@@ -1,7 +1,6 @@
 package app
 
 import (
-	"flag"
 	"strings"
 
 	"github.com/go-kratos/kratos/v2/config"
@@ -9,6 +8,7 @@ import (
 
 	registryv1 "github.com/yusank/goim/api/config/registry/v1"
 	configv1 "github.com/yusank/goim/api/config/v1"
+	"github.com/yusank/goim/pkg/cmd"
 	"github.com/yusank/goim/pkg/log"
 )
 
@@ -58,8 +58,7 @@ var (
 )
 
 func init() {
-	flag.StringVar(&confPath, "conf", "./configs", "set config path")
-	flag.Parse()
+	cmd.GlobalFlagSet.StringVar(&confPath, "conf", "./configs", "set config path")
 }
 
 func ParseConfig() *Config {

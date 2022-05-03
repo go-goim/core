@@ -23,7 +23,7 @@ func NewUserRouter() *UserRouter {
 func (r *UserRouter) Load(router *gin.RouterGroup) {
 	router.POST("/login", r.login)
 	router.POST("/register", r.register)
-	router.POST("/update", r.updateUserInfo)
+	router.POST("/update", mid.AuthJwtCookie, r.updateUserInfo)
 }
 
 func (r *UserRouter) login(c *gin.Context) {
@@ -40,6 +40,11 @@ func (r *UserRouter) login(c *gin.Context) {
 
 	user, err := service.GetUserService().Login(mid.GetContext(c), req)
 	if err != nil {
+		util.ErrorResp(c, err)
+		return
+	}
+
+	if err = mid.SetJwtToHeader(c, user.Uid); err != nil {
 		util.ErrorResp(c, err)
 		return
 	}

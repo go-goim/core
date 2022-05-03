@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 
+	"github.com/yusank/goim/pkg/cmd"
 	"github.com/yusank/goim/pkg/log"
 
 	messagev1 "github.com/yusank/goim/api/message/v1"
@@ -13,6 +14,10 @@ import (
 )
 
 func main() {
+	if err := cmd.ParseFlags(); err != nil {
+		panic(err)
+	}
+
 	application, err := app.InitApplication()
 	if err != nil {
 		log.Fatal("InitApplication got err", "error", err)
