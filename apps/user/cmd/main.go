@@ -9,12 +9,17 @@ import (
 	"github.com/yusank/goim/apps/user/internal/app"
 	"github.com/yusank/goim/apps/user/internal/router"
 	"github.com/yusank/goim/apps/user/internal/service"
+	"github.com/yusank/goim/pkg/cmd"
 	"github.com/yusank/goim/pkg/graceful"
 	"github.com/yusank/goim/pkg/log"
 	"github.com/yusank/goim/pkg/mid"
 )
 
 func main() {
+	if err := cmd.ParseFlags(); err != nil {
+		panic(err)
+	}
+
 	application, err := app.InitApplication()
 	if err != nil {
 		log.Fatal("InitApplication got err", "error", err)

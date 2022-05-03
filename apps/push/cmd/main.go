@@ -10,11 +10,27 @@ import (
 	"github.com/yusank/goim/apps/push/internal/app"
 	"github.com/yusank/goim/apps/push/internal/router"
 	"github.com/yusank/goim/apps/push/internal/service"
+	"github.com/yusank/goim/pkg/cmd"
 	"github.com/yusank/goim/pkg/graceful"
 	"github.com/yusank/goim/pkg/mid"
 )
 
+var jwtSecret string
+
+func init() {
+	cmd.GlobalFlagSet.StringVar(&jwtSecret, "jwt-secret", "", "jwt secret")
+}
+
 func main() {
+	if err := cmd.ParseFlags(); err != nil {
+		panic(err)
+	}
+
+	if jwtSecret == "" {
+		panic("jwt secret is empty")
+	}
+	mid.SetJwtHmacSecret(jwtSecret)
+
 	application, err := app.InitApplication()
 	if err != nil {
 		log.Fatal(err)

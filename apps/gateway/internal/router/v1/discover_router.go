@@ -8,6 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"github.com/yusank/goim/apps/gateway/internal/service"
+	"github.com/yusank/goim/pkg/mid"
 	"github.com/yusank/goim/pkg/router"
 )
 
@@ -22,7 +23,7 @@ func NewDiscoverRouter() *DiscoverRouter {
 }
 
 func (r *DiscoverRouter) Load(g *gin.RouterGroup) {
-	g.GET("/discover", r.handleDiscoverPushServer)
+	g.GET("/discover", mid.AuthJwtCookie, r.handleDiscoverPushServer)
 }
 
 func (r *DiscoverRouter) handleDiscoverPushServer(c *gin.Context) {
