@@ -21,6 +21,9 @@ func NewUserRouter() *UserRouter {
 }
 
 func (r *UserRouter) Load(router *gin.RouterGroup) {
+	relation := NewUserRelationRouter()
+	relation.Load(router.Group("/relation", mid.AuthJwtCookie))
+
 	router.POST("/login", r.login)
 	router.POST("/register", r.register)
 	router.POST("/update", mid.AuthJwtCookie, r.updateUserInfo)

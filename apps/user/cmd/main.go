@@ -27,6 +27,7 @@ func main() {
 
 	// TODO: add registered grpc services to metadata in service registry.
 	userv1.RegisterUserServiceServer(application.GrpcSrv, service.GetUserService())
+	userv1.RegisterUserRelationServiceServer(application.GrpcSrv, service.GetUserRelationService())
 
 	g := gin.New()
 	g.Use(gin.Recovery(), mid.Logger)
