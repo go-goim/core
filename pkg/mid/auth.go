@@ -19,7 +19,7 @@ func SetJwtHmacSecret(secret string) {
 }
 
 type JwtClaims struct {
-	UserId string `json:"uid"`
+	UserID string `json:"uid"`
 	jwt.RegisteredClaims
 }
 
@@ -28,16 +28,16 @@ func (c *JwtClaims) Valid() error {
 		return err
 	}
 
-	if c.UserId == "" {
+	if c.UserID == "" {
 		return fmt.Errorf("missing user id")
 	}
 
 	return nil
 }
 
-func newJwtClaims(userId string) *JwtClaims {
+func newJwtClaims(userID string) *JwtClaims {
 	return &JwtClaims{
-		UserId: userId,
+		UserID: userID,
 		RegisteredClaims: jwt.RegisteredClaims{
 			NotBefore: jwt.NewNumericDate(time.Now()),
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Minute * 10)),
@@ -45,8 +45,8 @@ func newJwtClaims(userId string) *JwtClaims {
 	}
 }
 
-func NewJwtToken(userId string) (string, error) {
-	claims := newJwtClaims(userId)
+func NewJwtToken(userID string) (string, error) {
+	claims := newJwtClaims(userID)
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	return token.SignedString(jwtHmacSecret)
 }
@@ -64,8 +64,8 @@ func ParseJwtToken(tokenString string) (*JwtClaims, error) {
 	return nil, err
 }
 
-func SetJwtToHeader(c *gin.Context, userId string) error {
-	token, err := NewJwtToken(userId)
+func SetJwtToHeader(c *gin.Context, userID string) error {
+	token, err := NewJwtToken(userID)
 	if err != nil {
 		return err
 	}
@@ -94,6 +94,6 @@ func AuthJwtCookie(c *gin.Context) {
 		return
 	}
 
-	c.Set("userId", claims.UserId)
+	c.Set("userId", claims.UserID)
 	c.Next()
 }
