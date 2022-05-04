@@ -15,7 +15,7 @@ on:
   push:
   pull_request:
   schedule:
-    - cron: '0 */4 * * *'
+    - cron: '0 9,18 * * *'
 jobs:
   analyze:
     name: Analyze
