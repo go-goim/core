@@ -14,5 +14,5 @@ func TestNewJwtToken(t *testing.T) {
 
 	c, err := ParseJwtToken(jwt)
 	assert.Nil(t, err)
-	assert.Equal(t, uid, c.UserId)
+	assert.Equal(t, uid, c.UserID)
 }

@@ -25,5 +25,5 @@ func SetFlagsFromEnv() {
 }
 
 func flagName2EnvName(name string) string {
-	return strings.ToUpper(strings.Replace(name, "-", "_", -1))
+	return strings.ToUpper(strings.ReplaceAll(name, "-", "_"))
 }

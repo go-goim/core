@@ -9,13 +9,13 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
-type PbJsonBinding struct{}
+type PbJSONBinding struct{}
 
-func (PbJsonBinding) Name() string {
+func (PbJSONBinding) Name() string {
 	return "protobuf/json"
 }
 
-func (b PbJsonBinding) Bind(req *http.Request, obj interface{}) error {
+func (b PbJSONBinding) Bind(req *http.Request, obj interface{}) error {
 	buf, err := ioutil.ReadAll(req.Body)
 	if err != nil {
 		return err
@@ -23,7 +23,7 @@ func (b PbJsonBinding) Bind(req *http.Request, obj interface{}) error {
 	return b.BindBody(buf, obj)
 }
 
-func (PbJsonBinding) BindBody(body []byte, obj interface{}) error {
+func (PbJSONBinding) BindBody(body []byte, obj interface{}) error {
 	o := protojson.UnmarshalOptions{
 		DiscardUnknown: true,
 	}
