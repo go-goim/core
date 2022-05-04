@@ -1,0 +1,107 @@
+syntax = "proto3";
+
+package api.user.v1;
+option go_package = "api/user/v1;v1";
+
+import "validate/validate.proto";
+
+message UserRelation {
+  string uid = 1;
+  string friend_uid = 2;
+  RelationStatus status = 3;
+  int64 create_at = 4;
+  int64 update_at = 5;
+}
+
+enum RelationStatus {
+  REQUESTED = 0;
+  FRIEND = 1;
+  STRANGER = 2;
+  BLOCKED = 3;
+}
+
+message UserRelationList {
+  repeated UserRelation user_relation = 1;
+}
+
+message AddFriendRequest {
+  string uid = 1 [(validate.rules).string = {min_len: 20, max_len: 24}];
+  string friend_uid = 2 [(validate.rules).string = {min_len: 20, max_len: 24}];
+}
+
+message AddFriendResponse {
+  AddFriendStatus status = 1;
+  string message = 2;
+  UserRelation user_relation = 3;
+}
+
+enum AddFriendStatus {
+  SEND_REQUEST_SUCCESS = 0;
+  SUCCESS = 1;
+  FAILED = 2;
+  ALREADY_FRIEND = 3;
+  ALREADY_REQUESTED = 4;
+  NOT_FOUND = 5;
+  BLOCKED_BY_ME = 6;
+  BLOCKED_BY_FRIEND = 7;
+}
+
+message GetUserRelationRequest {
+  string uid = 1 [(validate.rules).string = {min_len: 20, max_len: 24}];
+  string friend_uid = 2 [(validate.rules).string = {min_len: 20, max_len: 24}];
+}
+
+message GetUserRelationResponse {
+  UserRelation user_relation = 1;
+}
+
+message QueryUserRelationListRequest {
+  string uid = 1 [(validate.rules).string = {min_len: 20, max_len: 24}];
+}
+
+message QueryUserRelationListResponse {
+  repeated UserRelation user_relation_list = 3;
+}
+
+message UpdateUserRelationRequest {
+  string uid = 1 [(validate.rules).string = {min_len: 20, max_len: 24}];
+  string friend_uid = 2 [(validate.rules).string = {min_len: 20, max_len: 24}];
+  RelationStatus status = 3 [(validate.rules).enum.defined_only = true];
+}
+
+message UpdateUserRelationResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+service UserRelationService {
+  rpc AddFriend(AddFriendRequest) returns (AddFriendResponse);
+  rpc GetUserRelation(GetUserRelationRequest) returns (GetUserRelationResponse);
+  rpc QueryUserRelationList(QueryUserRelationListRequest) returns (QueryUserRelationListResponse);
+  rpc UpdateUserRelation(UpdateUserRelationRequest) returns (UpdateUserRelationResponse);
+}
+
+message AcceptFriendRequest {
+  string uid = 1 [(validate.rules).string = {min_len: 20, max_len: 24}];
+  string friend_uid = 2 [(validate.rules).string = {min_len: 20, max_len: 24}];
+}
+
+message RemoveFriendRequest {
+  string uid = 1 [(validate.rules).string = {min_len: 20, max_len: 24}];
+  string friend_uid = 2 [(validate.rules).string = {min_len: 20, max_len: 24}];
+}
+
+message RejectFriendRequest {
+  string uid = 1 [(validate.rules).string = {min_len: 20, max_len: 24}];
+  string friend_uid = 2 [(validate.rules).string = {min_len: 20, max_len: 24}];
+}
+
+message BlockFriendRequest {
+  string uid = 1 [(validate.rules).string = {min_len: 20, max_len: 24}];
+  string friend_uid = 2 [(validate.rules).string = {min_len: 20, max_len: 24}];
+}
+
+message UnblockFriendRequest {
+  string uid = 1 [(validate.rules).string = {min_len: 20, max_len: 24}];
+  string friend_uid = 2 [(validate.rules).string = {min_len: 20, max_len: 24}];
+}

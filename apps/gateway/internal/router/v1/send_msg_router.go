@@ -21,6 +21,7 @@ func NewMsgRouter() *MsgRouter {
 }
 
 func (r *MsgRouter) Load(g *gin.RouterGroup) {
+	g.Use(mid.AuthJwtCookie)
 	offline := NewOfflineMessageRouter()
 	offline.Load(g.Group("/offline_msg"))
 
