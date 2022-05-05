@@ -42,5 +42,5 @@ func (r *UserRouter) GetUser(c *gin.Context) {
 		return
 	}
 
-	util.Success(c, resp)
+	util.SuccessResp(c, resp)
 }

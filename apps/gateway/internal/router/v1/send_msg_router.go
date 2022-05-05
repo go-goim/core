@@ -47,7 +47,7 @@ func (r *MsgRouter) handleSendSingleUserMsg(c *gin.Context) {
 		return
 	}
 
-	util.Success(c, rsp)
+	util.SuccessResp(c, rsp)
 }
 
 func (r *MsgRouter) handleSendBroadcastMsg(c *gin.Context) {
@@ -63,5 +63,5 @@ func (r *MsgRouter) handleSendBroadcastMsg(c *gin.Context) {
 		return
 	}
 
-	util.Success(c, rsp)
+	util.SuccessResp(c, rsp)
 }
