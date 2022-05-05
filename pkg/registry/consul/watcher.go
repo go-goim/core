@@ -2,11 +2,12 @@ package consul
 
 import (
 	"context"
-	"log"
 
 	"github.com/go-kratos/kratos/v2/registry"
 	"github.com/hashicorp/consul/api"
 	"github.com/hashicorp/consul/api/watch"
+
+	"github.com/yusank/goim/pkg/log"
 )
 
 type consulWatcher struct {
@@ -20,7 +21,7 @@ type consulWatcher struct {
 }
 
 func newConsulWatcher(ctx context.Context, c *Client, name string) (registry.Watcher, error) {
-	log.Println("watch called,name=", name)
+	log.Info("watch called", "name", name)
 	ctx2, cancel := context.WithCancel(ctx)
 	cw := &consulWatcher{
 		c:           c,
@@ -39,7 +40,7 @@ func newConsulWatcher(ctx context.Context, c *Client, name string) (registry.Wat
 	wp.Handler = cw.serviceHandler
 	go func() {
 		if err1 := wp.RunWithClientAndHclog(c.cli, wp.Logger); err1 != nil {
-			log.Println(err1)
+			log.Error("watch.RunWithClientAndHclog error", "err", err1)
 		}
 	}()
 

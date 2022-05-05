@@ -1,6 +1,7 @@
 package v1
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -9,6 +10,7 @@ import (
 	"github.com/yusank/goim/apps/push/internal/service"
 	"github.com/yusank/goim/pkg/mid"
 	"github.com/yusank/goim/pkg/router"
+	"github.com/yusank/goim/pkg/util"
 )
 
 type ConnRouter struct {
@@ -37,13 +39,13 @@ func (r *ConnRouter) wsHandler(c *gin.Context) {
 	// todo use check uid/token middleware before this handler
 	uid := c.GetHeader("uid")
 	if uid == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"err": "uid not found"})
+		util.ErrorRespWithStatus(c, http.StatusUnauthorized, fmt.Errorf("invalid uid"))
 		return
 	}
 
 	conn, err := r.upgrader.Upgrade(c.Writer, c.Request, nil)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"err": err.Error()})
+		util.ErrorRespWithStatus(c, http.StatusBadRequest, err)
 		return
 	}
 

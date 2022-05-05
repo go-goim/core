@@ -42,7 +42,7 @@ func (r *UserRelationRouter) listRelation(c *gin.Context) {
 		return
 	}
 
-	util.Success(c, resp)
+	util.SuccessResp(c, resp)
 }
 
 func (r *UserRelationRouter) addFriend(c *gin.Context) {
@@ -58,7 +58,7 @@ func (r *UserRelationRouter) addFriend(c *gin.Context) {
 		return
 	}
 
-	util.Success(c, resp)
+	util.SuccessResp(c, resp)
 }
 
 func (r *UserRelationRouter) removeFriend(c *gin.Context) {
@@ -74,7 +74,7 @@ func (r *UserRelationRouter) removeFriend(c *gin.Context) {
 		return
 	}
 
-	util.Success(c, gin.H{"code": 0})
+	util.SuccessResp(c, gin.H{"code": 0})
 }
 
 func (r *UserRelationRouter) acceptFriend(c *gin.Context) {
@@ -90,7 +90,7 @@ func (r *UserRelationRouter) acceptFriend(c *gin.Context) {
 		return
 	}
 
-	util.Success(c, gin.H{"code": 0})
+	util.SuccessResp(c, gin.H{"code": 0})
 }
 
 func (r *UserRelationRouter) rejectFriend(c *gin.Context) {
@@ -106,7 +106,7 @@ func (r *UserRelationRouter) rejectFriend(c *gin.Context) {
 		return
 	}
 
-	util.Success(c, gin.H{"code": 0})
+	util.SuccessResp(c, gin.H{"code": 0})
 }
 
 func (r *UserRelationRouter) blockFriend(c *gin.Context) {
@@ -122,7 +122,7 @@ func (r *UserRelationRouter) blockFriend(c *gin.Context) {
 		return
 	}
 
-	util.Success(c, gin.H{"code": 0})
+	util.SuccessResp(c, gin.H{"code": 0})
 }
 
 func (r *UserRelationRouter) unblockFriend(c *gin.Context) {
@@ -138,5 +138,5 @@ func (r *UserRelationRouter) unblockFriend(c *gin.Context) {
 		return
 	}
 
-	util.Success(c, gin.H{"code": 0})
+	util.SuccessResp(c, gin.H{"code": 0})
 }
