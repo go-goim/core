@@ -1,20 +1,31 @@
 package worker
 
 import (
+	"container/list"
 	"context"
+	"log"
 	"sync"
 
 	"go.uber.org/atomic"
+
+	"github.com/yusank/goim/pkg/errors"
+	"github.com/yusank/goim/pkg/util"
 )
 
 // workerSet represent a group of task handle workers
 type workerSet struct {
 	task          *task
+	finishWorkers atomic.Int32
 	runningWorker atomic.Int32
-	workers       []*worker
-	ctx           context.Context
-	cancel        context.CancelFunc
-	wg            *sync.WaitGroup
+	totalWorkers  atomic.Int32
+	// list of workers w0 -> w1 -> w2 -> w3 -> w4
+	// start from w0, w0 will be used firstly then move w0 to end of list
+	workers *list.List
+	// lock for workers
+	lock   *sync.Mutex
+	ctx    context.Context
+	cancel context.CancelFunc
+	wg     *sync.WaitGroup
 }
 
 func newWorkerSet(ctx context.Context, t *task) *workerSet {
@@ -24,25 +35,51 @@ func newWorkerSet(ctx context.Context, t *task) *workerSet {
 
 	ws := &workerSet{
 		task:    t,
-		workers: make([]*worker, t.concurrence),
+		workers: list.New(),
+		lock:    new(sync.Mutex),
 		wg:      new(sync.WaitGroup),
 	}
 	t.assignWorkerSet(ws)
 	ws.ctx, ws.cancel = context.WithCancel(ctx)
 
 	for i := 0; i < t.concurrence; i++ {
-		ws.workers[i] = newWorker(ws)
+		ws.workers.PushBack(newWorker(ws))
 	}
 
 	return ws
 }
 
-func (ws *workerSet) run() {
-	ws.task.updateStatus(TaskStatusRunning)
-	for _, w := range ws.workers {
-		ws.addOne()
-		go w.run()
+func (ws *workerSet) run(runCount int) {
+	if runCount <= 0 {
+		return
 	}
+
+	if ws.isDone() {
+		return
+	}
+
+	ws.totalWorkers.Add(int32(util.Min(runCount, ws.task.concurrence)))
+	ws.task.updateStatus(TaskStatusRunning)
+	for i := 0; i < runCount; i++ {
+		ws.runOne()
+	}
+}
+
+func (ws *workerSet) runOne() {
+	ws.lock.Lock()
+	defer ws.lock.Unlock()
+
+	worker := ws.workers.Front().Value.(*worker)
+	if !worker.isIdle() {
+		// means all workers are running or finished
+		return
+	}
+
+	ws.addOne()
+	ws.workers.MoveToBack(ws.workers.Front())
+
+	worker.setRunning()
+	go worker.run()
 }
 
 func (ws *workerSet) stopAll() {
@@ -52,26 +89,42 @@ func (ws *workerSet) stopAll() {
 
 // err returns the first error that occurred in the workerSet.
 func (ws *workerSet) err() error {
-	for _, w := range ws.workers {
-		if w.err != nil {
-			return w.err
+	var err = make(errors.ErrorSet, 0)
+	// range over all workers and return all errors.
+	for e := ws.workers.Front(); e != nil; e = e.Next() {
+		worker := e.Value.(*worker)
+		if worker.err != nil {
+			err = append(err, worker.err)
 		}
 	}
 
-	return nil
+	return err.Err()
 }
 
-func (ws *workerSet) getRunningWorker() int {
+func (ws *workerSet) curRunningWorkerNum() int {
 	return int(ws.runningWorker.Load())
+}
+
+func (ws *workerSet) needMoreWorker() int {
+	return int(ws.totalWorkers.Load()) - int(ws.runningWorker.Load()+ws.finishWorkers.Load())
+}
+
+func (ws *workerSet) isDone() bool {
+	return ws.finishWorkers.Load() == int32(ws.task.concurrence)
 }
 
 // done called when worker stop.
 func (ws *workerSet) done() {
 	ws.addRunningWorker(-1)
-	ws.wg.Done()
-	if ws.getRunningWorker() == 0 {
+	ws.wg.Add(-1)
+
+	if ws.isDone() {
+		log.Println("all workers are done")
 		ws.task.updateStatus(TaskStatusDone)
+		return
 	}
+
+	ws.runOne()
 }
 
 // addOne called when worker start running.
@@ -91,5 +144,6 @@ func (ws *workerSet) addRunningWorker(delta int) {
 
 	if delta < 0 {
 		ws.runningWorker.Sub(-int32(delta))
+		ws.finishWorkers.Add(1)
 	}
 }

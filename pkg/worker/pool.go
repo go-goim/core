@@ -1,53 +1,53 @@
 package worker
 
 import (
+	"container/list"
 	"context"
 	"sync"
 	"time"
 
 	"go.uber.org/atomic"
+
+	"github.com/yusank/goim/pkg/util"
 )
 
 // Pool is a buffered worker pool
 type Pool struct {
-	// TODO: taskQueue should be a linked list, so that we can get the task from the head of the list and put it back to the head.
-	// If we use a channel as taskQueue, we can't get the task from the head of the list and put it back to the head.
-	// But make sure that before change it to linked list, we should have the ability run the task in
-	// min(taskQueue length, concurrence) goroutines.
-	taskQueue         chan *task
+	taskList          *list.List   // double linked list
 	enqueuedTaskCount atomic.Int32 // count of unhandled tasks
-	bufferSize        int          // size of taskQueue buffer, means can count of bufferSize task can wait to be handled
+	poolSize          int          // size of max task in list
 	maxWorker         int          // count of how many worker run in concurrence
-	workerSets        []*workerSet
+	workerSets        *list.List   // list of worker sets
 	lock              *sync.Mutex
+	stopChan          chan struct{}
 	stopFlag          atomic.Bool
 }
 
 const (
 	defaultWorkerSize = 100
-	defaultQueueSize  = 20 // assume one task need run 5 worker concurrence
+	defaultPoolSize   = 20 // assume one task need run 5 worker concurrence
 )
 
-func NewPool(workerSize, queueSize int) *Pool {
+func NewPool(maxWorker, poolSize int) *Pool {
 	p := &Pool{
 		enqueuedTaskCount: atomic.Int32{},
-		bufferSize:        defaultQueueSize,
+		poolSize:          defaultPoolSize,
 		maxWorker:         defaultWorkerSize,
 		lock:              new(sync.Mutex),
-		workerSets:        make([]*workerSet, 0),
+		taskList:          list.New(),
+		workerSets:        list.New(),
+		stopChan:          make(chan struct{}, 1),
 		stopFlag:          atomic.Bool{},
 	}
 
-	if workerSize > 0 {
-		p.maxWorker = workerSize
+	if maxWorker > 0 {
+		p.maxWorker = maxWorker
 	}
 
-	if queueSize >= 0 {
-		p.bufferSize = queueSize
+	if poolSize >= 0 {
+		p.poolSize = poolSize
 	}
 
-	// check p.enqueue to find out why make this channel size with p.bufferSize+1.
-	p.taskQueue = make(chan *task, p.bufferSize+1)
 	go p.consumeQueue()
 	return p
 }
@@ -70,7 +70,7 @@ func (p *Pool) Submit(ctx context.Context, tf TaskFunc, concurrence int) TaskRes
 		return t
 	}
 
-	if p.enqueueTask(t, true) {
+	if p.enqueueTask(t) {
 		return t
 	}
 
@@ -78,11 +78,11 @@ func (p *Pool) Submit(ctx context.Context, tf TaskFunc, concurrence int) TaskRes
 }
 
 func (p *Pool) Shutdown(ctx context.Context) error {
+	p.stopChan <- struct{}{}
 	p.stopFlag.Store(true)
-	// stop queue daemon
-	close(p.taskQueue)
 	// stop all workers
-	for _, ws := range p.workerSets {
+	for e := p.workerSets.Front(); e != nil; e = e.Next() {
+		ws := e.Value.(*workerSet)
 		select {
 		case <-ctx.Done():
 			return ctx.Err()
@@ -98,106 +98,109 @@ func (p *Pool) Shutdown(ctx context.Context) error {
 // tryRunTask try to put task into workerSet and run it.Return false if capacity not enough.
 // Make sure get p.Lock before call this func
 func (p *Pool) tryRunTask(ctx context.Context, t *task) bool {
-	if p.curRunningWorkerNum()+t.concurrence <= p.maxWorker {
-		ws := newWorkerSet(ctx, t)
-		p.workerSets = append(p.workerSets, ws)
-		ws.run()
-		return true
+	// calculate how many worker can run in concurrence
+	availableWorkerCount := p.maxWorker - p.curRunningWorkerNum()
+	if availableWorkerCount <= 0 {
+		return false
 	}
 
-	return false
+	ws := newWorkerSet(ctx, t)
+	ws.run(util.Min(availableWorkerCount, t.concurrence))
+	p.workerSets.PushBack(ws)
+	return true
 }
 
 // curRunningWorkerNum make sure lock mutex before call this func
 func (p *Pool) curRunningWorkerNum() int {
 	var (
-		cnt         int
-		needRemoved = make(map[int]bool)
+		cnt int
 	)
-	for i, w := range p.workerSets {
-		rw := w.getRunningWorker()
-		if rw == 0 {
-			needRemoved[i] = true
-		}
-
-		cnt += rw
+	// range worker set list
+	for e := p.workerSets.Front(); e != nil; e = e.Next() {
+		ws := e.Value.(*workerSet)
+		cnt += ws.curRunningWorkerNum()
 	}
-
-	if len(needRemoved) == 0 {
-		return cnt
-	}
-
-	// remove finished workerSet
-	temp := make([]*workerSet, 0, len(p.workerSets)-len(needRemoved))
-	for i := range p.workerSets {
-		if needRemoved[i] {
-			continue
-		}
-
-		temp = append(temp, p.workerSets[i])
-	}
-
-	p.workerSets = temp
 	return cnt
 }
 
-func (p *Pool) enqueueTask(t *task, isNewTask bool) bool {
+func (p *Pool) enqueueTask(t *task) bool {
 	// double check to avoid got panic: write to closed channel
 	if p.stopFlag.Load() {
 		return false
 	}
 
-	// Use atomic value instead of len(p.taskQueue).
-	// Because taskQueue need be read by p.consumeQueue and try to run the task,
-	// when try to run task fail and before put it back to taskQueue, there are len(p.taskQueue) + 1 tasks
-	// need to be handled.So it may cause unpredictable problem if we use len(p.taskQueue) as total count of
+	// Use atomic value instead of len(p.taskList).
+	// Because taskList need be read by p.consumeQueue and try to run the task,
+	// when try to run task fail and before put it back to taskList, there are len(p.taskList) + 1 tasks
+	// need to be handled.So it may cause unpredictable problem if we use len(p.taskList) as total count of
 	// enqueued tasks.
-	if int(p.enqueuedTaskCount.Load()) >= p.bufferSize && isNewTask {
+	if int(p.enqueuedTaskCount.Load()) >= p.poolSize {
 		return false
 	}
 
-	// if this is a put back old task action,then won't check channel capacity,
-	// because channel length is p.bufferSize + 1, so put back task will not be blocked.
-	p.taskQueue <- t
-	if isNewTask {
-		p.enqueuedTaskCount.Add(1)
-	}
+	p.taskList.PushBack(t)
+	p.enqueuedTaskCount.Inc()
 	return true
 }
 
-func (p *Pool) consumeQueue() {
-	var ticker = time.NewTicker(time.Second)
-	for {
-		select {
-		case t, ok := <-p.taskQueue:
-			if !ok {
-				// channel closed
-				return
-			}
+func (p *Pool) checkWorkerNum() {
+	// make sure lock mutex before call this func
+	var (
+		lastEmptyWorkerSet *list.Element
+	)
 
-			p.lock.Lock()
-			if p.tryRunTask(context.Background(), t) {
-				p.enqueuedTaskCount.Sub(1)
-				goto unlock
-			}
+	for e := p.workerSets.Front(); e != nil; e = e.Next() {
+		if lastEmptyWorkerSet != nil {
+			p.workerSets.Remove(lastEmptyWorkerSet)
+			lastEmptyWorkerSet = nil
+		}
 
-			// if enqueueTask return false, means channel is closed.
-			if !p.enqueueTask(t, false) {
-				// channel is closed
-				goto unlock
-			}
-			// sleep little while if try to run task failed
-			time.Sleep(time.Millisecond * 20)
+		ws := e.Value.(*workerSet)
+		if ws.isDone() {
+			lastEmptyWorkerSet = e
+			continue
+		}
 
-		unlock:
-			p.lock.Unlock()
-		case <-ticker.C:
-			// check if there has any worker place left
-			// TODO: check if there is any workerSet is idle and remove it
-			// TODO: try to run enqueued tasks even if there is no enough worker to run.
-			// log.Printf("current running worker num: %d", p.curRunningWorkerNum())
+		if cnt := ws.needMoreWorker(); cnt > 0 {
+			ws.run(util.Min(p.maxWorker-p.curRunningWorkerNum(), cnt))
 		}
 	}
 
-	// never reach here
+	if lastEmptyWorkerSet != nil {
+		p.workerSets.Remove(lastEmptyWorkerSet)
+	}
+}
+
+func (p *Pool) consumeQueue() {
+	var ticker = time.NewTicker(time.Millisecond * 20)
+	for {
+		if p.stopFlag.Load() {
+			return
+		}
+
+		select {
+		// check stop chan
+		case <-p.stopChan:
+			ticker.Stop()
+			return
+		default:
+		}
+
+		// check worker set first
+		p.lock.Lock()
+		p.checkWorkerNum()
+
+		// try to run task from task list
+		e := p.taskList.Front()
+		if e != nil {
+			if p.tryRunTask(context.Background(), e.Value.(*task)) {
+				p.taskList.Remove(e)
+				p.enqueuedTaskCount.Dec()
+			}
+		} else {
+			// no task to run, wait for a moment
+			<-ticker.C
+		}
+		p.lock.Unlock()
+	}
 }
