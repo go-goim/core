@@ -5,6 +5,8 @@ import (
 	"log"
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestPool_SubmitOrEnqueue(t *testing.T) {
@@ -22,33 +24,23 @@ func TestPool_SubmitOrEnqueue(t *testing.T) {
 	}
 
 	got := p.Submit(context.Background(), tf, concurrence)
-	if got.Status() != TaskStatusRunning {
-		t.Errorf("SubmitOrEnqueue() = %v, want %v", got.Status(), TaskStatusRunning)
-		return
-	}
+	assert.Equal(t, TaskStatusRunning, got.Status())
 	got.Wait()
-	if cnt != concurrence {
-		t.Errorf("cnt = %v, want %v", cnt, concurrence)
-	}
-	if got := p.Submit(context.Background(), tf, concurrence); got.Status() != TaskStatusRunning {
-		t.Errorf("SubmitOrEnqueue() = %v, want %v", got, TaskStatusRunning)
-		return
-	}
-	if got := p.Submit(context.Background(), tf, concurrence); got.Status() != TaskStatusEnqueue {
-		t.Errorf("SubmitOrEnqueue() = %v, want %v", got.Status(), TaskStatusEnqueue)
-		return
-	}
-	if got := p.Submit(context.Background(), tf, 6); got.Status() != TaskStatusTooManyWorker {
-		t.Errorf("SubmitOrEnqueue() = %v, want %v", got.Status(), TaskStatusTooManyWorker)
-		return
-	}
-	if got := p.Submit(context.Background(), tf, concurrence); got.Status() != TaskStatusQueueFull {
-		t.Errorf("SubmitOrEnqueue() = %v, want %v", got.Status(), TaskStatusQueueFull)
-		return
-	}
+	assert.Equal(t, concurrence, cnt)
+
+	got = p.Submit(context.Background(), tf, concurrence)
+	assert.Equal(t, TaskStatusRunning, got.Status())
+
+	got = p.Submit(context.Background(), tf, concurrence)
+	assert.Equal(t, TaskStatusEnqueue, got.Status())
+
+	got = p.Submit(context.Background(), tf, 6)
+	assert.Equal(t, TaskStatusTooManyWorker, got.Status())
+
+	got = p.Submit(context.Background(), tf, concurrence)
+	assert.Equal(t, TaskStatusQueueFull, got.Status())
+
 	_ = p.Shutdown(context.TODO())
-	if got := p.Submit(context.Background(), tf, 1); got.Status() != TaskStatusPoolClosed {
-		t.Errorf("SubmitOrEnqueue() = %v, want %v", got.Status(), TaskStatusPoolClosed)
-		return
-	}
+	got = p.Submit(context.Background(), tf, 1)
+	assert.Equal(t, TaskStatusPoolClosed, got.Status())
 }
