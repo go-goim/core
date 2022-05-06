@@ -190,3 +190,16 @@ func (u *UserDao) UndoDelete(ctx context.Context, user *data.User) error {
 
 	return nil
 }
+
+func (u *UserDao) ListUsers(ctx context.Context, uids ...string) ([]*data.User, error) {
+	var users []*data.User
+	if len(uids) == 0 {
+		return users, nil
+	}
+	tx := db.GetDBFromCtx(ctx).Where("uid in (?)", uids).Find(&users)
+	if tx.Error != nil {
+		return nil, tx.Error
+	}
+
+	return users, nil
+}

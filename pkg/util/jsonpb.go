@@ -37,6 +37,6 @@ func (PbJSONBinding) BindBody(body []byte, obj interface{}) error {
 }
 
 func MarshallPb(m proto.Message) ([]byte, error) {
-	o := protojson.MarshalOptions{EmitUnpopulated: true}
+	o := protojson.MarshalOptions{EmitUnpopulated: true, UseEnumNumbers: true}
 	return o.Marshal(m)
 }

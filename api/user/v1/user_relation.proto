@@ -8,9 +8,11 @@ import "validate/validate.proto";
 message UserRelation {
   string uid = 1;
   string friend_uid = 2;
-  RelationStatus status = 3;
-  int64 create_at = 4;
-  int64 update_at = 5;
+  string friend_name = 3;
+  string friend_avatar = 4;
+  RelationStatus status = 5;
+  int64 create_at = 6;
+  int64 update_at = 7;
 }
 
 enum RelationStatus {
