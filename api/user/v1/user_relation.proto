@@ -63,10 +63,18 @@ message QueryUserRelationListResponse {
   repeated UserRelation user_relation_list = 3;
 }
 
+enum UpdateUserRelationAction {
+  ACCEPT = 0; // accept friend request
+  REJECT = 1; // reject friend request
+  DELETE = 2; // delete friend
+  BLOCK = 3; // block friend
+  UNBLOCK = 4; // unblock friend
+}
+
 message UpdateUserRelationRequest {
   string uid = 1 [(validate.rules).string = {min_len: 20, max_len: 24}];
   string friend_uid = 2 [(validate.rules).string = {min_len: 20, max_len: 24}];
-  RelationStatus status = 3 [(validate.rules).enum.defined_only = true];
+  UpdateUserRelationAction action = 3 [(validate.rules).enum.defined_only = true];
 }
 
 message UpdateUserRelationResponse {

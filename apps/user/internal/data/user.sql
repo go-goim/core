@@ -36,7 +36,7 @@ CREATE TABLE IF NOT EXISTS goim.user_relation (
     `id` bigint not null auto_increment,
     `uid` varchar(64) not null, -- 22 bytes of uuid
     `friend_uid` varchar(64) not null, -- 22 bytes of uuid
-    `status` tinyint not null default 0, -- 0:requested, 1:friend, 2:stranger, 3:blacklist
+    `status` tinyint not null default 0 COMMENT '0: request; 1: friend; 2: stranger; 3: blacked',
     `create_at` int not null default 0,
     `update_at` int not null default 0,
     primary key (`id`),

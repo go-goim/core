@@ -23,7 +23,7 @@ func NewUserRelationRouter() *UserRelationRouter {
 func (r *UserRelationRouter) Load(g *gin.RouterGroup) {
 	g.GET("/list", r.listRelation)
 	g.POST("/add-friend", r.addFriend)
-	g.POST("/remove-friend", r.removeFriend)
+	g.POST("/delete-friend", r.deleteFriend)
 	g.POST("/accept-friend", r.acceptFriend)
 	g.POST("/reject-friend", r.rejectFriend)
 	g.POST("/block-friend", r.blockFriend)
@@ -61,14 +61,14 @@ func (r *UserRelationRouter) addFriend(c *gin.Context) {
 	util.SuccessResp(c, resp)
 }
 
-func (r *UserRelationRouter) removeFriend(c *gin.Context) {
+func (r *UserRelationRouter) deleteFriend(c *gin.Context) {
 	req := &userv1.RemoveFriendRequest{}
 	if err := c.ShouldBindWith(req, util.PbJSONBinding{}); err != nil {
 		util.ErrorResp(c, err)
 		return
 	}
 
-	err := service.GetUserRelationService().RemoveFriend(mid.GetContext(c), req)
+	err := service.GetUserRelationService().DeleteFriend(mid.GetContext(c), req)
 	if err != nil {
 		util.ErrorResp(c, err)
 		return

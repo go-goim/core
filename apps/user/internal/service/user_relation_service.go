@@ -183,27 +183,15 @@ func (s *UserRelationService) UpdateUserRelation(ctx context.Context, req *userv
 		}, nil
 	}
 
-	if req.GetStatus() == ur.Status {
-		// no need to update
-		return &userv1.UpdateUserRelationResponse{
-			Success: true,
-		}, nil
-	}
-
-	switch req.GetStatus() {
-	case userv1.RelationStatus_FRIEND:
-		ur.SetFriend()
-	case userv1.RelationStatus_STRANGER:
-		ur.SetStranger()
-	case userv1.RelationStatus_BLOCKED:
-		ur.SetBlackList()
-	default:
+	newStatus, valid := req.GetAction().CheckActionAndGetNewStatus(ur.Status)
+	if !valid {
 		return &userv1.UpdateUserRelationResponse{
 			Success: false,
-			Message: "unknown relation status",
+			Message: "invalid action",
 		}, nil
 	}
 
+	ur.SetStatus(newStatus)
 	if err := s.userRelationDao.UpdateUserRelationStatus(ctx, ur); err != nil {
 		return &userv1.UpdateUserRelationResponse{
 			Success: false,
