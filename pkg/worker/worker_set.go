@@ -9,15 +9,14 @@ import (
 	"go.uber.org/atomic"
 
 	"github.com/yusank/goim/pkg/errors"
-	"github.com/yusank/goim/pkg/util"
 )
 
 // workerSet represent a group of task handle workers
 type workerSet struct {
-	task          *task
-	finishWorkers atomic.Int32
-	runningWorker atomic.Int32
-	totalWorkers  atomic.Int32
+	task            *task
+	finishWorkers   atomic.Int32
+	runningWorker   atomic.Int32
+	runnableWorkers atomic.Int32
 	// list of workers w0 -> w1 -> w2 -> w3 -> w4
 	// start from w0, w0 will be used firstly then move w0 to end of list
 	workers *list.List
@@ -49,8 +48,8 @@ func newWorkerSet(ctx context.Context, t *task) *workerSet {
 	return ws
 }
 
-func (ws *workerSet) run(runCount int) {
-	if runCount <= 0 {
+func (ws *workerSet) run(concurrence int) {
+	if concurrence <= 0 {
 		return
 	}
 
@@ -58,21 +57,22 @@ func (ws *workerSet) run(runCount int) {
 		return
 	}
 
-	ws.totalWorkers.Add(int32(util.Min(runCount, ws.task.concurrence)))
 	ws.task.updateStatus(TaskStatusRunning)
-	for i := 0; i < runCount; i++ {
-		ws.runOne()
+	for i := 0; i < concurrence; i++ {
+		if ws.runOne() {
+			ws.runnableWorkers.Inc()
+		}
 	}
 }
 
-func (ws *workerSet) runOne() {
+func (ws *workerSet) runOne() bool {
 	ws.lock.Lock()
 	defer ws.lock.Unlock()
 
 	worker := ws.workers.Front().Value.(*worker)
 	if !worker.isIdle() {
 		// means all workers are running or finished
-		return
+		return false
 	}
 
 	ws.addOne()
@@ -80,6 +80,7 @@ func (ws *workerSet) runOne() {
 
 	worker.setRunning()
 	go worker.run()
+	return true
 }
 
 func (ws *workerSet) stopAll() {
@@ -106,7 +107,8 @@ func (ws *workerSet) curRunningWorkerNum() int {
 }
 
 func (ws *workerSet) needMoreWorker() int {
-	return int(ws.totalWorkers.Load()) - int(ws.runningWorker.Load()+ws.finishWorkers.Load())
+	// if runnable workers is less than concurrence, need more workers
+	return ws.task.concurrence - int(ws.runnableWorkers.Load())
 }
 
 func (ws *workerSet) isDone() bool {
