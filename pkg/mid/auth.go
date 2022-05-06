@@ -11,7 +11,10 @@ import (
 	"github.com/yusank/goim/pkg/log"
 )
 
-var jwtHmacSecret = []byte("secret")
+var (
+	jwtHmacSecret = []byte("secret")
+	expireTime    = time.Hour * 24
+)
 
 func SetJwtHmacSecret(secret string) {
 	log.Debug("set jwt hmac secret", "secret", secret)
@@ -40,7 +43,7 @@ func newJwtClaims(userID string) *JwtClaims {
 		UserID: userID,
 		RegisteredClaims: jwt.RegisteredClaims{
 			NotBefore: jwt.NewNumericDate(time.Now()),
-			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Minute * 10)),
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(expireTime)),
 		},
 	}
 }
@@ -94,6 +97,6 @@ func AuthJwtCookie(c *gin.Context) {
 		return
 	}
 
-	c.Set("userId", claims.UserID)
+	c.Set("uid", claims.UserID)
 	c.Next()
 }

@@ -9,7 +9,7 @@ import (
 type UserRelation struct {
 	ID int64 `gorm:"primary_key"`
 	// UID is the user uid of the user.
-	UID string `gorm:"column:u_id"`
+	UID string `gorm:"column:uid"`
 	// FriendUID is the user uid of the friend.
 	FriendUID string `gorm:"column:friend_uid"`
 	// Status is the status of the relation.

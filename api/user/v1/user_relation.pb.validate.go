@@ -61,6 +61,10 @@ func (m *UserRelation) validate(all bool) error {
 
 	// no validation rules for FriendUid
 
+	// no validation rules for FriendName
+
+	// no validation rules for FriendAvatar
+
 	// no validation rules for Status
 
 	// no validation rules for CreateAt

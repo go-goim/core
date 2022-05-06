@@ -161,9 +161,31 @@ func (s *UserRelationService) QueryUserRelationList(ctx context.Context, req *us
 		return nil, err
 	}
 
-	rsp := &userv1.QueryUserRelationListResponse{}
-	for _, ur := range urList {
+	var (
+		rsp           = &userv1.QueryUserRelationListResponse{}
+		friendUIDList = make([]string, len(urList))
+		friendMap     = make(map[string]*data.User)
+	)
+	for i, ur := range urList {
 		rsp.UserRelationList = append(rsp.UserRelationList, ur.ToProtoUserRelation())
+		friendUIDList[i] = ur.FriendUID
+	}
+
+	// get friend info
+	friendInfoList, err := s.userDao.ListUsers(ctx, friendUIDList...)
+	if err != nil {
+		return nil, err
+	}
+
+	for i, friendInfo := range friendInfoList {
+		friendMap[friendInfo.UID] = friendInfoList[i]
+	}
+
+	for _, ur := range rsp.UserRelationList {
+		if friendInfo, ok := friendMap[ur.FriendUid]; ok {
+			ur.FriendName = friendInfo.Name
+			ur.FriendAvatar = friendInfo.Avatar
+		}
 	}
 
 	return rsp, nil
