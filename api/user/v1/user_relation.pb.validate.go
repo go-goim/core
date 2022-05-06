@@ -1085,9 +1085,9 @@ func (m *UpdateUserRelationRequest) validate(all bool) error {
 		errors = append(errors, err)
 	}
 
-	if _, ok := RelationStatus_name[int32(m.GetStatus())]; !ok {
+	if _, ok := UpdateUserRelationAction_name[int32(m.GetAction())]; !ok {
 		err := UpdateUserRelationRequestValidationError{
-			field:  "Status",
+			field:  "Action",
 			reason: "value must be one of the defined enum values",
 		}
 		if !all {

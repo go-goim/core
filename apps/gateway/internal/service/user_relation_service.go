@@ -69,7 +69,7 @@ func (s *UserRelationService) AcceptFriend(ctx context.Context, req *userv1.Acce
 	updateReq := &userv1.UpdateUserRelationRequest{
 		Uid:       req.GetUid(),
 		FriendUid: req.GetFriendUid(),
-		Status:    userv1.RelationStatus_FRIEND,
+		Action:    userv1.UpdateUserRelationAction_ACCEPT,
 	}
 
 	rsp, err := userv1.NewUserRelationServiceClient(cc).UpdateUserRelation(ctx, updateReq)
@@ -97,7 +97,7 @@ func (s *UserRelationService) RejectFriend(ctx context.Context, req *userv1.Reje
 	updateReq := &userv1.UpdateUserRelationRequest{
 		Uid:       req.GetUid(),
 		FriendUid: req.GetFriendUid(),
-		Status:    userv1.RelationStatus_STRANGER,
+		Action:    userv1.UpdateUserRelationAction_REJECT,
 	}
 
 	rsp, err := userv1.NewUserRelationServiceClient(cc).UpdateUserRelation(ctx, updateReq)
@@ -125,7 +125,7 @@ func (s *UserRelationService) BlockFriend(ctx context.Context, req *userv1.Block
 	updateReq := &userv1.UpdateUserRelationRequest{
 		Uid:       req.GetUid(),
 		FriendUid: req.GetFriendUid(),
-		Status:    userv1.RelationStatus_BLOCKED,
+		Action:    userv1.UpdateUserRelationAction_BLOCK,
 	}
 
 	rsp, err := userv1.NewUserRelationServiceClient(cc).UpdateUserRelation(ctx, updateReq)
@@ -153,7 +153,7 @@ func (s *UserRelationService) UnblockFriend(ctx context.Context, req *userv1.Unb
 	updateReq := &userv1.UpdateUserRelationRequest{
 		Uid:       req.GetUid(),
 		FriendUid: req.GetFriendUid(),
-		Status:    userv1.RelationStatus_FRIEND,
+		Action:    userv1.UpdateUserRelationAction_UNBLOCK,
 	}
 
 	rsp, err := userv1.NewUserRelationServiceClient(cc).UpdateUserRelation(ctx, updateReq)
@@ -168,7 +168,7 @@ func (s *UserRelationService) UnblockFriend(ctx context.Context, req *userv1.Unb
 	return nil
 }
 
-func (s *UserRelationService) RemoveFriend(ctx context.Context, req *userv1.RemoveFriendRequest) error {
+func (s *UserRelationService) DeleteFriend(ctx context.Context, req *userv1.RemoveFriendRequest) error {
 	if err := req.ValidateAll(); err != nil {
 		return err
 	}
@@ -181,7 +181,7 @@ func (s *UserRelationService) RemoveFriend(ctx context.Context, req *userv1.Remo
 	updateReq := &userv1.UpdateUserRelationRequest{
 		Uid:       req.GetUid(),
 		FriendUid: req.GetFriendUid(),
-		Status:    userv1.RelationStatus_STRANGER,
+		Action:    userv1.UpdateUserRelationAction_DELETE,
 	}
 
 	rsp, err := userv1.NewUserRelationServiceClient(cc).UpdateUserRelation(ctx, updateReq)

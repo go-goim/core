@@ -44,20 +44,24 @@ func (ur *UserRelation) IsBlocked() bool {
 	return ur.Status == userv1.RelationStatus_BLOCKED
 }
 
+func (ur *UserRelation) SetStatus(status userv1.RelationStatus) {
+	ur.Status = status
+}
+
 func (ur *UserRelation) SetFriend() {
-	ur.Status = userv1.RelationStatus_FRIEND
+	ur.SetStatus(userv1.RelationStatus_FRIEND)
 }
 
 func (ur *UserRelation) SetRequested() {
-	ur.Status = userv1.RelationStatus_REQUESTED
+	ur.SetStatus(userv1.RelationStatus_REQUESTED)
 }
 
 func (ur *UserRelation) SetStranger() {
-	ur.Status = userv1.RelationStatus_STRANGER
+	ur.SetStatus(userv1.RelationStatus_STRANGER)
 }
 
-func (ur *UserRelation) SetBlackList() {
-	ur.Status = userv1.RelationStatus_BLOCKED
+func (ur *UserRelation) SetBlocked() {
+	ur.SetStatus(userv1.RelationStatus_BLOCKED)
 }
 
 func (ur *UserRelation) ToProtoUserRelation() *userv1.UserRelation {
