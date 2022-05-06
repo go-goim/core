@@ -13,14 +13,13 @@ import (
 
 // Pool is a buffered worker pool
 type Pool struct {
-	taskList          *list.List   // double linked list
-	enqueuedTaskCount atomic.Int32 // count of unhandled tasks
-	poolSize          int          // size of max task in list
-	maxWorker         int          // count of how many worker run in concurrence
-	workerSets        *list.List   // list of worker sets
-	lock              *sync.Mutex
-	stopChan          chan struct{}
-	stopFlag          atomic.Bool
+	taskList   *list.List // double linked list
+	poolSize   int        // size of max task in list
+	maxWorker  int        // count of how many worker run in concurrence
+	workerSets *list.List // list of worker sets
+	lock       *sync.Mutex
+	stopChan   chan struct{}
+	stopFlag   atomic.Bool
 }
 
 const (
@@ -30,14 +29,13 @@ const (
 
 func NewPool(maxWorker, poolSize int) *Pool {
 	p := &Pool{
-		enqueuedTaskCount: atomic.Int32{},
-		poolSize:          defaultPoolSize,
-		maxWorker:         defaultWorkerSize,
-		lock:              new(sync.Mutex),
-		taskList:          list.New(),
-		workerSets:        list.New(),
-		stopChan:          make(chan struct{}, 1),
-		stopFlag:          atomic.Bool{},
+		poolSize:   defaultPoolSize,
+		maxWorker:  defaultWorkerSize,
+		lock:       new(sync.Mutex),
+		taskList:   list.New(),
+		workerSets: list.New(),
+		stopChan:   make(chan struct{}, 1),
+		stopFlag:   atomic.Bool{},
 	}
 
 	if maxWorker > 0 {
@@ -129,17 +127,12 @@ func (p *Pool) enqueueTask(t *task) bool {
 		return false
 	}
 
-	// Use atomic value instead of len(p.taskList).
-	// Because taskList need be read by p.consumeQueue and try to run the task,
-	// when try to run task fail and before put it back to taskList, there are len(p.taskList) + 1 tasks
-	// need to be handled.So it may cause unpredictable problem if we use len(p.taskList) as total count of
-	// enqueued tasks.
-	if int(p.enqueuedTaskCount.Load()) >= p.poolSize {
+	// check if queue is full
+	if p.taskList.Len() >= p.poolSize {
 		return false
 	}
 
 	p.taskList.PushBack(t)
-	p.enqueuedTaskCount.Inc()
 	return true
 }
 
@@ -195,12 +188,14 @@ func (p *Pool) consumeQueue() {
 		if e != nil {
 			if p.tryRunTask(context.Background(), e.Value.(*task)) {
 				p.taskList.Remove(e)
-				p.enqueuedTaskCount.Dec()
 			}
-		} else {
-			// no task to run, wait for a moment
+		}
+		// release lock first
+		p.lock.Unlock()
+		// check again
+		if e == nil {
+			// no task to run, wait for next tick
 			<-ticker.C
 		}
-		p.lock.Unlock()
 	}
 }
