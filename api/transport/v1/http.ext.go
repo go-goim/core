@@ -97,8 +97,11 @@ func (x *Meta) Merge(src *Meta) *Meta {
 }
 
 type IResponse interface {
+	// SetMeta sets the meta information, but does not overwrite existing meta information when merging
 	SetMeta(*Meta) IResponse
 	SetData(interface{}) (IResponse, error)
+	// SetBaseResponse sets the base response, but won't set the meta information.
+	// Call SetMeta to set the meta information.
 	SetBaseResponse(*BaseResponse) IResponse
 	Marshall() ([]byte, error)
 }
@@ -254,19 +257,20 @@ func (x *PbResponse) Marshall() ([]byte, error) {
  */
 
 const (
-	// Code_OK       ResponseCode = 0
-	Code_UNKNOWN_ERRORL           Code = 10001
-	Code_USER_NOT_FOUND           Code = 10002
-	Code_INVALID_PARAMS           Code = 10003
-	Code_USER_EXIST               Code = 10004
-	Code_INVALID_USER_OR_PASSWORD Code = 10005
+	// Code_OK       Code = 0
+
+	CodeUnknownError          Code = 10001
+	CodeUserNotFound          Code = 10002
+	CodeInvalidParams         Code = 10003
+	CodeUserExists            Code = 10004
+	CodeInvalidUserOrPassword Code = 10005
 )
 
 var (
 	ResponseOK                    = NewBaseResponse(Code_OK, "OK")
-	ResponseUnknownError          = NewBaseResponse(Code_UNKNOWN_ERRORL, "unknown error")
-	ResponseUserNotFound          = NewBaseResponse(Code_USER_NOT_FOUND, "USER_NOT_FOUND")
-	ResponseInvalidParams         = NewBaseResponse(Code_INVALID_PARAMS, "INVALID_PARAMS")
-	ResponseUserExist             = NewBaseResponse(Code_USER_EXIST, "USER_EXIST")
-	ResponseInvalidUserOrPassword = NewBaseResponse(Code_INVALID_USER_OR_PASSWORD, "INVALID_USER_OR_PASSWORD")
+	ResponseUnknownError          = NewBaseResponse(CodeUnknownError, "unknown error")
+	ResponseUserNotFound          = NewBaseResponse(CodeUserNotFound, "USER_NOT_FOUND")
+	ResponseInvalidParams         = NewBaseResponse(CodeInvalidParams, "INVALID_PARAMS")
+	ResponseUserExist             = NewBaseResponse(CodeUserExists, "USER_EXIST")
+	ResponseInvalidUserOrPassword = NewBaseResponse(CodeInvalidUserOrPassword, "INVALID_USER_OR_PASSWORD")
 )

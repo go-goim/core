@@ -6,8 +6,8 @@ import (
 	messagev1 "github.com/yusank/goim/api/message/v1"
 	"github.com/yusank/goim/apps/gateway/internal/service"
 	"github.com/yusank/goim/pkg/mid"
+	"github.com/yusank/goim/pkg/resp"
 	"github.com/yusank/goim/pkg/router"
-	"github.com/yusank/goim/pkg/util"
 )
 
 type MsgRouter struct {
@@ -32,36 +32,36 @@ func (r *MsgRouter) Load(g *gin.RouterGroup) {
 func (r *MsgRouter) handleSendSingleUserMsg(c *gin.Context) {
 	req := new(messagev1.SendMessageReq)
 	if err := c.ShouldBindJSON(req); err != nil {
-		util.ErrorResp(c, err)
+		resp.ErrorResp(c, err)
 		return
 	}
 
 	if err := req.ValidateAll(); err != nil {
-		util.ErrorResp(c, err)
+		resp.ErrorResp(c, err)
 		return
 	}
 
 	rsp, err := service.GetSendMessageService().SendMessage(mid.GetContext(c), req)
 	if err != nil {
-		util.ErrorResp(c, err)
+		resp.ErrorResp(c, err)
 		return
 	}
 
-	util.SuccessResp(c, rsp)
+	resp.SuccessResp(c, rsp)
 }
 
 func (r *MsgRouter) handleSendBroadcastMsg(c *gin.Context) {
 	req := new(messagev1.SendMessageReq)
 	if err := c.ShouldBindJSON(req); err != nil {
-		util.ErrorResp(c, err)
+		resp.ErrorResp(c, err)
 		return
 	}
 
 	rsp, err := service.GetSendMessageService().Broadcast(mid.GetContext(c), req)
 	if err != nil {
-		util.ErrorResp(c, err)
+		resp.ErrorResp(c, err)
 		return
 	}
 
-	util.SuccessResp(c, rsp)
+	resp.SuccessResp(c, rsp)
 }

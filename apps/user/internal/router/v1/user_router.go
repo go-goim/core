@@ -6,8 +6,8 @@ import (
 	userv1 "github.com/yusank/goim/api/user/v1"
 	"github.com/yusank/goim/apps/user/internal/service"
 	"github.com/yusank/goim/pkg/mid"
+	"github.com/yusank/goim/pkg/resp"
 	"github.com/yusank/goim/pkg/router"
-	"github.com/yusank/goim/pkg/util"
 )
 
 type UserRouter struct {
@@ -30,17 +30,17 @@ func (r *UserRouter) GetUser(c *gin.Context) {
 		Uid: c.Query("uid"),
 	}
 	if err := req.ValidateAll(); err != nil {
-		util.ErrorResp(c, err)
+		resp.ErrorResp(c, err)
 		return
 	}
 
 	// get user info from service
 
-	resp, err := service.GetUserService().GetUser(mid.GetContext(c), req)
+	result, err := service.GetUserService().GetUser(mid.GetContext(c), req)
 	if err != nil {
-		util.ErrorResp(c, err)
+		resp.ErrorResp(c, err)
 		return
 	}
 
-	util.SuccessResp(c, resp)
+	resp.SuccessResp(c, result)
 }
