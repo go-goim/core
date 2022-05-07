@@ -14,6 +14,9 @@ Validate ?= false
 ## env
 export ROCKETMQ_GO_LOG_LEVEL=warn
 
+## jwt
+export JWT_SECRET="goim"
+
 ##################################################
 # Development                                    #
 ##################################################
