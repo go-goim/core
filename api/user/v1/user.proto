@@ -5,10 +5,18 @@ option go_package = "api/user/v1;v1";
 
 import "validate/validate.proto";
 
+// import goim/api/transport/v1/http.proto;
+import "api/transport/response/response.proto";
+
 enum LoginStatus {
   LOGIN = 0;
   ALREADY_LOGIN = 1;
   LOGOUT = 2;
+}
+
+message UserInternalResponse {
+  api.transport.response.BaseResponse response = 1;
+  UserInternal user = 2;
 }
 
 // UserInternal is the internal representation of a user.
@@ -80,13 +88,13 @@ message UpdateUserRequest {
 
 service UserService {
   // GetUser get user info by uid, called when uid is known.
-  rpc GetUser(GetUserInfoRequest) returns (UserInternal);
+  rpc GetUser(GetUserInfoRequest) returns (UserInternalResponse);
   // QueryUser query user info by email or phone, called when uid is unknown.
-  rpc QueryUser(QueryUserRequest) returns (UserInternal);
+  rpc QueryUser(QueryUserRequest) returns (UserInternalResponse);
   // CreateUser create user.
-  rpc CreateUser(CreateUserRequest) returns (UserInternal);
+  rpc CreateUser(CreateUserRequest) returns (UserInternalResponse);
   // UpdateUser update user info.
-  rpc UpdateUser(UpdateUserRequest) returns (UserInternal);
+  rpc UpdateUser(UpdateUserRequest) returns (UserInternalResponse);
 }
 
 

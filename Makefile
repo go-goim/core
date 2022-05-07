@@ -44,13 +44,13 @@ test: ## Run test against code.
 .PHONY: gen-protoc
 gen-protoc: ## Run protoc command to generate pb code.
 ifeq ($(Validate), true)
-	protoc --proto_path=. --proto_path=./third_party  \
+	protoc --proto_path=. --proto_path=./third_party --proto_path=./api \
 		--go_out==paths=source_relative:. \
 		--go-grpc_out==paths=source_relative:. \
 		--validate_out=lang=go,paths==paths=source_relative:. \
 		$(ProtoFile)
 else
-	protoc --proto_path=. --proto_path=./third_party  \
+	protoc --proto_path=. --proto_path=./third_party --proto_path=./api \
     		--go_out==paths=source_relative:. \
     		--go-grpc_out==paths=source_relative:. \
     		$(ProtoFile)

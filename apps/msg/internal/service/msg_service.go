@@ -100,8 +100,8 @@ func (s *MqMessageService) handleSingleMsg(ctx context.Context, msg *primitive.M
 		return err
 	}
 
-	if out.GetStatus() != messagev1.PushMessageRespStatus_OK {
-		return fmt.Errorf(out.GetReason())
+	if !out.Success() {
+		return out
 	}
 
 	return nil
@@ -139,8 +139,8 @@ func (s *MqMessageService) broadcastToEndpoint(ctx context.Context, req *message
 		return err
 	}
 
-	if rsp.GetStatus() != messagev1.PushMessageRespStatus_OK {
-		return fmt.Errorf("push message status=%d, reason=%s", rsp.GetStatus(), rsp.GetReason())
+	if !rsp.Success() {
+		return rsp
 	}
 
 	return nil

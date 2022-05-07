@@ -3,7 +3,7 @@ package v1
 import (
 	"github.com/gin-gonic/gin"
 
-	transportv1 "github.com/yusank/goim/api/transport/v1"
+	apiresp "github.com/yusank/goim/api/transport/response"
 	userv1 "github.com/yusank/goim/api/user/v1"
 	"github.com/yusank/goim/apps/user/internal/service"
 	"github.com/yusank/goim/pkg/mid"
@@ -31,7 +31,7 @@ func (r *UserRouter) GetUser(c *gin.Context) {
 		Uid: c.Query("uid"),
 	}
 	if err := req.Validate(); err != nil {
-		response.ErrorResp(c, transportv1.ResponseInvalidParams.SetMsg(err.Error()))
+		response.ErrorResp(c, apiresp.ErrInvalidParams.SetMsg(err.Error()))
 		return
 	}
 

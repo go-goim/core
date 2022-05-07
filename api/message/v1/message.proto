@@ -5,6 +5,8 @@ option go_package = "api/message/v1;v1";
 
 import "validate/validate.proto";
 
+import "transport/response/response.proto";
+
 enum MessageContentType {
   UnknownContentType = 0;
   Text = 1;
@@ -22,8 +24,7 @@ message SendMessageReq {
 
 // SendMessageResp is response body for sendMessage
 message SendMessageResp {
-  int32 status = 1;
-  string reason = 2;
+  transport.response.BaseResponse response = 1;
   // MsgSeq is unique seq of a message
   string msg_seq = 3;
 }
@@ -66,23 +67,8 @@ message PushMessageReq {
   string msg_seq = 7;
 }
 
-enum PushMessageRespStatus {
-  OK = 0;
-  ConnectionNotFound = 1;
-  ConnectionLost = 2;
-  ConnectionTimeout = 3;
-  WriteTimeout=4;
-  Unknown=5;
-}
-
-
-message PushMessageResp {
-  PushMessageRespStatus status = 1;
-  string reason =2;
-}
-
 service PushMessager {
-  rpc PushMessage(PushMessageReq) returns (PushMessageResp);
+  rpc PushMessage(PushMessageReq) returns (transport.response.BaseResponse);
 }
 
 // BriefMessage is message with basic information
@@ -102,15 +88,6 @@ message QueryOfflineMessageReq {
   int32 page_size = 5 [(validate.rules).int32 = {gte: 1, lte: 100}];
 }
 
-message QueryOfflineMessageResp {
-  int32 status = 1;
-  string reason = 2;
-  int32 total_count = 3;
-  int32 page = 4;
-  int32 page_size = 5;
-  repeated BriefMessage messages = 6;
-}
-
 service OfflineMessage {
-  rpc QueryOfflineMessage(QueryOfflineMessageReq) returns (QueryOfflineMessageResp);
+  rpc QueryOfflineMessage(QueryOfflineMessageReq) returns (transport.response.PbResponse);
 }

@@ -2,13 +2,13 @@ package service
 
 import (
 	"context"
-	"fmt"
 	"sync"
 
 	"github.com/go-kratos/kratos/v2/transport/grpc"
 	ggrpc "google.golang.org/grpc"
 
-	userv1 "github.com/yusank/goim/api/user/v1"
+	apiresp "github.com/yusank/goim/api/transport/response"
+	relationv1 "github.com/yusank/goim/api/user/relation/v1"
 	"github.com/yusank/goim/apps/gateway/internal/app"
 	"github.com/yusank/goim/pkg/conn/pool"
 	"github.com/yusank/goim/pkg/conn/wrapper"
@@ -29,144 +29,94 @@ func GetUserRelationService() *UserRelationService {
 	return userRelationService
 }
 
-func (s *UserRelationService) AddFriend(ctx context.Context, req *userv1.AddFriendRequest) (*userv1.AddFriendResponse, error) {
+func (s *UserRelationService) AddFriend(ctx context.Context, req *relationv1.AddFriendRequest) (*relationv1.AddFriendResponse, error) {
 	cc, err := s.loadConn(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	return userv1.NewUserRelationServiceClient(cc).AddFriend(ctx, req)
+	return relationv1.NewUserRelationServiceClient(cc).AddFriend(ctx, req)
 }
 
-func (s *UserRelationService) ListUserRelation(ctx context.Context, req *userv1.QueryUserRelationListRequest) (
-	*userv1.QueryUserRelationListResponse, error) {
+func (s *UserRelationService) ListUserRelation(ctx context.Context, req *relationv1.QueryUserRelationListRequest) (
+	*relationv1.QueryUserRelationListResponse, error) {
 
 	cc, err := s.loadConn(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	return userv1.NewUserRelationServiceClient(cc).QueryUserRelationList(ctx, req)
+	return relationv1.NewUserRelationServiceClient(cc).QueryUserRelationList(ctx, req)
 }
 
-func (s *UserRelationService) AcceptFriend(ctx context.Context, req *userv1.AcceptFriendRequest) error {
+func (s *UserRelationService) AcceptFriend(ctx context.Context, req *relationv1.RelationPair) (*apiresp.BaseResponse, error) {
 	cc, err := s.loadConn(ctx)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	updateReq := &userv1.UpdateUserRelationRequest{
-		Uid:       req.GetUid(),
-		FriendUid: req.GetFriendUid(),
-		Action:    userv1.UpdateUserRelationAction_ACCEPT,
+	updateReq := &relationv1.UpdateUserRelationRequest{
+		RelationPair: req,
+		Action:       relationv1.UpdateUserRelationAction_ACCEPT,
 	}
 
-	rsp, err := userv1.NewUserRelationServiceClient(cc).UpdateUserRelation(ctx, updateReq)
-	if err != nil {
-		return err
-	}
-
-	if !rsp.Success {
-		return fmt.Errorf("update user relation failed. detail: %s", rsp.Message)
-	}
-
-	return nil
+	return relationv1.NewUserRelationServiceClient(cc).UpdateUserRelation(ctx, updateReq)
 }
 
-func (s *UserRelationService) RejectFriend(ctx context.Context, req *userv1.RejectFriendRequest) error {
+func (s *UserRelationService) RejectFriend(ctx context.Context, req *relationv1.RelationPair) (*apiresp.BaseResponse, error) {
 	cc, err := s.loadConn(ctx)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	updateReq := &userv1.UpdateUserRelationRequest{
-		Uid:       req.GetUid(),
-		FriendUid: req.GetFriendUid(),
-		Action:    userv1.UpdateUserRelationAction_REJECT,
+	updateReq := &relationv1.UpdateUserRelationRequest{
+		RelationPair: req,
+		Action:       relationv1.UpdateUserRelationAction_REJECT,
 	}
 
-	rsp, err := userv1.NewUserRelationServiceClient(cc).UpdateUserRelation(ctx, updateReq)
-	if err != nil {
-		return err
-	}
-
-	if !rsp.Success {
-		return fmt.Errorf("update user relation failed. detail: %s", rsp.Message)
-	}
-
-	return nil
+	return relationv1.NewUserRelationServiceClient(cc).UpdateUserRelation(ctx, updateReq)
 }
 
-func (s *UserRelationService) BlockFriend(ctx context.Context, req *userv1.BlockFriendRequest) error {
+func (s *UserRelationService) BlockFriend(ctx context.Context, req *relationv1.RelationPair) (*apiresp.BaseResponse, error) {
 	cc, err := s.loadConn(ctx)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	updateReq := &userv1.UpdateUserRelationRequest{
-		Uid:       req.GetUid(),
-		FriendUid: req.GetFriendUid(),
-		Action:    userv1.UpdateUserRelationAction_BLOCK,
+	updateReq := &relationv1.UpdateUserRelationRequest{
+		RelationPair: req,
+		Action:       relationv1.UpdateUserRelationAction_BLOCK,
 	}
 
-	rsp, err := userv1.NewUserRelationServiceClient(cc).UpdateUserRelation(ctx, updateReq)
-	if err != nil {
-		return err
-	}
-
-	if !rsp.Success {
-		return fmt.Errorf("update user relation failed. detail: %s", rsp.Message)
-	}
-
-	return nil
+	return relationv1.NewUserRelationServiceClient(cc).UpdateUserRelation(ctx, updateReq)
 }
 
-func (s *UserRelationService) UnblockFriend(ctx context.Context, req *userv1.UnblockFriendRequest) error {
+func (s *UserRelationService) UnblockFriend(ctx context.Context, req *relationv1.RelationPair) (*apiresp.BaseResponse, error) {
 	cc, err := s.loadConn(ctx)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	updateReq := &userv1.UpdateUserRelationRequest{
-		Uid:       req.GetUid(),
-		FriendUid: req.GetFriendUid(),
-		Action:    userv1.UpdateUserRelationAction_UNBLOCK,
+	updateReq := &relationv1.UpdateUserRelationRequest{
+		RelationPair: req,
+		Action:       relationv1.UpdateUserRelationAction_UNBLOCK,
 	}
 
-	rsp, err := userv1.NewUserRelationServiceClient(cc).UpdateUserRelation(ctx, updateReq)
-	if err != nil {
-		return err
-	}
-
-	if !rsp.Success {
-		return fmt.Errorf("update user relation failed. detail: %s", rsp.Message)
-	}
-
-	return nil
+	return relationv1.NewUserRelationServiceClient(cc).UpdateUserRelation(ctx, updateReq)
 }
 
-func (s *UserRelationService) DeleteFriend(ctx context.Context, req *userv1.RemoveFriendRequest) error {
+func (s *UserRelationService) DeleteFriend(ctx context.Context, req *relationv1.RelationPair) (*apiresp.BaseResponse, error) {
 	cc, err := s.loadConn(ctx)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	updateReq := &userv1.UpdateUserRelationRequest{
-		Uid:       req.GetUid(),
-		FriendUid: req.GetFriendUid(),
-		Action:    userv1.UpdateUserRelationAction_DELETE,
+	updateReq := &relationv1.UpdateUserRelationRequest{
+		RelationPair: req,
+		Action:       relationv1.UpdateUserRelationAction_DELETE,
 	}
 
-	rsp, err := userv1.NewUserRelationServiceClient(cc).UpdateUserRelation(ctx, updateReq)
-	if err != nil {
-		return err
-	}
-
-	if !rsp.Success {
-		return fmt.Errorf("update user relation failed. detail: %s", rsp.Message)
-	}
-
-	return nil
+	return relationv1.NewUserRelationServiceClient(cc).UpdateUserRelation(ctx, updateReq)
 }
 
 func (s *UserRelationService) loadConn(ctx context.Context) (*ggrpc.ClientConn, error) {

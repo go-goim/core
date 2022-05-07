@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"sync"
 
+	apiresp "github.com/yusank/goim/api/transport/response"
 	"github.com/yusank/goim/pkg/log"
 
 	messagev1 "github.com/yusank/goim/api/message/v1"
@@ -40,26 +41,29 @@ func (s *SendMessageService) SendMessage(ctx context.Context, req *messagev1.Sen
 		Content:         req.GetContent(),
 	}
 
+	rsp := &messagev1.SendMessageResp{
+		Response: apiresp.OK,
+	}
+
 	b, err := json.Marshal(mm)
 	if err != nil {
-		return err2Resp(err), err
+		rsp.Response = apiresp.ErrUnknown.SetMsg(err.Error())
+		return rsp, nil
 	}
 
 	rs, err := app.GetApplication().Producer.SendSync(ctx, mq.NewMessage("def_topic", b))
 	if err != nil {
-		return err2Resp(err), err
+		rsp.Response = apiresp.ErrUnknown.SetMsg(err.Error())
+		return rsp, nil
 	}
 
 	log.Info(rs.String())
-	rsp := err2Resp(nil)
 	rsp.MsgSeq = rs.MsgID
 
 	return rsp, nil
 }
 
 func (s *SendMessageService) Broadcast(ctx context.Context, req *messagev1.SendMessageReq) (*messagev1.SendMessageResp, error) {
-	// check req params
-
 	mm := &messagev1.MqMessage{
 		FromUser:        req.GetFromUser(),
 		ToUser:          req.GetToUser(),
@@ -68,33 +72,25 @@ func (s *SendMessageService) Broadcast(ctx context.Context, req *messagev1.SendM
 		Content:         req.GetContent(),
 	}
 
+	rsp := &messagev1.SendMessageResp{
+		Response: apiresp.OK,
+	}
+
 	b, err := json.Marshal(mm)
 	if err != nil {
-		return err2Resp(err), err
+		rsp.Response = apiresp.ErrUnknown.SetMsg(err.Error())
+		return rsp, nil
 	}
 
 	// todo: maybe use another topic for all broadcast messages
 	rs, err := app.GetApplication().Producer.SendSync(ctx, mq.NewMessage("def_topic", b))
 	if err != nil {
-		return err2Resp(err), err
+		rsp.Response = apiresp.ErrUnknown.SetMsg(err.Error())
+		return rsp, nil
 	}
 
 	log.Info(rs.String())
-	rsp := err2Resp(nil)
 	rsp.MsgSeq = rs.MsgID
 
 	return rsp, nil
-}
-
-func err2Resp(err error) *messagev1.SendMessageResp {
-	if err == nil {
-		return &messagev1.SendMessageResp{
-			Reason: "ok",
-		}
-	}
-
-	return &messagev1.SendMessageResp{
-		Status: -1,
-		Reason: err.Error(),
-	}
 }

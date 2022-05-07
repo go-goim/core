@@ -1,6 +1,6 @@
 // Code Written Manually
 
-package v1
+package response
 
 import (
 	"encoding/json"
@@ -124,6 +124,10 @@ func NewBaseResponse(code Code, msg string) *BaseResponse {
 
 func (x *BaseResponse) Error() string {
 	return fmt.Sprintf("Code: %d, Msg: %s", x.Code, x.Msg)
+}
+
+func (x *BaseResponse) Success() bool {
+	return x.Code == Code_OK
 }
 
 func (x *BaseResponse) GetOrNewMeta() *Meta {
@@ -267,18 +271,38 @@ func (x *PbResponse) Marshall() ([]byte, error) {
 const (
 	// Code_OK       Code = 0
 
-	CodeUnknownError          Code = 10001
-	CodeUserNotFound          Code = 10002
-	CodeInvalidParams         Code = 10003
-	CodeUserExists            Code = 10004
-	CodeInvalidUserOrPassword Code = 10005
+	// common error codes
+
+	CodeUnknownError  Code = 10001
+	CodeInvalidParams Code = 10002
+
+	// user error codes
+
+	CodeUserNotFound          Code = 20001
+	CodeUserExists            Code = 20002
+	CodeInvalidUserOrPassword Code = 20003
+
+	// relation error codes
+
+	CodeRelationNotFound            Code = 30001
+	CodeInvalidUpdateRelationAction Code = 30002
 )
 
 var (
-	ResponseOK                    = NewBaseResponse(Code_OK, "OK")
-	ResponseUnknownError          = NewBaseResponse(CodeUnknownError, "unknown error")
-	ResponseUserNotFound          = NewBaseResponse(CodeUserNotFound, "USER_NOT_FOUND")
-	ResponseInvalidParams         = NewBaseResponse(CodeInvalidParams, "INVALID_PARAMS")
-	ResponseUserExist             = NewBaseResponse(CodeUserExists, "USER_EXIST")
-	ResponseInvalidUserOrPassword = NewBaseResponse(CodeInvalidUserOrPassword, "INVALID_USER_OR_PASSWORD")
+	// common error messages
+
+	OK               = NewBaseResponse(Code_OK, "OK")
+	ErrUnknown       = NewBaseResponse(CodeUnknownError, "unknown error")
+	ErrInvalidParams = NewBaseResponse(CodeInvalidParams, "INVALID_PARAMS")
+
+	// user error messages
+
+	ErrUserNotFound          = NewBaseResponse(CodeUserNotFound, "USER_NOT_FOUND")
+	ErrUserExist             = NewBaseResponse(CodeUserExists, "USER_EXIST")
+	ErrInvalidUserOrPassword = NewBaseResponse(CodeInvalidUserOrPassword, "INVALID_USER_OR_PASSWORD")
+
+	// relation error
+
+	ErrRelationNotFound            = NewBaseResponse(CodeRelationNotFound, "RELATION_NOT_FOUND")
+	ErrInvalidUpdateRelationAction = NewBaseResponse(CodeInvalidUpdateRelationAction, "INVALID_UPDATE_RELATION_ACTION")
 )
