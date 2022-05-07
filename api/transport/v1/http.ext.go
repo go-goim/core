@@ -24,7 +24,8 @@ func (x *Meta) SetRequestID(id string) *Meta {
 }
 
 func (x *Meta) SetTotal(total int) *Meta {
-	x.Total = int32(total)
+	var t = int32(total)
+	x.Total = &t
 
 	return x
 }
@@ -81,7 +82,7 @@ func (x *Meta) Merge(src *Meta) *Meta {
 		x.RequestId = src.RequestId
 	}
 
-	if src.Total != 0 {
+	if src.Total != nil {
 		x.Total = src.Total
 	}
 
@@ -138,12 +139,7 @@ func (x *BaseResponse) SetMeta(meta *Meta) IResponse {
 		return x
 	}
 
-	if x.Meta == nil {
-		x.Meta = NewMeta()
-	}
-
-	x.Meta.Merge(meta)
-
+	x.GetOrNewMeta().Merge(meta)
 	return x
 }
 
@@ -226,12 +222,7 @@ func (x *PbResponse) SetMeta(meta *Meta) IResponse {
 		return x
 	}
 
-	if x.Meta == nil {
-		x.Meta = NewMeta()
-	}
-
-	x.Meta.Merge(meta)
-
+	x.GetOrNewMeta().Merge(meta)
 	return x
 }
 

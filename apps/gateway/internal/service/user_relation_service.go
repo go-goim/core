@@ -30,10 +30,6 @@ func GetUserRelationService() *UserRelationService {
 }
 
 func (s *UserRelationService) AddFriend(ctx context.Context, req *userv1.AddFriendRequest) (*userv1.AddFriendResponse, error) {
-	if err := req.ValidateAll(); err != nil {
-		return nil, err
-	}
-
 	cc, err := s.loadConn(ctx)
 	if err != nil {
 		return nil, err
@@ -44,9 +40,6 @@ func (s *UserRelationService) AddFriend(ctx context.Context, req *userv1.AddFrie
 
 func (s *UserRelationService) ListUserRelation(ctx context.Context, req *userv1.QueryUserRelationListRequest) (
 	*userv1.QueryUserRelationListResponse, error) {
-	if err := req.ValidateAll(); err != nil {
-		return nil, err
-	}
 
 	cc, err := s.loadConn(ctx)
 	if err != nil {
@@ -57,10 +50,6 @@ func (s *UserRelationService) ListUserRelation(ctx context.Context, req *userv1.
 }
 
 func (s *UserRelationService) AcceptFriend(ctx context.Context, req *userv1.AcceptFriendRequest) error {
-	if err := req.ValidateAll(); err != nil {
-		return err
-	}
-
 	cc, err := s.loadConn(ctx)
 	if err != nil {
 		return err
@@ -85,10 +74,6 @@ func (s *UserRelationService) AcceptFriend(ctx context.Context, req *userv1.Acce
 }
 
 func (s *UserRelationService) RejectFriend(ctx context.Context, req *userv1.RejectFriendRequest) error {
-	if err := req.ValidateAll(); err != nil {
-		return err
-	}
-
 	cc, err := s.loadConn(ctx)
 	if err != nil {
 		return err
@@ -113,10 +98,6 @@ func (s *UserRelationService) RejectFriend(ctx context.Context, req *userv1.Reje
 }
 
 func (s *UserRelationService) BlockFriend(ctx context.Context, req *userv1.BlockFriendRequest) error {
-	if err := req.ValidateAll(); err != nil {
-		return err
-	}
-
 	cc, err := s.loadConn(ctx)
 	if err != nil {
 		return err
@@ -141,10 +122,6 @@ func (s *UserRelationService) BlockFriend(ctx context.Context, req *userv1.Block
 }
 
 func (s *UserRelationService) UnblockFriend(ctx context.Context, req *userv1.UnblockFriendRequest) error {
-	if err := req.ValidateAll(); err != nil {
-		return err
-	}
-
 	cc, err := s.loadConn(ctx)
 	if err != nil {
 		return err
@@ -169,10 +146,6 @@ func (s *UserRelationService) UnblockFriend(ctx context.Context, req *userv1.Unb
 }
 
 func (s *UserRelationService) DeleteFriend(ctx context.Context, req *userv1.RemoveFriendRequest) error {
-	if err := req.ValidateAll(); err != nil {
-		return err
-	}
-
 	cc, err := s.loadConn(ctx)
 	if err != nil {
 		return err

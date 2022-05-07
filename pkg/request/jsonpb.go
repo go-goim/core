@@ -1,4 +1,4 @@
-package util
+package request
 
 import (
 	"fmt"
@@ -7,6 +7,9 @@ import (
 
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/proto"
+
+	transportv1 "github.com/yusank/goim/api/transport/v1"
+	"github.com/yusank/goim/pkg/mid"
 )
 
 type PbJSONBinding struct{}
@@ -33,7 +36,21 @@ func (PbJSONBinding) BindBody(body []byte, obj interface{}) error {
 		return fmt.Errorf("%T is not a protobuf message", obj)
 	}
 
-	return o.Unmarshal(body, pbObj)
+	if err := o.Unmarshal(body, pbObj); err != nil {
+		return err
+	}
+
+	validate, ok := pbObj.(mid.Validator)
+	if !ok {
+		return nil
+	}
+
+	err := validate.Validate()
+	if err != nil {
+		return transportv1.ResponseInvalidParams.SetMsg(err.Error())
+	}
+
+	return nil
 }
 
 func MarshallPb(m proto.Message) ([]byte, error) {
