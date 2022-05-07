@@ -97,6 +97,7 @@ func (x *Meta) Merge(src *Meta) *Meta {
 }
 
 type IResponse interface {
+	GetOrNewMeta() *Meta
 	// SetMeta sets the meta information, but does not overwrite existing meta information when merging
 	SetMeta(*Meta) IResponse
 	SetData(interface{}) (IResponse, error)
@@ -122,6 +123,14 @@ func NewBaseResponse(code Code, msg string) *BaseResponse {
 
 func (x *BaseResponse) Error() string {
 	return fmt.Sprintf("Code: %d, Msg: %s", x.Code, x.Msg)
+}
+
+func (x *BaseResponse) GetOrNewMeta() *Meta {
+	if x.GetMeta() == nil {
+		x.Meta = NewMeta()
+	}
+
+	return x.Meta
 }
 
 func (x *BaseResponse) SetMeta(meta *Meta) IResponse {
@@ -202,6 +211,14 @@ func NewPbResponse(br *BaseResponse) *PbResponse {
 		Code: br.Code,
 		Msg:  br.Msg,
 	}
+}
+
+func (x *PbResponse) GetOrNewMeta() *Meta {
+	if x.GetMeta() == nil {
+		x.Meta = NewMeta()
+	}
+
+	return x.Meta
 }
 
 func (x *PbResponse) SetMeta(meta *Meta) IResponse {
