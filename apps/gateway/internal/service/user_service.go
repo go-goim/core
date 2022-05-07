@@ -8,6 +8,7 @@ import (
 	"github.com/go-kratos/kratos/v2/transport/grpc"
 	ggrpc "google.golang.org/grpc"
 
+	transportv1 "github.com/yusank/goim/api/transport/v1"
 	userv1 "github.com/yusank/goim/api/user/v1"
 	"github.com/yusank/goim/apps/gateway/internal/app"
 	"github.com/yusank/goim/apps/gateway/internal/dao"
@@ -36,10 +37,6 @@ func GetUserService() *UserService {
 
 // Login check user login status and return user info
 func (s *UserService) Login(ctx context.Context, req *userv1.UserLoginRequest) (*userv1.User, error) {
-	if err := req.ValidateAll(); err != nil {
-		return nil, err
-	}
-
 	cc, err := s.loadConn(ctx)
 	if err != nil {
 		return nil, err
@@ -61,7 +58,7 @@ func (s *UserService) Login(ctx context.Context, req *userv1.UserLoginRequest) (
 	}
 
 	if user.GetPassword() != util.Md5String(req.GetPassword()) {
-		return nil, fmt.Errorf("invalid password or user not exist")
+		return nil, transportv1.ResponseInvalidUserOrPassword
 	}
 
 	agentID, err := s.userDao.GetUserOnlineAgent(ctx, user.GetUid())
@@ -83,10 +80,6 @@ func (s *UserService) Login(ctx context.Context, req *userv1.UserLoginRequest) (
 
 // Register register user.
 func (s *UserService) Register(ctx context.Context, req *userv1.CreateUserRequest) (*userv1.User, error) {
-	if err := req.ValidateAll(); err != nil {
-		return nil, err
-	}
-
 	cc, err := s.loadConn(ctx)
 	if err != nil {
 		return nil, err
@@ -103,10 +96,6 @@ func (s *UserService) Register(ctx context.Context, req *userv1.CreateUserReques
 
 // UpdateUser update user info.
 func (s *UserService) UpdateUser(ctx context.Context, req *userv1.UpdateUserRequest) (*userv1.User, error) {
-	if err := req.ValidateAll(); err != nil {
-		return nil, err
-	}
-
 	cc, err := s.loadConn(ctx)
 	if err != nil {
 		return nil, err

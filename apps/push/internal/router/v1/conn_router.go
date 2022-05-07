@@ -9,7 +9,7 @@ import (
 
 	"github.com/yusank/goim/apps/push/internal/service"
 	"github.com/yusank/goim/pkg/mid"
-	"github.com/yusank/goim/pkg/resp"
+	"github.com/yusank/goim/pkg/response"
 	"github.com/yusank/goim/pkg/router"
 )
 
@@ -39,13 +39,13 @@ func (r *ConnRouter) wsHandler(c *gin.Context) {
 	// todo use check uid/token middleware before this handler
 	uid := c.GetHeader("uid")
 	if uid == "" {
-		resp.ErrorRespWithStatus(c, http.StatusUnauthorized, fmt.Errorf("invalid uid"))
+		response.ErrorRespWithStatus(c, http.StatusUnauthorized, fmt.Errorf("invalid uid"))
 		return
 	}
 
 	conn, err := r.upgrader.Upgrade(c.Writer, c.Request, nil)
 	if err != nil {
-		resp.ErrorRespWithStatus(c, http.StatusBadRequest, err)
+		response.ErrorRespWithStatus(c, http.StatusBadRequest, err)
 		return
 	}
 

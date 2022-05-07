@@ -27,7 +27,7 @@ message PbResponse {
 
 message Meta {
   string request_id = 1;
-  int32 total = 2;
+  optional int32 total = 2;
   optional Pagination pagination = 3;
   map<string, string> extra = 4;
 }

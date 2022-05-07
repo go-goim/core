@@ -6,9 +6,9 @@ import (
 	userv1 "github.com/yusank/goim/api/user/v1"
 	"github.com/yusank/goim/apps/gateway/internal/service"
 	"github.com/yusank/goim/pkg/mid"
-	"github.com/yusank/goim/pkg/resp"
+	"github.com/yusank/goim/pkg/request"
+	"github.com/yusank/goim/pkg/response"
 	"github.com/yusank/goim/pkg/router"
-	"github.com/yusank/goim/pkg/util"
 )
 
 type UserRelationRouter struct {
@@ -34,111 +34,112 @@ func (r *UserRelationRouter) Load(g *gin.RouterGroup) {
 func (r *UserRelationRouter) listRelation(c *gin.Context) {
 	// no need to check uid
 	uid := c.GetString("uid")
-
-	list, err := service.GetUserRelationService().ListUserRelation(mid.GetContext(c), &userv1.QueryUserRelationListRequest{
+	req := &userv1.QueryUserRelationListRequest{
 		Uid: uid,
-	})
+	}
+
+	list, err := service.GetUserRelationService().ListUserRelation(mid.GetContext(c), req)
 	if err != nil {
-		resp.ErrorResp(c, err)
+		response.ErrorResp(c, err)
 		return
 	}
 
 	total := len(list.UserRelationList)
-	resp.SuccessResp(c, list, resp.SetPaging(1, total, total))
+	response.SuccessResp(c, list, response.SetPaging(1, total, total))
 }
 
 func (r *UserRelationRouter) addFriend(c *gin.Context) {
 	req := &userv1.AddFriendRequest{}
-	if err := c.ShouldBindWith(req, util.PbJSONBinding{}); err != nil {
-		resp.ErrorResp(c, err)
+	if err := c.ShouldBindWith(req, request.PbJSONBinding{}); err != nil {
+		response.ErrorResp(c, err)
 		return
 	}
 
 	result, err := service.GetUserRelationService().AddFriend(mid.GetContext(c), req)
 	if err != nil {
-		resp.ErrorResp(c, err)
+		response.ErrorResp(c, err)
 		return
 	}
 
-	resp.SuccessResp(c, result)
+	response.SuccessResp(c, result)
 }
 
 func (r *UserRelationRouter) deleteFriend(c *gin.Context) {
 	req := &userv1.RemoveFriendRequest{}
-	if err := c.ShouldBindWith(req, util.PbJSONBinding{}); err != nil {
-		resp.ErrorResp(c, err)
+	if err := c.ShouldBindWith(req, request.PbJSONBinding{}); err != nil {
+		response.ErrorResp(c, err)
 		return
 	}
 
 	err := service.GetUserRelationService().DeleteFriend(mid.GetContext(c), req)
 	if err != nil {
-		resp.ErrorResp(c, err)
+		response.ErrorResp(c, err)
 		return
 	}
 
-	resp.SuccessResp(c, nil)
+	response.SuccessResp(c, nil)
 }
 
 func (r *UserRelationRouter) acceptFriend(c *gin.Context) {
 	req := &userv1.AcceptFriendRequest{}
-	if err := c.ShouldBindWith(req, util.PbJSONBinding{}); err != nil {
-		resp.ErrorResp(c, err)
+	if err := c.ShouldBindWith(req, request.PbJSONBinding{}); err != nil {
+		response.ErrorResp(c, err)
 		return
 	}
 
 	err := service.GetUserRelationService().AcceptFriend(mid.GetContext(c), req)
 	if err != nil {
-		resp.ErrorResp(c, err)
+		response.ErrorResp(c, err)
 		return
 	}
 
-	resp.SuccessResp(c, gin.H{"code": 0})
+	response.SuccessResp(c, gin.H{"code": 0})
 }
 
 func (r *UserRelationRouter) rejectFriend(c *gin.Context) {
 	req := &userv1.RejectFriendRequest{}
-	if err := c.ShouldBindWith(req, util.PbJSONBinding{}); err != nil {
-		resp.ErrorResp(c, err)
+	if err := c.ShouldBindWith(req, request.PbJSONBinding{}); err != nil {
+		response.ErrorResp(c, err)
 		return
 	}
 
 	err := service.GetUserRelationService().RejectFriend(mid.GetContext(c), req)
 	if err != nil {
-		resp.ErrorResp(c, err)
+		response.ErrorResp(c, err)
 		return
 	}
 
-	resp.SuccessResp(c, gin.H{"code": 0})
+	response.SuccessResp(c, gin.H{"code": 0})
 }
 
 func (r *UserRelationRouter) blockFriend(c *gin.Context) {
 	req := &userv1.BlockFriendRequest{}
-	if err := c.ShouldBindWith(req, util.PbJSONBinding{}); err != nil {
-		resp.ErrorResp(c, err)
+	if err := c.ShouldBindWith(req, request.PbJSONBinding{}); err != nil {
+		response.ErrorResp(c, err)
 		return
 	}
 
 	err := service.GetUserRelationService().BlockFriend(mid.GetContext(c), req)
 	if err != nil {
-		resp.ErrorResp(c, err)
+		response.ErrorResp(c, err)
 		return
 	}
 
-	resp.SuccessResp(c, gin.H{"code": 0})
+	response.SuccessResp(c, gin.H{"code": 0})
 }
 
 func (r *UserRelationRouter) unblockFriend(c *gin.Context) {
 	req := &userv1.UnblockFriendRequest{}
-	if err := c.ShouldBindWith(req, util.PbJSONBinding{}); err != nil {
-		resp.ErrorResp(c, err)
+	if err := c.ShouldBindWith(req, request.PbJSONBinding{}); err != nil {
+		response.ErrorResp(c, err)
 		return
 	}
 
 	err := service.GetUserRelationService().UnblockFriend(mid.GetContext(c), req)
 	if err != nil {
-		resp.ErrorResp(c, err)
+		response.ErrorResp(c, err)
 		return
 	}
 
-	resp.SuccessResp(c, gin.H{"code": 0})
+	response.SuccessResp(c, gin.H{"code": 0})
 }
