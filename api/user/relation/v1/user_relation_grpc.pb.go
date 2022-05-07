@@ -4,6 +4,7 @@ package v1
 
 import (
 	context "context"
+	response "github.com/yusank/goim/api/transport/response"
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
@@ -21,7 +22,7 @@ type UserRelationServiceClient interface {
 	AddFriend(ctx context.Context, in *AddFriendRequest, opts ...grpc.CallOption) (*AddFriendResponse, error)
 	GetUserRelation(ctx context.Context, in *GetUserRelationRequest, opts ...grpc.CallOption) (*GetUserRelationResponse, error)
 	QueryUserRelationList(ctx context.Context, in *QueryUserRelationListRequest, opts ...grpc.CallOption) (*QueryUserRelationListResponse, error)
-	UpdateUserRelation(ctx context.Context, in *UpdateUserRelationRequest, opts ...grpc.CallOption) (*UpdateUserRelationResponse, error)
+	UpdateUserRelation(ctx context.Context, in *UpdateUserRelationRequest, opts ...grpc.CallOption) (*response.BaseResponse, error)
 }
 
 type userRelationServiceClient struct {
@@ -59,8 +60,8 @@ func (c *userRelationServiceClient) QueryUserRelationList(ctx context.Context, i
 	return out, nil
 }
 
-func (c *userRelationServiceClient) UpdateUserRelation(ctx context.Context, in *UpdateUserRelationRequest, opts ...grpc.CallOption) (*UpdateUserRelationResponse, error) {
-	out := new(UpdateUserRelationResponse)
+func (c *userRelationServiceClient) UpdateUserRelation(ctx context.Context, in *UpdateUserRelationRequest, opts ...grpc.CallOption) (*response.BaseResponse, error) {
+	out := new(response.BaseResponse)
 	err := c.cc.Invoke(ctx, "/api.user.v1.UserRelationService/UpdateUserRelation", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -75,7 +76,7 @@ type UserRelationServiceServer interface {
 	AddFriend(context.Context, *AddFriendRequest) (*AddFriendResponse, error)
 	GetUserRelation(context.Context, *GetUserRelationRequest) (*GetUserRelationResponse, error)
 	QueryUserRelationList(context.Context, *QueryUserRelationListRequest) (*QueryUserRelationListResponse, error)
-	UpdateUserRelation(context.Context, *UpdateUserRelationRequest) (*UpdateUserRelationResponse, error)
+	UpdateUserRelation(context.Context, *UpdateUserRelationRequest) (*response.BaseResponse, error)
 	mustEmbedUnimplementedUserRelationServiceServer()
 }
 
@@ -92,7 +93,7 @@ func (UnimplementedUserRelationServiceServer) GetUserRelation(context.Context, *
 func (UnimplementedUserRelationServiceServer) QueryUserRelationList(context.Context, *QueryUserRelationListRequest) (*QueryUserRelationListResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method QueryUserRelationList not implemented")
 }
-func (UnimplementedUserRelationServiceServer) UpdateUserRelation(context.Context, *UpdateUserRelationRequest) (*UpdateUserRelationResponse, error) {
+func (UnimplementedUserRelationServiceServer) UpdateUserRelation(context.Context, *UpdateUserRelationRequest) (*response.BaseResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateUserRelation not implemented")
 }
 func (UnimplementedUserRelationServiceServer) mustEmbedUnimplementedUserRelationServiceServer() {}
@@ -205,5 +206,5 @@ var UserRelationService_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "api/user/v1/user_relation.proto",
+	Metadata: "api/user/relation/v1/user_relation.proto",
 }

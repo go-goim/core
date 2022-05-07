@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"sync"
 
+	apiresp "github.com/yusank/goim/api/transport/response"
 	userv1 "github.com/yusank/goim/api/user/v1"
 	"github.com/yusank/goim/apps/user/internal/dao"
 	"github.com/yusank/goim/apps/user/internal/data"
@@ -32,30 +33,42 @@ func GetUserService() *UserService {
 	return userService
 }
 
-func (s *UserService) GetUser(ctx context.Context, req *userv1.GetUserInfoRequest) (*userv1.UserInternal, error) {
+func (s *UserService) GetUser(ctx context.Context, req *userv1.GetUserInfoRequest) (*userv1.UserInternalResponse, error) {
 	user, err := s.userDao.GetUserByUID(ctx, req.GetUid())
 	if err != nil {
 		return nil, err
 	}
 
-	if user == nil || user.IsDeleted() {
-		return nil, fmt.Errorf("user not found")
+	rsp := &userv1.UserInternalResponse{
+		Response: apiresp.OK,
 	}
 
-	return user.ToProtoUserInternal(), nil
+	if user == nil || user.IsDeleted() {
+		rsp.Response = apiresp.ErrUserNotFound
+		return rsp, nil
+	}
+
+	rsp.User = user.ToProtoUserInternal()
+	return rsp, nil
 }
 
-func (s *UserService) QueryUser(ctx context.Context, req *userv1.QueryUserRequest) (*userv1.UserInternal, error) {
+func (s *UserService) QueryUser(ctx context.Context, req *userv1.QueryUserRequest) (*userv1.UserInternalResponse, error) {
 	user, err := s.loadUserByEmailOrPhone(ctx, req.GetEmail(), req.GetPhone())
 	if err != nil {
 		return nil, err
 	}
 
-	if user == nil || user.IsDeleted() {
-		return nil, fmt.Errorf("user not found")
+	rsp := &userv1.UserInternalResponse{
+		Response: apiresp.OK,
 	}
 
-	return user.ToProtoUserInternal(), nil
+	if user == nil || user.IsDeleted() {
+		rsp.Response = apiresp.ErrUserNotFound
+		return rsp, nil
+	}
+
+	rsp.User = user.ToProtoUserInternal()
+	return rsp, nil
 }
 
 func (s *UserService) loadUserByEmailOrPhone(ctx context.Context, email, phone string) (*data.User, error) {
@@ -83,10 +96,14 @@ func (s *UserService) loadUserByEmailOrPhone(ctx context.Context, email, phone s
 	return user, nil
 }
 
-func (s *UserService) CreateUser(ctx context.Context, req *userv1.CreateUserRequest) (*userv1.UserInternal, error) {
+func (s *UserService) CreateUser(ctx context.Context, req *userv1.CreateUserRequest) (*userv1.UserInternalResponse, error) {
 	user, err := s.loadUserByEmailOrPhone(ctx, req.GetEmail(), req.GetPhone())
 	if err != nil {
 		return nil, err
+	}
+
+	rsp := &userv1.UserInternalResponse{
+		Response: apiresp.OK,
 	}
 
 	if user == nil {
@@ -103,7 +120,8 @@ func (s *UserService) CreateUser(ctx context.Context, req *userv1.CreateUserRequ
 			return nil, err
 		}
 
-		return user.ToProtoUserInternal(), nil
+		rsp.User = user.ToProtoUserInternal()
+		return rsp, nil
 	}
 
 	// user exists
@@ -116,21 +134,28 @@ func (s *UserService) CreateUser(ctx context.Context, req *userv1.CreateUserRequ
 			return nil, err
 		}
 
-		return user.ToProtoUserInternal(), nil
+		rsp.User = user.ToProtoUserInternal()
+		return rsp, nil
 	}
 
-	return nil, fmt.Errorf("user exists")
+	rsp.Response = apiresp.ErrUserExist
+	return rsp, nil
 
 }
 
-func (s *UserService) UpdateUser(ctx context.Context, req *userv1.UpdateUserRequest) (*userv1.UserInternal, error) {
+func (s *UserService) UpdateUser(ctx context.Context, req *userv1.UpdateUserRequest) (*userv1.UserInternalResponse, error) {
 	user, err := s.userDao.GetUserByUID(ctx, req.GetUid())
 	if err != nil {
 		return nil, err
 	}
 
+	rsp := &userv1.UserInternalResponse{
+		Response: apiresp.OK,
+	}
+
 	if user == nil || user.IsDeleted() {
-		return nil, fmt.Errorf("user not found")
+		rsp.Response = apiresp.ErrUserNotFound
+		return rsp, nil
 	}
 
 	if req.GetEmail() != "" {
@@ -154,5 +179,6 @@ func (s *UserService) UpdateUser(ctx context.Context, req *userv1.UpdateUserRequ
 		return nil, err
 	}
 
-	return user.ToProtoUserInternal(), nil
+	rsp.User = user.ToProtoUserInternal()
+	return rsp, nil
 }

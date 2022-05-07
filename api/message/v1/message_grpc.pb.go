@@ -4,6 +4,7 @@ package v1
 
 import (
 	context "context"
+	response "github.com/yusank/goim/api/transport/response"
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
@@ -144,7 +145,7 @@ var SendMessager_ServiceDesc = grpc.ServiceDesc{
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type PushMessagerClient interface {
-	PushMessage(ctx context.Context, in *PushMessageReq, opts ...grpc.CallOption) (*PushMessageResp, error)
+	PushMessage(ctx context.Context, in *PushMessageReq, opts ...grpc.CallOption) (*response.BaseResponse, error)
 }
 
 type pushMessagerClient struct {
@@ -155,8 +156,8 @@ func NewPushMessagerClient(cc grpc.ClientConnInterface) PushMessagerClient {
 	return &pushMessagerClient{cc}
 }
 
-func (c *pushMessagerClient) PushMessage(ctx context.Context, in *PushMessageReq, opts ...grpc.CallOption) (*PushMessageResp, error) {
-	out := new(PushMessageResp)
+func (c *pushMessagerClient) PushMessage(ctx context.Context, in *PushMessageReq, opts ...grpc.CallOption) (*response.BaseResponse, error) {
+	out := new(response.BaseResponse)
 	err := c.cc.Invoke(ctx, "/api.message.v1.PushMessager/PushMessage", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -168,7 +169,7 @@ func (c *pushMessagerClient) PushMessage(ctx context.Context, in *PushMessageReq
 // All implementations must embed UnimplementedPushMessagerServer
 // for forward compatibility
 type PushMessagerServer interface {
-	PushMessage(context.Context, *PushMessageReq) (*PushMessageResp, error)
+	PushMessage(context.Context, *PushMessageReq) (*response.BaseResponse, error)
 	mustEmbedUnimplementedPushMessagerServer()
 }
 
@@ -176,7 +177,7 @@ type PushMessagerServer interface {
 type UnimplementedPushMessagerServer struct {
 }
 
-func (UnimplementedPushMessagerServer) PushMessage(context.Context, *PushMessageReq) (*PushMessageResp, error) {
+func (UnimplementedPushMessagerServer) PushMessage(context.Context, *PushMessageReq) (*response.BaseResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method PushMessage not implemented")
 }
 func (UnimplementedPushMessagerServer) mustEmbedUnimplementedPushMessagerServer() {}
@@ -230,7 +231,7 @@ var PushMessager_ServiceDesc = grpc.ServiceDesc{
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type OfflineMessageClient interface {
-	QueryOfflineMessage(ctx context.Context, in *QueryOfflineMessageReq, opts ...grpc.CallOption) (*QueryOfflineMessageResp, error)
+	QueryOfflineMessage(ctx context.Context, in *QueryOfflineMessageReq, opts ...grpc.CallOption) (*response.PbResponse, error)
 }
 
 type offlineMessageClient struct {
@@ -241,8 +242,8 @@ func NewOfflineMessageClient(cc grpc.ClientConnInterface) OfflineMessageClient {
 	return &offlineMessageClient{cc}
 }
 
-func (c *offlineMessageClient) QueryOfflineMessage(ctx context.Context, in *QueryOfflineMessageReq, opts ...grpc.CallOption) (*QueryOfflineMessageResp, error) {
-	out := new(QueryOfflineMessageResp)
+func (c *offlineMessageClient) QueryOfflineMessage(ctx context.Context, in *QueryOfflineMessageReq, opts ...grpc.CallOption) (*response.PbResponse, error) {
+	out := new(response.PbResponse)
 	err := c.cc.Invoke(ctx, "/api.message.v1.OfflineMessage/QueryOfflineMessage", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -254,7 +255,7 @@ func (c *offlineMessageClient) QueryOfflineMessage(ctx context.Context, in *Quer
 // All implementations must embed UnimplementedOfflineMessageServer
 // for forward compatibility
 type OfflineMessageServer interface {
-	QueryOfflineMessage(context.Context, *QueryOfflineMessageReq) (*QueryOfflineMessageResp, error)
+	QueryOfflineMessage(context.Context, *QueryOfflineMessageReq) (*response.PbResponse, error)
 	mustEmbedUnimplementedOfflineMessageServer()
 }
 
@@ -262,7 +263,7 @@ type OfflineMessageServer interface {
 type UnimplementedOfflineMessageServer struct {
 }
 
-func (UnimplementedOfflineMessageServer) QueryOfflineMessage(context.Context, *QueryOfflineMessageReq) (*QueryOfflineMessageResp, error) {
+func (UnimplementedOfflineMessageServer) QueryOfflineMessage(context.Context, *QueryOfflineMessageReq) (*response.PbResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method QueryOfflineMessage not implemented")
 }
 func (UnimplementedOfflineMessageServer) mustEmbedUnimplementedOfflineMessageServer() {}

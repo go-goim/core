@@ -6,7 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"google.golang.org/protobuf/proto"
 
-	transportv1 "github.com/yusank/goim/api/transport/v1"
+	"github.com/yusank/goim/api/transport/response"
 	"github.com/yusank/goim/pkg/log"
 	"github.com/yusank/goim/pkg/mid"
 )
@@ -16,12 +16,12 @@ func ErrorResp(c *gin.Context, err error) {
 	json(c, http.StatusOK, errorResp(err))
 }
 
-func errorResp(err error) *transportv1.BaseResponse {
+func errorResp(err error) *response.BaseResponse {
 	switch t := err.(type) {
-	case *transportv1.BaseResponse:
+	case *response.BaseResponse:
 		return t
 	default:
-		return transportv1.ResponseUnknownError.SetMsg(err.Error())
+		return response.ErrUnknown.SetMsg(err.Error())
 	}
 }
 
@@ -44,27 +44,27 @@ func SuccessResp(c *gin.Context, body interface{}, setFunc ...SetMetaFunc) {
 	json(c, http.StatusOK, resp)
 }
 
-func convertBodyToResponse(body interface{}) transportv1.IResponse {
-	var resp transportv1.IResponse
+func convertBodyToResponse(body interface{}) response.IResponse {
+	var resp response.IResponse
 	switch b := body.(type) {
-	case transportv1.IResponse:
+	case response.IResponse:
 		return b
 	case proto.Message:
-		resp = transportv1.NewPbResponse(transportv1.ResponseOK)
+		resp = response.NewPbResponse(response.OK)
 	default:
-		resp = transportv1.NewResponse(transportv1.ResponseOK)
+		resp = response.NewResponse(response.OK)
 	}
 
 	var err error
 	resp, err = resp.SetData(body)
 	if err != nil {
-		return transportv1.ResponseUnknownError.SetMsg(err.Error())
+		return response.ErrUnknown.SetMsg(err.Error())
 	}
 
 	return resp
 }
 
-func json(c *gin.Context, code int, resp transportv1.IResponse) {
+func json(c *gin.Context, code int, resp response.IResponse) {
 	// get request id from context
 	SetRequestID(c.GetString(mid.RequestIDKey))(resp.GetOrNewMeta())
 
@@ -72,7 +72,7 @@ func json(c *gin.Context, code int, resp transportv1.IResponse) {
 	if err != nil {
 		// this is a critical error
 		log.Error("marshal response error.", "err", err)
-		c.JSON(http.StatusInternalServerError, gin.H{"code": transportv1.ResponseUnknownError.GetCode(), "msg": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"code": response.ErrUnknown.GetCode(), "msg": err.Error()})
 	}
 
 	c.Data(code, jsonContentType, b)
@@ -80,28 +80,28 @@ func json(c *gin.Context, code int, resp transportv1.IResponse) {
 
 // set meta data to response
 
-type SetMetaFunc func(meta *transportv1.Meta)
+type SetMetaFunc func(meta *response.Meta)
 
 func SetPaging(page, size, total int) SetMetaFunc {
-	return func(meta *transportv1.Meta) {
+	return func(meta *response.Meta) {
 		meta.SetPaging(page, size).SetTotal(total)
 	}
 }
 
 func SetRequestID(requestID string) SetMetaFunc {
-	return func(meta *transportv1.Meta) {
+	return func(meta *response.Meta) {
 		meta.SetRequestID(requestID)
 	}
 }
 
 func SetExtra(key string, value string) SetMetaFunc {
-	return func(meta *transportv1.Meta) {
+	return func(meta *response.Meta) {
 		meta.SetExtra(key, value)
 	}
 }
 
 func SetExtraMap(m map[string]string) SetMetaFunc {
-	return func(meta *transportv1.Meta) {
+	return func(meta *response.Meta) {
 		meta.SetExtraMap(m)
 	}
 }

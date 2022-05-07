@@ -8,7 +8,7 @@ import (
 	"github.com/go-kratos/kratos/v2/transport/grpc"
 	ggrpc "google.golang.org/grpc"
 
-	transportv1 "github.com/yusank/goim/api/transport/v1"
+	apiresp "github.com/yusank/goim/api/transport/response"
 	userv1 "github.com/yusank/goim/api/user/v1"
 	"github.com/yusank/goim/apps/gateway/internal/app"
 	"github.com/yusank/goim/apps/gateway/internal/dao"
@@ -52,13 +52,19 @@ func (s *UserService) Login(ctx context.Context, req *userv1.UserLoginRequest) (
 		return nil, fmt.Errorf("invalid user login request")
 	}
 
-	user, err := userv1.NewUserServiceClient(cc).QueryUser(ctx, queryReq)
+	rsp, err := userv1.NewUserServiceClient(cc).QueryUser(ctx, queryReq)
 	if err != nil {
 		return nil, err
 	}
 
+	if !rsp.GetResponse().Success() {
+		return nil, rsp.GetResponse()
+	}
+
+	user := rsp.GetUser()
+
 	if user.GetPassword() != util.Md5String(req.GetPassword()) {
-		return nil, transportv1.ResponseInvalidUserOrPassword
+		return nil, apiresp.ErrInvalidUserOrPassword
 	}
 
 	agentID, err := s.userDao.GetUserOnlineAgent(ctx, user.GetUid())
@@ -86,12 +92,16 @@ func (s *UserService) Register(ctx context.Context, req *userv1.CreateUserReques
 	}
 
 	// do check user exist and create.
-	user, err := userv1.NewUserServiceClient(cc).CreateUser(ctx, req)
+	rsp, err := userv1.NewUserServiceClient(cc).CreateUser(ctx, req)
 	if err != nil {
 		return nil, err
 	}
 
-	return user.ToUser(), nil
+	if !rsp.GetResponse().Success() {
+		return nil, rsp.GetResponse()
+	}
+
+	return rsp.GetUser().ToUser(), nil
 }
 
 // UpdateUser update user info.
@@ -102,12 +112,16 @@ func (s *UserService) UpdateUser(ctx context.Context, req *userv1.UpdateUserRequ
 	}
 
 	// do check user exist and update.
-	user, err := userv1.NewUserServiceClient(cc).UpdateUser(ctx, req)
+	rsp, err := userv1.NewUserServiceClient(cc).UpdateUser(ctx, req)
 	if err != nil {
 		return nil, err
 	}
 
-	return user.ToUser(), nil
+	if !rsp.GetResponse().Success() {
+		return nil, rsp.GetResponse()
+	}
+
+	return rsp.GetUser().ToUser(), nil
 }
 
 func (s *UserService) loadConn(ctx context.Context) (*ggrpc.ClientConn, error) {

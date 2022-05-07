@@ -1,9 +1,11 @@
 syntax = "proto3";
 
 package api.user.v1;
-option go_package = "api/user/v1;v1";
+option go_package = "api/user/relation/v1;v1";
 
 import "validate/validate.proto";
+
+import "transport/response/response.proto";
 
 message UserRelation {
   string uid = 1;
@@ -32,8 +34,8 @@ message AddFriendRequest {
 }
 
 message AddFriendResponse {
-  AddFriendStatus status = 1;
-  string message = 2;
+  transport.response.BaseResponse response = 1;
+  AddFriendStatus status = 2;
   UserRelation user_relation = 3;
 }
 
@@ -54,7 +56,8 @@ message GetUserRelationRequest {
 }
 
 message GetUserRelationResponse {
-  UserRelation user_relation = 1;
+  transport.response.BaseResponse response = 1;
+  UserRelation user_relation = 2;
 }
 
 message QueryUserRelationListRequest {
@@ -62,7 +65,8 @@ message QueryUserRelationListRequest {
 }
 
 message QueryUserRelationListResponse {
-  repeated UserRelation user_relation_list = 3;
+  transport.response.BaseResponse response = 1;
+  repeated UserRelation user_relation_list = 2;
 }
 
 enum UpdateUserRelationAction {
@@ -73,45 +77,20 @@ enum UpdateUserRelationAction {
   UNBLOCK = 4; // unblock friend
 }
 
-message UpdateUserRelationRequest {
+message RelationPair {
   string uid = 1 [(validate.rules).string = {min_len: 20, max_len: 24}];
   string friend_uid = 2 [(validate.rules).string = {min_len: 20, max_len: 24}];
-  UpdateUserRelationAction action = 3 [(validate.rules).enum.defined_only = true];
 }
 
-message UpdateUserRelationResponse {
-  bool success = 1;
-  string message = 2;
+message UpdateUserRelationRequest {
+  RelationPair relation_pair = 1 [(validate.rules).message.required = true];
+  UpdateUserRelationAction action = 2 [(validate.rules).enum.defined_only = true];
 }
+
 
 service UserRelationService {
   rpc AddFriend(AddFriendRequest) returns (AddFriendResponse);
   rpc GetUserRelation(GetUserRelationRequest) returns (GetUserRelationResponse);
   rpc QueryUserRelationList(QueryUserRelationListRequest) returns (QueryUserRelationListResponse);
-  rpc UpdateUserRelation(UpdateUserRelationRequest) returns (UpdateUserRelationResponse);
-}
-
-message AcceptFriendRequest {
-  string uid = 1 [(validate.rules).string = {min_len: 20, max_len: 24}];
-  string friend_uid = 2 [(validate.rules).string = {min_len: 20, max_len: 24}];
-}
-
-message RemoveFriendRequest {
-  string uid = 1 [(validate.rules).string = {min_len: 20, max_len: 24}];
-  string friend_uid = 2 [(validate.rules).string = {min_len: 20, max_len: 24}];
-}
-
-message RejectFriendRequest {
-  string uid = 1 [(validate.rules).string = {min_len: 20, max_len: 24}];
-  string friend_uid = 2 [(validate.rules).string = {min_len: 20, max_len: 24}];
-}
-
-message BlockFriendRequest {
-  string uid = 1 [(validate.rules).string = {min_len: 20, max_len: 24}];
-  string friend_uid = 2 [(validate.rules).string = {min_len: 20, max_len: 24}];
-}
-
-message UnblockFriendRequest {
-  string uid = 1 [(validate.rules).string = {min_len: 20, max_len: 24}];
-  string friend_uid = 2 [(validate.rules).string = {min_len: 20, max_len: 24}];
+  rpc UpdateUserRelation(UpdateUserRelationRequest) returns (transport.response.BaseResponse);
 }

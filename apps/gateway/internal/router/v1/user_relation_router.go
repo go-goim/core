@@ -3,7 +3,7 @@ package v1
 import (
 	"github.com/gin-gonic/gin"
 
-	userv1 "github.com/yusank/goim/api/user/v1"
+	relationv1 "github.com/yusank/goim/api/user/relation/v1"
 	"github.com/yusank/goim/apps/gateway/internal/service"
 	"github.com/yusank/goim/pkg/mid"
 	"github.com/yusank/goim/pkg/request"
@@ -34,7 +34,7 @@ func (r *UserRelationRouter) Load(g *gin.RouterGroup) {
 func (r *UserRelationRouter) listRelation(c *gin.Context) {
 	// no need to check uid
 	uid := c.GetString("uid")
-	req := &userv1.QueryUserRelationListRequest{
+	req := &relationv1.QueryUserRelationListRequest{
 		Uid: uid,
 	}
 
@@ -49,7 +49,7 @@ func (r *UserRelationRouter) listRelation(c *gin.Context) {
 }
 
 func (r *UserRelationRouter) addFriend(c *gin.Context) {
-	req := &userv1.AddFriendRequest{}
+	req := &relationv1.AddFriendRequest{}
 	if err := c.ShouldBindWith(req, request.PbJSONBinding{}); err != nil {
 		response.ErrorResp(c, err)
 		return
@@ -65,81 +65,81 @@ func (r *UserRelationRouter) addFriend(c *gin.Context) {
 }
 
 func (r *UserRelationRouter) deleteFriend(c *gin.Context) {
-	req := &userv1.RemoveFriendRequest{}
+	req := &relationv1.RelationPair{}
 	if err := c.ShouldBindWith(req, request.PbJSONBinding{}); err != nil {
 		response.ErrorResp(c, err)
 		return
 	}
 
-	err := service.GetUserRelationService().DeleteFriend(mid.GetContext(c), req)
+	rsp, err := service.GetUserRelationService().DeleteFriend(mid.GetContext(c), req)
 	if err != nil {
 		response.ErrorResp(c, err)
 		return
 	}
 
-	response.SuccessResp(c, nil)
+	response.SuccessResp(c, rsp)
 }
 
 func (r *UserRelationRouter) acceptFriend(c *gin.Context) {
-	req := &userv1.AcceptFriendRequest{}
+	req := &relationv1.RelationPair{}
 	if err := c.ShouldBindWith(req, request.PbJSONBinding{}); err != nil {
 		response.ErrorResp(c, err)
 		return
 	}
 
-	err := service.GetUserRelationService().AcceptFriend(mid.GetContext(c), req)
+	rsp, err := service.GetUserRelationService().AcceptFriend(mid.GetContext(c), req)
 	if err != nil {
 		response.ErrorResp(c, err)
 		return
 	}
 
-	response.SuccessResp(c, gin.H{"code": 0})
+	response.SuccessResp(c, rsp)
 }
 
 func (r *UserRelationRouter) rejectFriend(c *gin.Context) {
-	req := &userv1.RejectFriendRequest{}
+	req := &relationv1.RelationPair{}
 	if err := c.ShouldBindWith(req, request.PbJSONBinding{}); err != nil {
 		response.ErrorResp(c, err)
 		return
 	}
 
-	err := service.GetUserRelationService().RejectFriend(mid.GetContext(c), req)
+	rsp, err := service.GetUserRelationService().RejectFriend(mid.GetContext(c), req)
 	if err != nil {
 		response.ErrorResp(c, err)
 		return
 	}
 
-	response.SuccessResp(c, gin.H{"code": 0})
+	response.SuccessResp(c, rsp)
 }
 
 func (r *UserRelationRouter) blockFriend(c *gin.Context) {
-	req := &userv1.BlockFriendRequest{}
+	req := &relationv1.RelationPair{}
 	if err := c.ShouldBindWith(req, request.PbJSONBinding{}); err != nil {
 		response.ErrorResp(c, err)
 		return
 	}
 
-	err := service.GetUserRelationService().BlockFriend(mid.GetContext(c), req)
+	rsp, err := service.GetUserRelationService().BlockFriend(mid.GetContext(c), req)
 	if err != nil {
 		response.ErrorResp(c, err)
 		return
 	}
 
-	response.SuccessResp(c, gin.H{"code": 0})
+	response.SuccessResp(c, rsp)
 }
 
 func (r *UserRelationRouter) unblockFriend(c *gin.Context) {
-	req := &userv1.UnblockFriendRequest{}
+	req := &relationv1.RelationPair{}
 	if err := c.ShouldBindWith(req, request.PbJSONBinding{}); err != nil {
 		response.ErrorResp(c, err)
 		return
 	}
 
-	err := service.GetUserRelationService().UnblockFriend(mid.GetContext(c), req)
+	rsp, err := service.GetUserRelationService().UnblockFriend(mid.GetContext(c), req)
 	if err != nil {
 		response.ErrorResp(c, err)
 		return
 	}
 
-	response.SuccessResp(c, gin.H{"code": 0})
+	response.SuccessResp(c, rsp)
 }

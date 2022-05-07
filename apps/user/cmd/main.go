@@ -5,6 +5,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 
+	relationv1 "github.com/yusank/goim/api/user/relation/v1"
 	userv1 "github.com/yusank/goim/api/user/v1"
 	"github.com/yusank/goim/apps/user/internal/app"
 	"github.com/yusank/goim/apps/user/internal/router"
@@ -27,7 +28,7 @@ func main() {
 
 	// TODO: add registered grpc services to metadata in service registry.
 	userv1.RegisterUserServiceServer(application.GrpcSrv, service.GetUserService())
-	userv1.RegisterUserRelationServiceServer(application.GrpcSrv, service.GetUserRelationService())
+	relationv1.RegisterUserRelationServiceServer(application.GrpcSrv, service.GetUserRelationService())
 
 	g := gin.New()
 	g.Use(gin.Recovery(), mid.Logger)

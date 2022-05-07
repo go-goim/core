@@ -6,6 +6,7 @@ import (
 	messagev1 "github.com/yusank/goim/api/message/v1"
 	"github.com/yusank/goim/apps/gateway/internal/service"
 	"github.com/yusank/goim/pkg/mid"
+	"github.com/yusank/goim/pkg/request"
 	"github.com/yusank/goim/pkg/response"
 	"github.com/yusank/goim/pkg/router"
 )
@@ -26,7 +27,7 @@ func (r *OfflineMessageRouter) Load(g *gin.RouterGroup) {
 
 func (r *OfflineMessageRouter) handleQueryOfflineMessage(c *gin.Context) {
 	req := new(messagev1.QueryOfflineMessageReq)
-	if err := c.ShouldBindJSON(req); err != nil {
+	if err := c.ShouldBindWith(req, request.PbJSONBinding{}); err != nil {
 		response.ErrorResp(c, err)
 		return
 	}

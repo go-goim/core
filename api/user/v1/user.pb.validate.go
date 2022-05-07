@@ -35,6 +35,166 @@ var (
 	_ = sort.Sort
 )
 
+// Validate checks the field values on UserInternalResponse with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *UserInternalResponse) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on UserInternalResponse with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// UserInternalResponseMultiError, or nil if none found.
+func (m *UserInternalResponse) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *UserInternalResponse) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if all {
+		switch v := interface{}(m.GetResponse()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, UserInternalResponseValidationError{
+					field:  "Response",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, UserInternalResponseValidationError{
+					field:  "Response",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetResponse()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return UserInternalResponseValidationError{
+				field:  "Response",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	if all {
+		switch v := interface{}(m.GetUser()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, UserInternalResponseValidationError{
+					field:  "User",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, UserInternalResponseValidationError{
+					field:  "User",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetUser()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return UserInternalResponseValidationError{
+				field:  "User",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	if len(errors) > 0 {
+		return UserInternalResponseMultiError(errors)
+	}
+
+	return nil
+}
+
+// UserInternalResponseMultiError is an error wrapping multiple validation
+// errors returned by UserInternalResponse.ValidateAll() if the designated
+// constraints aren't met.
+type UserInternalResponseMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m UserInternalResponseMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m UserInternalResponseMultiError) AllErrors() []error { return m }
+
+// UserInternalResponseValidationError is the validation error returned by
+// UserInternalResponse.Validate if the designated constraints aren't met.
+type UserInternalResponseValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e UserInternalResponseValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e UserInternalResponseValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e UserInternalResponseValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e UserInternalResponseValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e UserInternalResponseValidationError) ErrorName() string {
+	return "UserInternalResponseValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e UserInternalResponseValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sUserInternalResponse.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = UserInternalResponseValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = UserInternalResponseValidationError{}
+
 // Validate checks the field values on UserInternal with the rules defined in
 // the proto definition for this message. If any rules are violated, the first
 // error encountered is returned, or nil if there are no violations.
