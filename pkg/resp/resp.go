@@ -35,7 +35,7 @@ const jsonContentType = "application/json; charset=utf-8"
 func SuccessResp(c *gin.Context, body interface{}, setFunc ...SetMetaFunc) {
 	resp := convertBodyToResponse(body)
 
-	meta := transportv1.NewMeta()
+	meta := resp.GetOrNewMeta()
 	for _, f := range setFunc {
 		f(meta)
 	}
@@ -66,7 +66,7 @@ func convertBodyToResponse(body interface{}) transportv1.IResponse {
 
 func json(c *gin.Context, code int, resp transportv1.IResponse) {
 	// get request id from context
-	resp.SetMeta(transportv1.NewMeta().SetRequestID(c.GetString(mid.RequestIDKey)))
+	SetRequestID(c.GetString(mid.RequestIDKey))(resp.GetOrNewMeta())
 
 	b, err := resp.Marshall()
 	if err != nil {
