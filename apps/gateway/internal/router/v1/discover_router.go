@@ -8,8 +8,8 @@ import (
 
 	"github.com/yusank/goim/apps/gateway/internal/service"
 	"github.com/yusank/goim/pkg/mid"
+	"github.com/yusank/goim/pkg/resp"
 	"github.com/yusank/goim/pkg/router"
-	"github.com/yusank/goim/pkg/util"
 )
 
 type DiscoverRouter struct {
@@ -29,17 +29,17 @@ func (r *DiscoverRouter) Load(g *gin.RouterGroup) {
 func (r *DiscoverRouter) handleDiscoverPushServer(c *gin.Context) {
 	uid := c.GetHeader("uid")
 	if uid == "" {
-		util.ErrorResp(c, fmt.Errorf("uid is empty"))
+		resp.ErrorResp(c, fmt.Errorf("uid is empty"))
 		return
 	}
 
 	agentID, err := service.LoadMatchedPushServer(context.Background())
 	if err != nil {
-		util.ErrorResp(c, err)
+		resp.ErrorResp(c, err)
 		return
 	}
 
-	util.SuccessResp(c, gin.H{
+	resp.SuccessResp(c, gin.H{
 		"agentId": agentID,
 	})
 }

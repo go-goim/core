@@ -1,4 +1,4 @@
-package util
+package resp
 
 import (
 	"net/http"
@@ -8,6 +8,7 @@ import (
 
 	transportv1 "github.com/yusank/goim/api/transport/v1"
 	"github.com/yusank/goim/pkg/log"
+	"github.com/yusank/goim/pkg/mid"
 )
 
 func ErrorResp(c *gin.Context, err error) {
@@ -31,8 +32,16 @@ func ErrorRespWithStatus(c *gin.Context, httpCode int, err error) {
 
 const jsonContentType = "application/json; charset=utf-8"
 
-func SuccessResp(c *gin.Context, body interface{}) {
-	json(c, http.StatusOK, body)
+func SuccessResp(c *gin.Context, body interface{}, setFunc ...SetMetaFunc) {
+	resp := convertBodyToResponse(body)
+
+	meta := transportv1.NewMeta()
+	for _, f := range setFunc {
+		f(meta)
+	}
+	resp.SetMeta(meta)
+
+	json(c, http.StatusOK, resp)
 }
 
 func convertBodyToResponse(body interface{}) transportv1.IResponse {
@@ -55,9 +64,10 @@ func convertBodyToResponse(body interface{}) transportv1.IResponse {
 	return resp
 }
 
-func json(c *gin.Context, code int, body interface{}) {
-	resp := convertBodyToResponse(body)
-	// TODO set meta data
+func json(c *gin.Context, code int, resp transportv1.IResponse) {
+	// get request id from context
+	resp.SetMeta(transportv1.NewMeta().SetRequestID(c.GetString(mid.RequestIDKey)))
+
 	b, err := resp.Marshall()
 	if err != nil {
 		// this is a critical error
@@ -66,4 +76,32 @@ func json(c *gin.Context, code int, body interface{}) {
 	}
 
 	c.Data(code, jsonContentType, b)
+}
+
+// set meta data to response
+
+type SetMetaFunc func(meta *transportv1.Meta)
+
+func SetPaging(page, size, total int) SetMetaFunc {
+	return func(meta *transportv1.Meta) {
+		meta.SetPaging(page, size).SetTotal(total)
+	}
+}
+
+func SetRequestID(requestID string) SetMetaFunc {
+	return func(meta *transportv1.Meta) {
+		meta.SetRequestID(requestID)
+	}
+}
+
+func SetExtra(key string, value string) SetMetaFunc {
+	return func(meta *transportv1.Meta) {
+		meta.SetExtra(key, value)
+	}
+}
+
+func SetExtraMap(m map[string]string) SetMetaFunc {
+	return func(meta *transportv1.Meta) {
+		meta.SetExtraMap(m)
+	}
 }

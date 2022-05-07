@@ -6,8 +6,8 @@ import (
 	messagev1 "github.com/yusank/goim/api/message/v1"
 	"github.com/yusank/goim/apps/gateway/internal/service"
 	"github.com/yusank/goim/pkg/mid"
+	"github.com/yusank/goim/pkg/resp"
 	"github.com/yusank/goim/pkg/router"
-	"github.com/yusank/goim/pkg/util"
 )
 
 type OfflineMessageRouter struct {
@@ -27,15 +27,15 @@ func (r *OfflineMessageRouter) Load(g *gin.RouterGroup) {
 func (r *OfflineMessageRouter) handleQueryOfflineMessage(c *gin.Context) {
 	req := new(messagev1.QueryOfflineMessageReq)
 	if err := c.ShouldBindJSON(req); err != nil {
-		util.ErrorResp(c, err)
+		resp.ErrorResp(c, err)
 		return
 	}
 
 	rsp, err := service.GetOfflineMessageService().QueryOfflineMsg(mid.GetContext(c), req)
 	if err != nil {
-		util.ErrorResp(c, err)
+		resp.ErrorResp(c, err)
 		return
 	}
 
-	util.SuccessResp(c, rsp)
+	resp.SuccessResp(c, rsp)
 }
