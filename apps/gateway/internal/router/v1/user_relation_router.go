@@ -74,7 +74,7 @@ func (r *UserRelationRouter) deleteFriend(c *gin.Context) {
 		return
 	}
 
-	util.SuccessResp(c, gin.H{"code": 0})
+	util.SuccessResp(c, nil)
 }
 
 func (r *UserRelationRouter) acceptFriend(c *gin.Context) {
