@@ -31,7 +31,12 @@ func GetSendMessageService() *SendMessageService {
 }
 
 func (s *SendMessageService) SendMessage(ctx context.Context, req *messagev1.SendMessageReq) (*messagev1.SendMessageResp, error) {
+	rsp := new(messagev1.SendMessageResp)
 	// check req params
+	if err := req.Validate(); err != nil {
+		rsp.Response = apiresp.ErrInvalidParams.SetMsg(err.Error())
+		return rsp, nil
+	}
 
 	mm := &messagev1.MqMessage{
 		FromUser:        req.GetFromUser(),
@@ -41,29 +46,17 @@ func (s *SendMessageService) SendMessage(ctx context.Context, req *messagev1.Sen
 		Content:         req.GetContent(),
 	}
 
-	rsp := &messagev1.SendMessageResp{
-		Response: apiresp.OK,
-	}
-
-	b, err := json.Marshal(mm)
-	if err != nil {
-		rsp.Response = apiresp.ErrUnknown.SetMsg(err.Error())
-		return rsp, nil
-	}
-
-	rs, err := app.GetApplication().Producer.SendSync(ctx, mq.NewMessage("def_topic", b))
-	if err != nil {
-		rsp.Response = apiresp.ErrUnknown.SetMsg(err.Error())
-		return rsp, nil
-	}
-
-	log.Info(rs.String())
-	rsp.MsgSeq = rs.MsgID
-
-	return rsp, nil
+	return s.sendMessage(ctx, mm)
 }
 
 func (s *SendMessageService) Broadcast(ctx context.Context, req *messagev1.SendMessageReq) (*messagev1.SendMessageResp, error) {
+	rsp := new(messagev1.SendMessageResp)
+	// check req params
+	if err := req.Validate(); err != nil {
+		rsp.Response = apiresp.ErrInvalidParams.SetMsg(err.Error())
+		return rsp, nil
+	}
+
 	mm := &messagev1.MqMessage{
 		FromUser:        req.GetFromUser(),
 		ToUser:          req.GetToUser(),
@@ -72,9 +65,11 @@ func (s *SendMessageService) Broadcast(ctx context.Context, req *messagev1.SendM
 		Content:         req.GetContent(),
 	}
 
-	rsp := &messagev1.SendMessageResp{
-		Response: apiresp.OK,
-	}
+	return s.sendMessage(ctx, mm)
+}
+
+func (s *SendMessageService) sendMessage(ctx context.Context, mm *messagev1.MqMessage) (*messagev1.SendMessageResp, error) {
+	rsp := new(messagev1.SendMessageResp)
 
 	b, err := json.Marshal(mm)
 	if err != nil {

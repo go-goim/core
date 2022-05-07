@@ -286,6 +286,10 @@ const (
 
 	CodeRelationNotFound            Code = 30001
 	CodeInvalidUpdateRelationAction Code = 30002
+
+	// push server error codes
+
+	CodeUserNotOnline Code = 40001
 )
 
 var (
@@ -305,4 +309,8 @@ var (
 
 	ErrRelationNotFound            = NewBaseResponse(CodeRelationNotFound, "RELATION_NOT_FOUND")
 	ErrInvalidUpdateRelationAction = NewBaseResponse(CodeInvalidUpdateRelationAction, "INVALID_UPDATE_RELATION_ACTION")
+
+	// push server error
+
+	ErrUserNotOnline = NewBaseResponse(CodeUserNotOnline, "USER_NOT_ONLINE")
 )
