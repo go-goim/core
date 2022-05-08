@@ -7,7 +7,6 @@ import (
 	ggrpc "google.golang.org/grpc"
 
 	messagev1 "github.com/yusank/goim/api/message/v1"
-	apiresp "github.com/yusank/goim/api/transport/response"
 	"github.com/yusank/goim/apps/gateway/internal/app"
 	"github.com/yusank/goim/pkg/conn/pool"
 	"github.com/yusank/goim/pkg/conn/wrapper"
@@ -23,7 +22,7 @@ func GetOfflineMessageService() *OfflineMessageService {
 }
 
 func (s *OfflineMessageService) QueryOfflineMsg(ctx context.Context, req *messagev1.QueryOfflineMessageReq) (
-	*apiresp.PbResponse, error) {
+	*messagev1.QueryOfflineMessageResp, error) {
 	cc, err := s.loadConn(ctx)
 	if err != nil {
 		return nil, err

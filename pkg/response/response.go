@@ -4,7 +4,6 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"google.golang.org/protobuf/proto"
 
 	"github.com/yusank/goim/api/transport/response"
 	"github.com/yusank/goim/pkg/log"
@@ -49,19 +48,11 @@ func convertBodyToResponse(body interface{}) response.IResponse {
 	switch b := body.(type) {
 	case response.IResponse:
 		return b
-	case proto.Message:
-		resp = response.NewPbResponse(response.OK)
 	default:
 		resp = response.NewResponse(response.OK)
 	}
 
-	var err error
-	resp, err = resp.SetData(body)
-	if err != nil {
-		return response.ErrUnknown.SetMsg(err.Error())
-	}
-
-	return resp
+	return resp.SetData(body)
 }
 
 func json(c *gin.Context, code int, resp response.IResponse) {

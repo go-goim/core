@@ -6,10 +6,8 @@ Srv ?= push
 BinPath ?= bin/service.goim.$(Srv)
 CmdPath ?= apps/$(Srv)/cmd/main.go
 CfgPath ?= apps/$(Srv)/configs
-ProtoFile ?= api/config/v1/config.proto
 IMAGE ?= goim/$(Srv)
 VERSION ?= $(shell git describe --exact-match --tags 2> /dev/null || git rev-parse --abbrev-ref HEAD)
-Validate ?= false
 
 ## env
 export ROCKETMQ_GO_LOG_LEVEL=warn
@@ -43,18 +41,8 @@ test: ## Run test against code.
 
 .PHONY: gen-protoc
 gen-protoc: ## Run protoc command to generate pb code.
-ifeq ($(Validate), true)
-	protoc --proto_path=. --proto_path=./third_party --proto_path=./api \
-		--go_out==paths=source_relative:. \
-		--go-grpc_out==paths=source_relative:. \
-		--validate_out=lang=go,paths==paths=source_relative:. \
-		$(ProtoFile)
-else
-	protoc --proto_path=. --proto_path=./third_party --proto_path=./api \
-    		--go_out==paths=source_relative:. \
-    		--go-grpc_out==paths=source_relative:. \
-    		$(ProtoFile)
-endif
+	# call gen_proto.sh
+	./gen_proto.sh api
 
 .PHONY: tools-install
 tools-install: ## Install tools.

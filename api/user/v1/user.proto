@@ -5,8 +5,8 @@ option go_package = "api/user/v1;v1";
 
 import "validate/validate.proto";
 
-// import goim/api/transport/v1/http.proto;
-import "api/transport/response/response.proto";
+// import api/transport/v1/http.proto;
+import "transport/response/response.proto";
 
 enum LoginStatus {
   LOGIN = 0;

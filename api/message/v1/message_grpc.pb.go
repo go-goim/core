@@ -231,7 +231,7 @@ var PushMessager_ServiceDesc = grpc.ServiceDesc{
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type OfflineMessageClient interface {
-	QueryOfflineMessage(ctx context.Context, in *QueryOfflineMessageReq, opts ...grpc.CallOption) (*response.PbResponse, error)
+	QueryOfflineMessage(ctx context.Context, in *QueryOfflineMessageReq, opts ...grpc.CallOption) (*QueryOfflineMessageResp, error)
 }
 
 type offlineMessageClient struct {
@@ -242,8 +242,8 @@ func NewOfflineMessageClient(cc grpc.ClientConnInterface) OfflineMessageClient {
 	return &offlineMessageClient{cc}
 }
 
-func (c *offlineMessageClient) QueryOfflineMessage(ctx context.Context, in *QueryOfflineMessageReq, opts ...grpc.CallOption) (*response.PbResponse, error) {
-	out := new(response.PbResponse)
+func (c *offlineMessageClient) QueryOfflineMessage(ctx context.Context, in *QueryOfflineMessageReq, opts ...grpc.CallOption) (*QueryOfflineMessageResp, error) {
+	out := new(QueryOfflineMessageResp)
 	err := c.cc.Invoke(ctx, "/api.message.v1.OfflineMessage/QueryOfflineMessage", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -255,7 +255,7 @@ func (c *offlineMessageClient) QueryOfflineMessage(ctx context.Context, in *Quer
 // All implementations must embed UnimplementedOfflineMessageServer
 // for forward compatibility
 type OfflineMessageServer interface {
-	QueryOfflineMessage(context.Context, *QueryOfflineMessageReq) (*response.PbResponse, error)
+	QueryOfflineMessage(context.Context, *QueryOfflineMessageReq) (*QueryOfflineMessageResp, error)
 	mustEmbedUnimplementedOfflineMessageServer()
 }
 
@@ -263,7 +263,7 @@ type OfflineMessageServer interface {
 type UnimplementedOfflineMessageServer struct {
 }
 
-func (UnimplementedOfflineMessageServer) QueryOfflineMessage(context.Context, *QueryOfflineMessageReq) (*response.PbResponse, error) {
+func (UnimplementedOfflineMessageServer) QueryOfflineMessage(context.Context, *QueryOfflineMessageReq) (*QueryOfflineMessageResp, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method QueryOfflineMessage not implemented")
 }
 func (UnimplementedOfflineMessageServer) mustEmbedUnimplementedOfflineMessageServer() {}
