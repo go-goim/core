@@ -88,6 +88,11 @@ message QueryOfflineMessageReq {
   int32 page_size = 5 [(validate.rules).int32 = {gte: 1, lte: 100}];
 }
 
+message QueryOfflineMessageResp {
+  transport.response.BaseResponse response = 1;
+  repeated BriefMessage messages = 2;
+}
+
 service OfflineMessage {
-  rpc QueryOfflineMessage(QueryOfflineMessageReq) returns (transport.response.PbResponse);
+  rpc QueryOfflineMessage(QueryOfflineMessageReq) returns (QueryOfflineMessageResp);
 }

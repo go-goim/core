@@ -21,16 +21,18 @@ type OfflineMessageService struct {
 }
 
 func (o *OfflineMessageService) QueryOfflineMessage(ctx context.Context, req *messagev1.QueryOfflineMessageReq) (
-	*apiresp.PbResponse, error) {
-	rsp := &apiresp.PbResponse{}
-	rsp.SetBaseResponse(apiresp.OK)
-	rsp.GetOrNewMeta().SetPaging(int(req.GetPage()), int(req.GetPageSize()))
+	*messagev1.QueryOfflineMessageResp, error) {
+	rsp := &messagev1.QueryOfflineMessageResp{
+		Response: apiresp.OK,
+	}
+
+	rsp.Response.GetOrNewMeta().SetPaging(int(req.GetPage()), int(req.GetPageSize()))
 
 	log.Info("req=", req.String())
 	msgID, err := primitive.UnmarshalMsgID([]byte(req.GetLastMsgSeq()))
 	if err != nil {
 		log.Info("unmarshal msg id err=", err)
-		rsp.SetBaseResponse(apiresp.ErrUnknown.SetMsg(err.Error()))
+		rsp.Response.SetBaseResponse(apiresp.ErrUnknown.SetMsg(err.Error()))
 		return rsp, nil
 	}
 
@@ -42,11 +44,11 @@ func (o *OfflineMessageService) QueryOfflineMessage(ctx context.Context, req *me
 		strconv.FormatInt(msgID.Offset+1, 10),
 		"+inf").Result()
 	if err != nil {
-		rsp.SetBaseResponse(apiresp.ErrUnknown.SetMsg(err.Error()))
+		rsp.Response.SetBaseResponse(apiresp.ErrUnknown.SetMsg(err.Error()))
 		return rsp, nil
 	}
 
-	rsp.GetOrNewMeta().SetTotal(int(cnt))
+	rsp.Response.GetOrNewMeta().SetTotal(int(cnt))
 	if req.GetOnlyCount() {
 		return rsp, nil
 	}
@@ -60,25 +62,20 @@ func (o *OfflineMessageService) QueryOfflineMessage(ctx context.Context, req *me
 			Count:  int64(req.GetPageSize()),
 		}).Result()
 	if err != nil {
-		rsp.SetBaseResponse(apiresp.ErrUnknown.SetMsg(err.Error()))
+		rsp.Response.SetBaseResponse(apiresp.ErrUnknown.SetMsg(err.Error()))
 		return rsp, nil
 	}
 
-	messages := make([]*messagev1.BriefMessage, len(results))
+	rsp.Messages = make([]*messagev1.BriefMessage, len(results))
 	for i, result := range results {
 		str := result.Member.(string)
 		msg := new(messagev1.BriefMessage)
 		if err = json.Unmarshal([]byte(str), msg); err != nil {
-			rsp.SetBaseResponse(apiresp.ErrUnknown.SetMsg(err.Error()))
+			rsp.Response.SetBaseResponse(apiresp.ErrUnknown.SetMsg(err.Error()))
 			return rsp, nil
 		}
 
-		messages[i] = msg
-	}
-
-	_, err = rsp.SetData(messages)
-	if err != nil {
-		rsp.SetBaseResponse(apiresp.ErrUnknown.SetMsg(err.Error()))
+		rsp.Messages[i] = msg
 	}
 
 	return rsp, nil

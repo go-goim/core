@@ -3,8 +3,6 @@ syntax = "proto3";
 package api.transport.response;
 option go_package = "github.com/yusank/goim/api/transport/response";
 
-import "google/protobuf/any.proto";
-
 enum Code {
   OK = 0;
   // define other response codes in ext file
@@ -15,14 +13,6 @@ message BaseResponse {
   Code code = 1;
   string msg = 2;
   optional Meta meta = 3; // only for some http response
-}
-
-
-message PbResponse {
-  Code code = 1;
-  string msg = 2;
-  Meta meta = 3;
-  google.protobuf.Any data = 4;
 }
 
 message Meta {
