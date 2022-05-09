@@ -29,24 +29,23 @@ values
     (10002, '7mRZLYedtK1EwxzC5X1Lxf', 'user3', 'e10adc3949ba59abbe56e057f20f883e', 'user2@example.com', ' ', ' ', 0, 1528894200, 1528894200),
     (10003, 'WmbtshDDMUgb3KWFisWZ4E', 'user4', 'e10adc3949ba59abbe56e057f20f883e', 'user3@example.com', ' ', ' ', 0, 1528894200, 1528894200);
 
--- define user_friend table based on go structure UserRelation in current directory
-DROP TABLE IF EXISTS goim.user_relation;
+-- define friend table based on go structure Friend in current directory
+DROP TABLE IF EXISTS goim.friend;
 
-CREATE TABLE IF NOT EXISTS goim.user_relation (
+CREATE TABLE IF NOT EXISTS goim.friend (
     `id` bigint not null auto_increment,
     `uid` varchar(64) not null, -- 22 bytes of uuid
     `friend_uid` varchar(64) not null, -- 22 bytes of uuid
-    `status` tinyint not null default 0 COMMENT '0: request; 1: friend; 2: stranger; 3: blacked',
+    `status` tinyint not null default 0 COMMENT '0: friend; 1: stranger; 2: blacked',
     `create_at` int not null default 0,
     `update_at` int not null default 0,
     primary key (`id`),
     unique key (`uid`, `friend_uid`),
-    key (`uid`),
-    key (`friend_uid`)
+    key (`uid`)
 ) auto_increment = 10000 engine = innodb charset = utf8mb4;
 
 -- mock data
-insert into goim.user_relation (`id`, `uid`, `friend_uid`, `status`, `create_at`, `update_at`)
+insert into goim.friend (`id`, `uid`, `friend_uid`, `status`, `create_at`, `update_at`)
 values
     (10000, '4F8DSQByUsEUMoETzTCabh', 'C6CtUjpC6h5e5SW9tBFNVX', 1, 1528894200, 1528894200),
     (10001, 'C6CtUjpC6h5e5SW9tBFNVX', '4F8DSQByUsEUMoETzTCabh', 1, 1528894200, 1528894200),
@@ -58,3 +57,18 @@ values
     (10007, 'WmbtshDDMUgb3KWFisWZ4E', '4F8DSQByUsEUMoETzTCabh', 1, 1528894200, 1528894200),
     (10008, 'WmbtshDDMUgb3KWFisWZ4E', 'C6CtUjpC6h5e5SW9tBFNVX', 1, 1528894200, 1528894200),
     (10009, 'WmbtshDDMUgb3KWFisWZ4E', '7mRZLYedtK1EwxzC5X1Lxf', 1, 1528894200, 1528894200);
+
+-- define friend_request table based on go structure FriendRequest in current directory
+DROP TABLE IF EXISTS goim.friend_request;
+
+CREATE TABLE IF NOT EXISTS goim.friend_request (
+    `id` bigint not null auto_increment,
+    `uid` varchar(64) not null, -- 22 bytes of uuid
+    `friend_uid` varchar(64) not null, -- 22 bytes of uuid
+    `status` tinyint not null default 0 COMMENT '0: pending; 1: accepted; 2: rejected',
+    `create_at` int not null default 0,
+    `update_at` int not null default 0,
+    primary key (`id`),
+    unique key (`uid`, `friend_uid`),
+    key (`uid`)
+) auto_increment = 10000 engine = innodb charset = utf8mb4;

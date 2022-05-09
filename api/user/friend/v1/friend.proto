@@ -1,0 +1,133 @@
+syntax = "proto3";
+
+package api.user.v1;
+option go_package = "api/user/friend/v1;v1";
+
+import "validate/validate.proto";
+
+import "transport/response/response.proto";
+
+message Friend {
+  string uid = 1;
+  string friend_uid = 2;
+  string friend_name = 3;
+  string friend_avatar = 4;
+  FriendStatus status = 5;
+  int64 create_at = 6;
+  int64 update_at = 7;
+}
+
+enum FriendStatus {
+  // Friend as default status
+  FRIEND = 0;
+  // Stranger when delete friend
+  STRANGER = 1;
+  // Blocked when block friend
+  BLOCKED = 2;
+  // Unblock when unblock friend
+  // unblock status won't be in database only use when update friend status
+  UNBLOCKED = 3;
+}
+
+message FriendList {
+  repeated Friend friend_list = 1;
+}
+
+message UpdateFriendStatusRequest {
+  string uid = 1 [(validate.rules).string = {min_len: 20, max_len: 24}];
+  string friend_uid = 2 [(validate.rules).string = {min_len: 20, max_len: 24}];
+  FriendStatus status = 3;
+}
+
+message GetFriendResponse {
+  transport.response.BaseResponse response = 1;
+  Friend friend = 2;
+}
+
+message QueryFriendListRequest {
+  string uid = 1 [(validate.rules).string = {min_len: 20, max_len: 24}];
+}
+
+message QueryFriendListResponse {
+  transport.response.BaseResponse response = 1;
+  repeated Friend friend_list = 2;
+}
+
+/*
+ * FriendRequest
+*/
+
+// FriendRequest is the request data for adding friend
+message FriendRequest {
+  string uid = 1;
+  string friend_uid = 2;
+  FriendRequestStatus status = 3;
+  int64 create_at = 4;
+  int64 update_at = 5;
+}
+
+enum FriendRequestStatus {
+  // Friend request as default status
+  REQUESTED = 0;
+  // Friend request as accepted
+  ACCEPTED = 1;
+  // Friend request as rejected
+  REJECTED = 2;
+}
+
+message FriendRequestList {
+  repeated FriendRequest friend_request_list = 1;
+}
+
+message BaseFriendRequest {
+  string uid = 1 [(validate.rules).string = {min_len: 20, max_len: 24}];
+  string friend_uid = 2 [(validate.rules).string = {min_len: 20, max_len: 24}];
+}
+
+message AddFriendResponse {
+  transport.response.BaseResponse response = 1;
+  AddFriendStatus status = 2;
+  FriendRequest friend_request = 3;
+}
+
+enum AddFriendStatus {
+  SEND_REQUEST_SUCCESS = 0;
+  ALREADY_SENT_REQUEST = 1;
+  ADD_FRIEND_SUCCESS = 2;
+  BLOCKED_BY_ME = 3;
+  BLOCKED_BY_FRIEND = 4;
+}
+
+message ConfirmFriendRequestReq {
+  BaseFriendRequest info = 1 [(validate.rules).message.required = true];
+  ConfirmFriendRequestAction action = 2 [(validate.rules).enum.defined_only = true];
+}
+
+enum ConfirmFriendRequestAction {
+  ACCEPT = 0; // accept friend request
+  REJECT = 1; // reject friend request
+}
+
+message GetFriendRequestResponse {
+  transport.response.BaseResponse response = 1;
+  FriendRequest friend_request = 2;
+}
+
+message QueryFriendRequestListRequest {
+  string uid = 1 [(validate.rules).string = {min_len: 20, max_len: 24}];
+}
+
+message QueryFriendRequestListResponse {
+  transport.response.BaseResponse response = 1;
+  FriendRequestList friend_request_list = 2;
+}
+
+service FriendService {
+  rpc AddFriend(BaseFriendRequest) returns (AddFriendResponse);
+  rpc ConfirmFriendRequest(ConfirmFriendRequestReq) returns (transport.response.BaseResponse);
+  rpc UpdateFriendStatus(UpdateFriendStatusRequest) returns (transport.response.BaseResponse);
+  rpc GetFriend(BaseFriendRequest) returns (GetFriendResponse);
+  rpc QueryFriendList(QueryFriendListRequest) returns (QueryFriendListResponse);
+  rpc GetFriendRequest(BaseFriendRequest) returns (GetFriendRequestResponse);
+  rpc QueryFriendRequestList(QueryFriendRequestListRequest) returns (QueryFriendRequestListResponse);
+}
