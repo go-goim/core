@@ -112,7 +112,7 @@ func (s *UserService) CreateUser(ctx context.Context, req *userv1.CreateUserRequ
 			Name:     req.GetName(),
 			Email:    req.GetEmail(),
 			Phone:    req.GetPhone(),
-			Password: util.Md5String(req.GetPassword()),
+			Password: util.HashString(req.GetPassword()),
 		}
 
 		err = s.userDao.CreateUser(ctx, user)
@@ -128,7 +128,7 @@ func (s *UserService) CreateUser(ctx context.Context, req *userv1.CreateUserRequ
 	if user.IsDeleted() {
 		// undo delete
 		// 这里会出现被删除用户 undo 后使用的是旧密码的情况,需要更新密码
-		user.Password = util.Md5String(req.GetPassword())
+		user.Password = util.HashString(req.GetPassword())
 		err = s.userDao.UndoDelete(ctx, user)
 		if err != nil {
 			return nil, err

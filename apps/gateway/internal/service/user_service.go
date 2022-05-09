@@ -63,7 +63,7 @@ func (s *UserService) Login(ctx context.Context, req *userv1.UserLoginRequest) (
 
 	user := rsp.GetUser()
 
-	if user.GetPassword() != util.Md5String(req.GetPassword()) {
+	if user.GetPassword() != util.HashString(req.GetPassword()) {
 		return nil, apiresp.ErrInvalidUserOrPassword
 	}
 
