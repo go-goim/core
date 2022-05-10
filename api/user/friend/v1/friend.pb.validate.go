@@ -66,9 +66,9 @@ func (m *Friend) validate(all bool) error {
 
 	// no validation rules for Status
 
-	// no validation rules for CreateAt
+	// no validation rules for CreatedAt
 
-	// no validation rules for UpdateAt
+	// no validation rules for UpdatedAt
 
 	if len(errors) > 0 {
 		return FriendMultiError(errors)
@@ -302,26 +302,33 @@ func (m *UpdateFriendStatusRequest) validate(all bool) error {
 
 	var errors []error
 
-	if l := utf8.RuneCountInString(m.GetUid()); l < 20 || l > 24 {
-		err := UpdateFriendStatusRequestValidationError{
-			field:  "Uid",
-			reason: "value length must be between 20 and 24 runes, inclusive",
+	if all {
+		switch v := interface{}(m.GetInfo()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, UpdateFriendStatusRequestValidationError{
+					field:  "Info",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, UpdateFriendStatusRequestValidationError{
+					field:  "Info",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
 		}
-		if !all {
-			return err
+	} else if v, ok := interface{}(m.GetInfo()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return UpdateFriendStatusRequestValidationError{
+				field:  "Info",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
 		}
-		errors = append(errors, err)
-	}
-
-	if l := utf8.RuneCountInString(m.GetFriendUid()); l < 20 || l > 24 {
-		err := UpdateFriendStatusRequestValidationError{
-			field:  "FriendUid",
-			reason: "value length must be between 20 and 24 runes, inclusive",
-		}
-		if !all {
-			return err
-		}
-		errors = append(errors, err)
 	}
 
 	// no validation rules for Status
@@ -872,9 +879,9 @@ func (m *FriendRequest) validate(all bool) error {
 
 	// no validation rules for Status
 
-	// no validation rules for CreateAt
+	// no validation rules for CreatedAt
 
-	// no validation rules for UpdateAt
+	// no validation rules for UpdatedAt
 
 	if len(errors) > 0 {
 		return FriendRequestMultiError(errors)
@@ -953,142 +960,6 @@ var _ interface {
 	Cause() error
 	ErrorName() string
 } = FriendRequestValidationError{}
-
-// Validate checks the field values on FriendRequestList with the rules defined
-// in the proto definition for this message. If any rules are violated, the
-// first error encountered is returned, or nil if there are no violations.
-func (m *FriendRequestList) Validate() error {
-	return m.validate(false)
-}
-
-// ValidateAll checks the field values on FriendRequestList with the rules
-// defined in the proto definition for this message. If any rules are
-// violated, the result is a list of violation errors wrapped in
-// FriendRequestListMultiError, or nil if none found.
-func (m *FriendRequestList) ValidateAll() error {
-	return m.validate(true)
-}
-
-func (m *FriendRequestList) validate(all bool) error {
-	if m == nil {
-		return nil
-	}
-
-	var errors []error
-
-	for idx, item := range m.GetFriendRequestList() {
-		_, _ = idx, item
-
-		if all {
-			switch v := interface{}(item).(type) {
-			case interface{ ValidateAll() error }:
-				if err := v.ValidateAll(); err != nil {
-					errors = append(errors, FriendRequestListValidationError{
-						field:  fmt.Sprintf("FriendRequestList[%v]", idx),
-						reason: "embedded message failed validation",
-						cause:  err,
-					})
-				}
-			case interface{ Validate() error }:
-				if err := v.Validate(); err != nil {
-					errors = append(errors, FriendRequestListValidationError{
-						field:  fmt.Sprintf("FriendRequestList[%v]", idx),
-						reason: "embedded message failed validation",
-						cause:  err,
-					})
-				}
-			}
-		} else if v, ok := interface{}(item).(interface{ Validate() error }); ok {
-			if err := v.Validate(); err != nil {
-				return FriendRequestListValidationError{
-					field:  fmt.Sprintf("FriendRequestList[%v]", idx),
-					reason: "embedded message failed validation",
-					cause:  err,
-				}
-			}
-		}
-
-	}
-
-	if len(errors) > 0 {
-		return FriendRequestListMultiError(errors)
-	}
-
-	return nil
-}
-
-// FriendRequestListMultiError is an error wrapping multiple validation errors
-// returned by FriendRequestList.ValidateAll() if the designated constraints
-// aren't met.
-type FriendRequestListMultiError []error
-
-// Error returns a concatenation of all the error messages it wraps.
-func (m FriendRequestListMultiError) Error() string {
-	var msgs []string
-	for _, err := range m {
-		msgs = append(msgs, err.Error())
-	}
-	return strings.Join(msgs, "; ")
-}
-
-// AllErrors returns a list of validation violation errors.
-func (m FriendRequestListMultiError) AllErrors() []error { return m }
-
-// FriendRequestListValidationError is the validation error returned by
-// FriendRequestList.Validate if the designated constraints aren't met.
-type FriendRequestListValidationError struct {
-	field  string
-	reason string
-	cause  error
-	key    bool
-}
-
-// Field function returns field value.
-func (e FriendRequestListValidationError) Field() string { return e.field }
-
-// Reason function returns reason value.
-func (e FriendRequestListValidationError) Reason() string { return e.reason }
-
-// Cause function returns cause value.
-func (e FriendRequestListValidationError) Cause() error { return e.cause }
-
-// Key function returns key value.
-func (e FriendRequestListValidationError) Key() bool { return e.key }
-
-// ErrorName returns error name.
-func (e FriendRequestListValidationError) ErrorName() string {
-	return "FriendRequestListValidationError"
-}
-
-// Error satisfies the builtin error interface
-func (e FriendRequestListValidationError) Error() string {
-	cause := ""
-	if e.cause != nil {
-		cause = fmt.Sprintf(" | caused by: %v", e.cause)
-	}
-
-	key := ""
-	if e.key {
-		key = "key for "
-	}
-
-	return fmt.Sprintf(
-		"invalid %sFriendRequestList.%s: %s%s",
-		key,
-		e.field,
-		e.reason,
-		cause)
-}
-
-var _ error = FriendRequestListValidationError{}
-
-var _ interface {
-	Field() string
-	Reason() string
-	Key() bool
-	Cause() error
-	ErrorName() string
-} = FriendRequestListValidationError{}
 
 // Validate checks the field values on BaseFriendRequest with the rules defined
 // in the proto definition for this message. If any rules are violated, the
@@ -1854,33 +1725,38 @@ func (m *QueryFriendRequestListResponse) validate(all bool) error {
 		}
 	}
 
-	if all {
-		switch v := interface{}(m.GetFriendRequestList()).(type) {
-		case interface{ ValidateAll() error }:
-			if err := v.ValidateAll(); err != nil {
-				errors = append(errors, QueryFriendRequestListResponseValidationError{
-					field:  "FriendRequestList",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
+	for idx, item := range m.GetFriendRequestList() {
+		_, _ = idx, item
+
+		if all {
+			switch v := interface{}(item).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, QueryFriendRequestListResponseValidationError{
+						field:  fmt.Sprintf("FriendRequestList[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, QueryFriendRequestListResponseValidationError{
+						field:  fmt.Sprintf("FriendRequestList[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
 			}
-		case interface{ Validate() error }:
+		} else if v, ok := interface{}(item).(interface{ Validate() error }); ok {
 			if err := v.Validate(); err != nil {
-				errors = append(errors, QueryFriendRequestListResponseValidationError{
-					field:  "FriendRequestList",
+				return QueryFriendRequestListResponseValidationError{
+					field:  fmt.Sprintf("FriendRequestList[%v]", idx),
 					reason: "embedded message failed validation",
 					cause:  err,
-				})
+				}
 			}
 		}
-	} else if v, ok := interface{}(m.GetFriendRequestList()).(interface{ Validate() error }); ok {
-		if err := v.Validate(); err != nil {
-			return QueryFriendRequestListResponseValidationError{
-				field:  "FriendRequestList",
-				reason: "embedded message failed validation",
-				cause:  err,
-			}
-		}
+
 	}
 
 	if len(errors) > 0 {

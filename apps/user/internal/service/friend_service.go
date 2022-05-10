@@ -8,6 +8,7 @@ import (
 	friendpb "github.com/yusank/goim/api/user/friend/v1"
 	"github.com/yusank/goim/apps/user/internal/dao"
 	"github.com/yusank/goim/apps/user/internal/data"
+	"github.com/yusank/goim/pkg/db"
 )
 
 // FriendService implements friendpb.FriendServiceServer
@@ -24,7 +25,7 @@ var (
 	friendServiceOnce sync.Once
 )
 
-func GetUserRelationService() *FriendService {
+func GetFriendService() *FriendService {
 	friendServiceOnce.Do(func() {
 		friendService = &FriendService{
 			friendDao:        dao.GetUserRelationDao(),
@@ -35,7 +36,12 @@ func GetUserRelationService() *FriendService {
 	return friendService
 }
 
-func (s *FriendService) AddFriend(ctx context.Context, req *friendpb.BaseFriendRequest) (*friendpb.AddFriendResponse, error) {
+/*
+ * handle friend request logic
+ */
+
+func (s *FriendService) AddFriend(ctx context.Context, req *friendpb.BaseFriendRequest) (
+	*friendpb.AddFriendResponse, error) {
 	friendUser, err := s.userDao.GetUserByUID(ctx, req.GetFriendUid())
 	if err != nil {
 		return nil, err
@@ -65,7 +71,7 @@ func (s *FriendService) AddFriend(ctx context.Context, req *friendpb.BaseFriendR
 		return rsp, nil
 	}
 
-	ok, err := s.canAddAutomatically(ctx, me, friend, rsp)
+	ok, err := s.addAutomatically(ctx, me, friend, rsp)
 	if err != nil {
 		return nil, err
 	}
@@ -76,7 +82,7 @@ func (s *FriendService) AddFriend(ctx context.Context, req *friendpb.BaseFriendR
 	}
 
 	// send friend request
-	err = s.sendFriendRequest(ctx, req, me, friend, rsp)
+	err = s.sendFriendRequest(ctx, req, rsp)
 	if err != nil {
 		return nil, err
 	}
@@ -84,7 +90,8 @@ func (s *FriendService) AddFriend(ctx context.Context, req *friendpb.BaseFriendR
 	return rsp, nil
 }
 
-func (s *FriendService) canAddFriend(ctx context.Context, me, friend *data.Friend, rsp *friendpb.AddFriendResponse) bool {
+func (s *FriendService) canAddFriend(_ context.Context, me, friend *data.Friend,
+	rsp *friendpb.AddFriendResponse) bool {
 	// check if me blocked the friend
 	if friend != nil && friend.IsBlocked() {
 		rsp.Status = friendpb.AddFriendStatus_BLOCKED_BY_FRIEND
@@ -100,7 +107,8 @@ func (s *FriendService) canAddFriend(ctx context.Context, me, friend *data.Frien
 	return true
 }
 
-func (s *FriendService) canAddAutomatically(ctx context.Context, me, friend *data.Friend, rsp *friendpb.AddFriendResponse) (bool, error) {
+func (s *FriendService) addAutomatically(ctx context.Context, me, friend *data.Friend,
+	rsp *friendpb.AddFriendResponse) (bool, error) {
 	if friend == nil || friend.IsStranger() {
 		return false, nil
 	}
@@ -134,7 +142,7 @@ func (s *FriendService) canAddAutomatically(ctx context.Context, me, friend *dat
 // friend has not blocked me and has no relation with me(no data or status is stranger)
 // me has not blocked the friend and may have relation with the friend(no data or status in [friend, stranger])
 func (s *FriendService) sendFriendRequest(ctx context.Context, req *friendpb.BaseFriendRequest,
-	me, friend *data.Friend, rsp *friendpb.AddFriendResponse) error {
+	rsp *friendpb.AddFriendResponse) error {
 	// load old friend request
 	fr, err := s.friendRequestDao.GetFriendRequest(ctx, req.GetUid(), req.GetFriendUid())
 	if err != nil {
@@ -171,14 +179,6 @@ func (s *FriendService) sendFriendRequest(ctx context.Context, req *friendpb.Bas
 		}
 
 		rsp.Status = friendpb.AddFriendStatus_SEND_REQUEST_SUCCESS
-
-		// if me status is friend, update friend status to stranger
-		if me != nil && me.IsFriend() {
-			me.SetStranger()
-			if err := s.friendDao.UpdateFriendStatus(ctx, me); err != nil {
-				return err
-			}
-		}
 	}
 
 	if fr.IsRejected() {
@@ -189,49 +189,176 @@ func (s *FriendService) sendFriendRequest(ctx context.Context, req *friendpb.Bas
 		}
 
 		rsp.Status = friendpb.AddFriendStatus_SEND_REQUEST_SUCCESS
-
-		// if me status is friend, update friend status to stranger
-		if me != nil && me.IsFriend() {
-			me.SetStranger()
-			if err := s.friendDao.UpdateFriendStatus(ctx, me); err != nil {
-				return err
-			}
-		}
 	}
 
 	return nil
 }
 
-func (s *FriendService) GetUserRelation(ctx context.Context, req *friendpb.GetUserRelationRequest) (
-	*friendpb.GetUserRelationResponse, error) {
-	ur, err := s.friendDao.GetFriend(ctx, req.GetUid(), req.GetFriendUid())
+func (s *FriendService) ConfirmFriendRequest(ctx context.Context, req *friendpb.ConfirmFriendRequestReq) (
+	*responsepb.BaseResponse, error) {
+	info := req.GetInfo()
+	fr, err := s.friendRequestDao.GetFriendRequest(ctx, info.GetUid(), info.GetFriendUid())
 	if err != nil {
 		return nil, err
 	}
 
-	rsp := &friendpb.GetUserRelationResponse{}
-	if ur != nil {
-		rsp.UserRelation = ur.ToProtoFriend()
+	if fr == nil {
+		// todo use another error code
+		return responsepb.ErrUserNotFound, nil
+	}
+
+	// cannot confirm friend request if the friend request is not requested
+	// it means the friend request is accepted or rejected
+	if !fr.IsRequested() {
+		// todo use another error code
+		return responsepb.ErrUserNotFound, nil
+	}
+
+	if req.GetAction() == friendpb.ConfirmFriendRequestAction_REJECT {
+		fr.SetRejected()
+		if err = s.friendRequestDao.UpdateFriendRequest(ctx, fr); err != nil {
+			return nil, err
+		}
+
+		return responsepb.OK, nil
+	}
+
+	// accept the friend request
+
+	me, err := s.friendDao.GetFriend(ctx, info.GetUid(), info.GetFriendUid())
+	if err != nil {
+		return nil, err
+	}
+
+	friend, err := s.friendDao.GetFriend(ctx, info.GetFriendUid(), info.GetUid())
+	if err != nil {
+		return nil, err
+	}
+
+	// big transaction here
+	err = db.Transaction(ctx, func(ctx2 context.Context) error {
+		// step 1: update friend request status to accepted
+		fr.SetAccepted()
+		if err = s.friendRequestDao.UpdateFriendRequest(ctx2, fr); err != nil {
+			return err
+		}
+
+		// step 2: create or update friend relationship me -> friend
+		if err = s.createOrSetFriend(ctx2, info.GetUid(), info.GetFriendUid(), me); err != nil {
+			return err
+		}
+
+		// step 3: create or update friend relationship friend -> me
+		if err = s.createOrSetFriend(ctx2, info.GetFriendUid(), info.GetUid(), friend); err != nil {
+			return err
+		}
+
+		return nil
+	})
+
+	if err != nil {
+		return responsepb.ErrUnknown.SetMsg(err.Error()), nil
+	}
+
+	return responsepb.OK, nil
+
+}
+
+func (s *FriendService) createOrSetFriend(ctx context.Context, uid, friendUID string, f *data.Friend) error {
+	if f != nil {
+		f.SetFriend()
+		return s.friendDao.UpdateFriendStatus(ctx, f)
+	}
+
+	f = &data.Friend{
+		UID:       uid,
+		FriendUID: friendUID,
+		Status:    friendpb.FriendStatus_FRIEND,
+	}
+
+	return s.friendDao.CreateFriend(ctx, f)
+}
+
+func (s *FriendService) GetFriendRequest(ctx context.Context, req *friendpb.BaseFriendRequest) (
+	*friendpb.GetFriendRequestResponse, error) {
+	fr, err := s.friendRequestDao.GetFriendRequest(ctx, req.GetUid(), req.GetFriendUid())
+	if err != nil {
+		return nil, err
+	}
+
+	rsp := &friendpb.GetFriendRequestResponse{
+		Response: responsepb.OK,
+	}
+
+	if fr == nil {
+		// rsp.Response = responsepb.NOT_FOUND
+
+		return rsp, nil
+	}
+
+	rsp.FriendRequest = fr.ToProto()
+	return rsp, nil
+}
+
+func (s *FriendService) QueryFriendRequestList(ctx context.Context, req *friendpb.QueryFriendRequestListRequest) (
+	*friendpb.QueryFriendRequestListResponse, error) {
+
+	frList, err := s.friendRequestDao.GetFriendRequests(ctx, req.GetUid())
+	if err != nil {
+		return nil, err
+	}
+
+	rsp := &friendpb.QueryFriendRequestListResponse{
+		Response:          responsepb.OK,
+		FriendRequestList: make([]*friendpb.FriendRequest, 0, len(frList)),
+	}
+
+	for _, fr := range frList {
+		rsp.FriendRequestList = append(rsp.FriendRequestList, fr.ToProto())
 	}
 
 	return rsp, nil
 }
 
-func (s *FriendService) QueryUserRelationList(ctx context.Context, req *friendpb.QueryUserRelationListRequest) (
-	*friendpb.QueryUserRelationListResponse, error) {
-	urList, err := s.friendDao.GetFriends(ctx, req.GetUid())
+/*
+ * handle friend logic
+ */
+
+func (s *FriendService) GetFriend(ctx context.Context, req *friendpb.BaseFriendRequest) (
+	*friendpb.GetFriendResponse, error) {
+	f, err := s.friendDao.GetFriend(ctx, req.GetUid(), req.GetFriendUid())
+	if err != nil {
+		return nil, err
+	}
+
+	rsp := &friendpb.GetFriendResponse{
+		Response: responsepb.OK,
+	}
+
+	if f != nil {
+		rsp.Friend = f.ToProtoFriend()
+	}
+
+	return rsp, nil
+}
+
+func (s *FriendService) QueryFriendList(ctx context.Context, req *friendpb.QueryFriendListRequest) (
+	*friendpb.QueryFriendListResponse, error) {
+	friends, err := s.friendDao.GetFriends(ctx, req.GetUid())
 	if err != nil {
 		return nil, err
 	}
 
 	var (
-		rsp           = &friendpb.QueryUserRelationListResponse{}
-		friendUIDList = make([]string, len(urList))
+		rsp = &friendpb.QueryFriendListResponse{
+			Response: responsepb.OK,
+		}
+		friendUIDList = make([]string, len(friends))
 		friendMap     = make(map[string]*data.User)
 	)
-	for i, ur := range urList {
-		rsp.UserRelationList = append(rsp.UserRelationList, ur.ToProtoFriend())
-		friendUIDList[i] = ur.FriendUID
+	for i, f := range friends {
+		rsp.FriendList = append(rsp.FriendList, f.ToProtoFriend())
+		friendUIDList[i] = f.FriendUID
 	}
 
 	// get friend info
@@ -244,7 +371,7 @@ func (s *FriendService) QueryUserRelationList(ctx context.Context, req *friendpb
 		friendMap[friendInfo.UID] = friendInfoList[i]
 	}
 
-	for _, ur := range rsp.UserRelationList {
+	for _, ur := range rsp.FriendList {
 		if friendInfo, ok := friendMap[ur.FriendUid]; ok {
 			ur.FriendName = friendInfo.Name
 			ur.FriendAvatar = friendInfo.Avatar
@@ -254,25 +381,25 @@ func (s *FriendService) QueryUserRelationList(ctx context.Context, req *friendpb
 	return rsp, nil
 }
 
-func (s *FriendService) UpdateUserRelation(ctx context.Context, req *friendpb.UpdateUserRelationRequest) (
+func (s *FriendService) UpdateFriendStatus(ctx context.Context, req *friendpb.UpdateFriendStatusRequest) (
 	*responsepb.BaseResponse, error) {
-	pair := req.GetRelationPair()
-	ur, err := s.friendDao.GetFriend(ctx, pair.GetUid(), pair.GetFriendUid())
+	info := req.GetInfo()
+	f, err := s.friendDao.GetFriend(ctx, info.GetUid(), info.GetFriendUid())
 	if err != nil {
 		return nil, err
 	}
 
-	if ur == nil {
+	if f == nil {
 		return responsepb.ErrRelationNotFound, nil
 	}
 
-	newStatus, valid := req.GetAction().CheckActionAndGetNewStatus(ur.Status)
-	if !valid {
+	ok := f.Status.CanUpdateStatus(req.GetStatus())
+	if !ok {
 		return responsepb.ErrInvalidUpdateRelationAction, nil
 	}
 
-	ur.SetStatus(newStatus)
-	if err := s.friendDao.UpdateFriendStatus(ctx, ur); err != nil {
+	f.SetStatus(req.GetStatus())
+	if err := s.friendDao.UpdateFriendStatus(ctx, f); err != nil {
 		return responsepb.ErrUnknown.SetMsg(err.Error()), nil
 	}
 

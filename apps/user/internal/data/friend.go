@@ -66,7 +66,7 @@ func (ur *Friend) ToProtoFriend() *friendpb.Friend {
 		Uid:       ur.UID,
 		FriendUid: ur.FriendUID,
 		Status:    ur.Status,
-		CreateAt:  ur.CreatedAt,
-		UpdateAt:  ur.UpdatedAt,
+		CreatedAt: ur.CreatedAt,
+		UpdatedAt: ur.UpdatedAt,
 	}
 }

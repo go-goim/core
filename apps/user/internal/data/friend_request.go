@@ -46,3 +46,13 @@ func (fr *FriendRequest) SetAccepted() {
 func (fr *FriendRequest) SetRejected() {
 	fr.SetStatus(friendpb.FriendRequestStatus_REJECTED)
 }
+
+func (fr *FriendRequest) ToProto() *friendpb.FriendRequest {
+	return &friendpb.FriendRequest{
+		Uid:       fr.UID,
+		FriendUid: fr.FriendUID,
+		Status:    fr.Status,
+		CreatedAt: fr.CreatedAt,
+		UpdatedAt: fr.UpdatedAt,
+	}
+}

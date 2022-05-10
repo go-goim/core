@@ -4,28 +4,12 @@ package response
 
 import (
 	"fmt"
-
-	"google.golang.org/protobuf/encoding/protojson"
 )
-
-type IResponse interface {
-	GetOrNewMeta() *Meta
-	// SetMeta sets the meta information, but does not overwrite existing meta information when merging
-	SetMeta(*Meta) IResponse
-	SetData(interface{}) IResponse
-	// SetBaseResponse sets the base response, but won't set the meta information.
-	// Call SetMeta to set the meta information.
-	SetBaseResponse(*BaseResponse) IResponse
-	Marshall() ([]byte, error)
-}
-
-var protoMarshalOpt = protojson.MarshalOptions{EmitUnpopulated: true, UseEnumNumbers: true}
 
 /*
  * Define BaseResponse
  */
 
-var _ IResponse = &BaseResponse{}
 var _ error = &BaseResponse{}
 
 func NewBaseResponse(code Code, msg string) *BaseResponse {
@@ -51,7 +35,7 @@ func (x *BaseResponse) GetOrNewMeta() *Meta {
 	return x.Meta
 }
 
-func (x *BaseResponse) SetMeta(meta *Meta) IResponse {
+func (x *BaseResponse) SetMeta(meta *Meta) *BaseResponse {
 	if meta == nil {
 		return x
 	}
@@ -60,57 +44,23 @@ func (x *BaseResponse) SetMeta(meta *Meta) IResponse {
 	return x
 }
 
-// SetData sets the data field of the response.
-// Don't use this method in any circumstances.
-func (x *BaseResponse) SetData(data interface{}) IResponse {
-	// do not set the data field
+func (x *BaseResponse) SetTotal(total int) *BaseResponse {
+	x.GetOrNewMeta().SetTotal(total)
+
 	return x
 }
 
-func (x *BaseResponse) SetBaseResponse(br *BaseResponse) IResponse {
+func (x *BaseResponse) SetBaseResponse(br *BaseResponse) *BaseResponse {
 	x.Code = br.Code
 	x.Msg = br.Msg
 
 	return x
 }
 
-func (x *BaseResponse) Marshall() ([]byte, error) {
-	return protoMarshalOpt.Marshal(x)
-}
-
 func (x *BaseResponse) SetMsg(msg string) *BaseResponse {
 	x.Msg = msg
 
 	return x
-}
-
-/*
- * Define Response
- */
-
-var _ IResponse = &Response{}
-
-// Response is the response object for the HTTP transport.
-type Response struct {
-	*BaseResponse `json:",inline"`
-	Data          interface{} `json:"data"`
-}
-
-func NewResponse(br *BaseResponse) *Response {
-	return &Response{
-		BaseResponse: br,
-	}
-
-}
-
-func (x *Response) SetData(data interface{}) IResponse {
-	x.Data = data
-
-	return x
-}
-
-func (x *Response) Marshall() ([]byte, error) {
-	return protoMarshalOpt.Marshal(x)
 }
 
 /*

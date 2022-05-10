@@ -16,13 +16,8 @@ message BaseResponse {
 }
 
 message Meta {
-  string request_id = 1;
-  optional int32 total = 2;
-  optional Pagination pagination = 3;
+  optional int32 total = 1;
+  optional int32 page = 2;
+  optional int32 page_size = 3;
   map<string, string> extra = 4;
-}
-
-message Pagination {
-  int32 page = 1;
-  int32 page_size = 2;
 }

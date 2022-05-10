@@ -231,9 +231,9 @@ func (m *UserInternal) validate(all bool) error {
 
 	// no validation rules for LoginStatus
 
-	// no validation rules for CreateAt
+	// no validation rules for CreatedAt
 
-	// no validation rules for UpdateAt
+	// no validation rules for UpdatedAt
 
 	if m.AgentId != nil {
 		// no validation rules for AgentId

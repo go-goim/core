@@ -1,98 +1,66 @@
 package response
 
 import (
-	"net/http"
-
-	"github.com/gin-gonic/gin"
-
-	"github.com/yusank/goim/api/transport/response"
-	"github.com/yusank/goim/pkg/log"
-	"github.com/yusank/goim/pkg/mid"
+	responsepb "github.com/yusank/goim/api/transport/response"
 )
 
-func ErrorResp(c *gin.Context, err error) {
-	log.Error("ErrorResp", "err", err)
-	json(c, http.StatusOK, errorResp(err))
+type BaseResponse struct {
+	Code int    `json:"code"`
+	Msg  string `json:"msg"`
+	Meta *Meta  `json:"meta,omitempty"`
 }
 
-func errorResp(err error) *response.BaseResponse {
-	switch t := err.(type) {
-	case *response.BaseResponse:
-		return t
-	default:
-		return response.ErrUnknown.SetMsg(err.Error())
+type Meta struct {
+	Total    int               `json:"total"`
+	Page     int               `json:"page"`
+	PageSize int               `json:"page_size"`
+	Extra    map[string]string `json:"extra,omitempty"`
+}
+
+func BaseResponseFromPb(pb *responsepb.BaseResponse) *BaseResponse {
+	return &BaseResponse{
+		Code: int(pb.Code),
+		Msg:  pb.Msg,
+		Meta: MetaFromPbMeta(pb.Meta),
 	}
 }
 
-func ErrorRespWithStatus(c *gin.Context, httpCode int, err error) {
-	log.Error("ErrorResp", "err", err)
-	json(c, httpCode, errorResp(err))
-}
-
-const jsonContentType = "application/json; charset=utf-8"
-
-func SuccessResp(c *gin.Context, body interface{}, setFunc ...SetMetaFunc) {
-	resp := convertBodyToResponse(body)
-
-	meta := resp.GetOrNewMeta()
-	for _, f := range setFunc {
-		f(meta)
-	}
-	resp.SetMeta(meta)
-
-	json(c, http.StatusOK, resp)
-}
-
-func convertBodyToResponse(body interface{}) response.IResponse {
-	var resp response.IResponse
-	switch b := body.(type) {
-	case response.IResponse:
-		return b
-	default:
-		resp = response.NewResponse(response.OK)
+func MetaFromPbMeta(pb *responsepb.Meta) *Meta {
+	if pb == nil {
+		return nil
 	}
 
-	return resp.SetData(body)
-}
-
-func json(c *gin.Context, code int, resp response.IResponse) {
-	// get request id from context
-	SetRequestID(c.GetString(mid.RequestIDKey))(resp.GetOrNewMeta())
-
-	b, err := resp.Marshall()
-	if err != nil {
-		// this is a critical error
-		log.Error("marshal response error.", "err", err)
-		c.JSON(http.StatusInternalServerError, gin.H{"code": response.ErrUnknown.GetCode(), "msg": err.Error()})
-	}
-
-	c.Data(code, jsonContentType, b)
-}
-
-// set meta data to response
-
-type SetMetaFunc func(meta *response.Meta)
-
-func SetPaging(page, size, total int) SetMetaFunc {
-	return func(meta *response.Meta) {
-		meta.SetPaging(page, size).SetTotal(total)
+	return &Meta{
+		Total:    int(pb.GetTotal()),
+		Page:     int(pb.GetPage()),
+		PageSize: int(pb.GetPageSize()),
+		Extra:    pb.GetExtra(),
 	}
 }
 
-func SetRequestID(requestID string) SetMetaFunc {
-	return func(meta *response.Meta) {
-		meta.SetRequestID(requestID)
+type Response struct {
+	*BaseResponse
+	Data interface{} `json:"data,omitempty"`
+}
+
+func NewResponse(code int, msg string, data interface{}) *Response {
+	return &Response{
+		BaseResponse: &BaseResponse{
+			Code: code,
+			Msg:  msg,
+		},
+		Data: data,
 	}
 }
 
-func SetExtra(key string, value string) SetMetaFunc {
-	return func(meta *response.Meta) {
-		meta.SetExtra(key, value)
+func NewResponseFromPb(base *responsepb.BaseResponse) *Response {
+	return &Response{
+		BaseResponse: BaseResponseFromPb(base),
 	}
 }
 
-func SetExtraMap(m map[string]string) SetMetaFunc {
-	return func(meta *response.Meta) {
-		meta.SetExtraMap(m)
-	}
+func (r *Response) SetData(data interface{}) *Response {
+	r.Data = data
+
+	return r
 }

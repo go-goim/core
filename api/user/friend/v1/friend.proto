@@ -13,8 +13,8 @@ message Friend {
   string friend_name = 3;
   string friend_avatar = 4;
   FriendStatus status = 5;
-  int64 create_at = 6;
-  int64 update_at = 7;
+  int64 created_at = 6;
+  int64 updated_at = 7;
 }
 
 enum FriendStatus {
@@ -34,9 +34,8 @@ message FriendList {
 }
 
 message UpdateFriendStatusRequest {
-  string uid = 1 [(validate.rules).string = {min_len: 20, max_len: 24}];
-  string friend_uid = 2 [(validate.rules).string = {min_len: 20, max_len: 24}];
-  FriendStatus status = 3;
+  BaseFriendRequest info = 1;
+  FriendStatus status = 2;
 }
 
 message GetFriendResponse {
@@ -62,8 +61,9 @@ message FriendRequest {
   string uid = 1;
   string friend_uid = 2;
   FriendRequestStatus status = 3;
-  int64 create_at = 4;
-  int64 update_at = 5;
+  int64 created_at = 4;
+  int64 updated_at = 5;
+  //TODO: add friend info for view
 }
 
 enum FriendRequestStatus {
@@ -73,10 +73,6 @@ enum FriendRequestStatus {
   ACCEPTED = 1;
   // Friend request as rejected
   REJECTED = 2;
-}
-
-message FriendRequestList {
-  repeated FriendRequest friend_request_list = 1;
 }
 
 message BaseFriendRequest {
@@ -119,7 +115,7 @@ message QueryFriendRequestListRequest {
 
 message QueryFriendRequestListResponse {
   transport.response.BaseResponse response = 1;
-  FriendRequestList friend_request_list = 2;
+  repeated FriendRequest friend_request_list = 2;
 }
 
 service FriendService {
