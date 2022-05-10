@@ -8,7 +8,7 @@ import (
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/proto"
 
-	apiresp "github.com/yusank/goim/api/transport/response"
+	responsepb "github.com/yusank/goim/api/transport/response"
 	"github.com/yusank/goim/pkg/mid"
 )
 
@@ -47,7 +47,7 @@ func (PbJSONBinding) BindBody(body []byte, obj interface{}) error {
 
 	err := validate.Validate()
 	if err != nil {
-		return apiresp.ErrInvalidParams.SetMsg(err.Error())
+		return responsepb.NewBaseResponse(responsepb.Code_InvalidParams, err.Error())
 	}
 
 	return nil

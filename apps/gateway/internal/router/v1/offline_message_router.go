@@ -32,11 +32,11 @@ func (r *OfflineMessageRouter) handleQueryOfflineMessage(c *gin.Context) {
 		return
 	}
 
-	rsp, err := service.GetOfflineMessageService().QueryOfflineMsg(mid.GetContext(c), req)
+	messages, err := service.GetOfflineMessageService().QueryOfflineMsg(mid.GetContext(c), req)
 	if err != nil {
 		response.ErrorResp(c, err)
 		return
 	}
 
-	response.SuccessResp(c, rsp.Response, rsp.Messages)
+	response.SuccessResp(c, messages, response.SetTotal(len(messages)))
 }

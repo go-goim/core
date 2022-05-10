@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"sync"
 
-	apiresp "github.com/yusank/goim/api/transport/response"
+	responsepb "github.com/yusank/goim/api/transport/response"
 	userv1 "github.com/yusank/goim/api/user/v1"
 	"github.com/yusank/goim/apps/user/internal/dao"
 	"github.com/yusank/goim/apps/user/internal/data"
@@ -40,11 +40,11 @@ func (s *UserService) GetUser(ctx context.Context, req *userv1.GetUserInfoReques
 	}
 
 	rsp := &userv1.UserInternalResponse{
-		Response: apiresp.OK,
+		Response: responsepb.Code_OK.BaseResponse(),
 	}
 
 	if user == nil || user.IsDeleted() {
-		rsp.Response = apiresp.ErrUserNotFound
+		rsp.Response = responsepb.Code_UserNotExist.BaseResponse()
 		return rsp, nil
 	}
 
@@ -59,11 +59,11 @@ func (s *UserService) QueryUser(ctx context.Context, req *userv1.QueryUserReques
 	}
 
 	rsp := &userv1.UserInternalResponse{
-		Response: apiresp.OK,
+		Response: responsepb.Code_OK.BaseResponse(),
 	}
 
 	if user == nil || user.IsDeleted() {
-		rsp.Response = apiresp.ErrUserNotFound
+		rsp.Response = responsepb.Code_UserNotExist.BaseResponse()
 		return rsp, nil
 	}
 
@@ -103,7 +103,7 @@ func (s *UserService) CreateUser(ctx context.Context, req *userv1.CreateUserRequ
 	}
 
 	rsp := &userv1.UserInternalResponse{
-		Response: apiresp.OK,
+		Response: responsepb.Code_OK.BaseResponse(),
 	}
 
 	if user == nil {
@@ -138,7 +138,7 @@ func (s *UserService) CreateUser(ctx context.Context, req *userv1.CreateUserRequ
 		return rsp, nil
 	}
 
-	rsp.Response = apiresp.ErrUserExist
+	rsp.Response = responsepb.Code_UserExist.BaseResponse()
 	return rsp, nil
 
 }
@@ -150,11 +150,11 @@ func (s *UserService) UpdateUser(ctx context.Context, req *userv1.UpdateUserRequ
 	}
 
 	rsp := &userv1.UserInternalResponse{
-		Response: apiresp.OK,
+		Response: responsepb.Code_OK.BaseResponse(),
 	}
 
 	if user == nil || user.IsDeleted() {
-		rsp.Response = apiresp.ErrUserNotFound
+		rsp.Response = responsepb.Code_UserNotExist.BaseResponse()
 		return rsp, nil
 	}
 

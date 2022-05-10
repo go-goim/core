@@ -48,11 +48,12 @@ func (s *FriendService) AddFriend(ctx context.Context, req *friendpb.BaseFriendR
 	}
 
 	rsp := &friendpb.AddFriendResponse{
-		Response: responsepb.OK,
+		Response: responsepb.Code_OK.BaseResponse(),
+		Result:   &friendpb.AddFriendResult{},
 	}
 
 	if friendUser == nil {
-		rsp.Response = responsepb.ErrUserNotFound
+		rsp.Response = responsepb.Code_UserNotExist.BaseResponse()
 		return rsp, nil
 	}
 
@@ -94,13 +95,13 @@ func (s *FriendService) canAddFriend(_ context.Context, me, friend *data.Friend,
 	rsp *friendpb.AddFriendResponse) bool {
 	// check if me blocked the friend
 	if friend != nil && friend.IsBlocked() {
-		rsp.Status = friendpb.AddFriendStatus_BLOCKED_BY_FRIEND
+		rsp.Result.Status = friendpb.AddFriendStatus_BLOCKED_BY_FRIEND
 		return false
 	}
 
 	// check if me has blocked the friend
 	if me != nil && me.IsBlocked() {
-		rsp.Status = friendpb.AddFriendStatus_BLOCKED_BY_ME
+		rsp.Result.Status = friendpb.AddFriendStatus_BLOCKED_BY_ME
 		return false
 	}
 
@@ -126,7 +127,7 @@ func (s *FriendService) addAutomatically(ctx context.Context, me, friend *data.F
 			return false, err
 		}
 
-		rsp.Status = friendpb.AddFriendStatus_ADD_FRIEND_SUCCESS
+		rsp.Result.Status = friendpb.AddFriendStatus_ADD_FRIEND_SUCCESS
 		return true, nil
 	}
 
@@ -135,7 +136,7 @@ func (s *FriendService) addAutomatically(ctx context.Context, me, friend *data.F
 		return false, err
 	}
 
-	rsp.Status = friendpb.AddFriendStatus_ADD_FRIEND_SUCCESS
+	rsp.Result.Status = friendpb.AddFriendStatus_ADD_FRIEND_SUCCESS
 	return true, nil
 }
 
@@ -161,13 +162,13 @@ func (s *FriendService) sendFriendRequest(ctx context.Context, req *friendpb.Bas
 			return err
 		}
 
-		rsp.Status = friendpb.AddFriendStatus_SEND_REQUEST_SUCCESS
+		rsp.Result.Status = friendpb.AddFriendStatus_SEND_REQUEST_SUCCESS
 		return nil
 	}
 
 	// if the friend request is exist, check the status
 	if fr.IsRequested() {
-		rsp.Status = friendpb.AddFriendStatus_ALREADY_SENT_REQUEST
+		rsp.Result.Status = friendpb.AddFriendStatus_ALREADY_SENT_REQUEST
 		return nil
 	}
 
@@ -178,7 +179,7 @@ func (s *FriendService) sendFriendRequest(ctx context.Context, req *friendpb.Bas
 			return err
 		}
 
-		rsp.Status = friendpb.AddFriendStatus_SEND_REQUEST_SUCCESS
+		rsp.Result.Status = friendpb.AddFriendStatus_SEND_REQUEST_SUCCESS
 	}
 
 	if fr.IsRejected() {
@@ -188,7 +189,7 @@ func (s *FriendService) sendFriendRequest(ctx context.Context, req *friendpb.Bas
 			return err
 		}
 
-		rsp.Status = friendpb.AddFriendStatus_SEND_REQUEST_SUCCESS
+		rsp.Result.Status = friendpb.AddFriendStatus_SEND_REQUEST_SUCCESS
 	}
 
 	return nil
@@ -203,15 +204,14 @@ func (s *FriendService) ConfirmFriendRequest(ctx context.Context, req *friendpb.
 	}
 
 	if fr == nil {
-		// todo use another error code
-		return responsepb.ErrUserNotFound, nil
+		return responsepb.Code_FriendRequestNotExist.BaseResponse(), nil
 	}
 
 	// cannot confirm friend request if the friend request is not requested
 	// it means the friend request is accepted or rejected
 	if !fr.IsRequested() {
-		// todo use another error code
-		return responsepb.ErrUserNotFound, nil
+		return responsepb.NewBaseResponse(responsepb.Code_FriendRequestStatusError,
+			"current friend request status cannot be confirmed"), nil
 	}
 
 	if req.GetAction() == friendpb.ConfirmFriendRequestAction_REJECT {
@@ -220,7 +220,7 @@ func (s *FriendService) ConfirmFriendRequest(ctx context.Context, req *friendpb.
 			return nil, err
 		}
 
-		return responsepb.OK, nil
+		return responsepb.Code_OK.BaseResponse(), nil
 	}
 
 	// accept the friend request
@@ -257,10 +257,10 @@ func (s *FriendService) ConfirmFriendRequest(ctx context.Context, req *friendpb.
 	})
 
 	if err != nil {
-		return responsepb.ErrUnknown.SetMsg(err.Error()), nil
+		return responsepb.NewBaseResponse(responsepb.Code_UnknownError, err.Error()), nil
 	}
 
-	return responsepb.OK, nil
+	return responsepb.Code_OK.BaseResponse(), nil
 
 }
 
@@ -287,7 +287,7 @@ func (s *FriendService) GetFriendRequest(ctx context.Context, req *friendpb.Base
 	}
 
 	rsp := &friendpb.GetFriendRequestResponse{
-		Response: responsepb.OK,
+		Response: responsepb.Code_OK.BaseResponse(),
 	}
 
 	if fr == nil {
@@ -309,7 +309,7 @@ func (s *FriendService) QueryFriendRequestList(ctx context.Context, req *friendp
 	}
 
 	rsp := &friendpb.QueryFriendRequestListResponse{
-		Response:          responsepb.OK,
+		Response:          responsepb.Code_OK.BaseResponse(),
 		FriendRequestList: make([]*friendpb.FriendRequest, 0, len(frList)),
 	}
 
@@ -332,7 +332,7 @@ func (s *FriendService) GetFriend(ctx context.Context, req *friendpb.BaseFriendR
 	}
 
 	rsp := &friendpb.GetFriendResponse{
-		Response: responsepb.OK,
+		Response: responsepb.Code_OK.BaseResponse(),
 	}
 
 	if f != nil {
@@ -351,7 +351,7 @@ func (s *FriendService) QueryFriendList(ctx context.Context, req *friendpb.Query
 
 	var (
 		rsp = &friendpb.QueryFriendListResponse{
-			Response: responsepb.OK,
+			Response: responsepb.Code_OK.BaseResponse(),
 		}
 		friendUIDList = make([]string, len(friends))
 		friendMap     = make(map[string]*data.User)
@@ -390,18 +390,18 @@ func (s *FriendService) UpdateFriendStatus(ctx context.Context, req *friendpb.Up
 	}
 
 	if f == nil {
-		return responsepb.ErrRelationNotFound, nil
+		return responsepb.Code_RelationNotExist.BaseResponse(), nil
 	}
 
 	ok := f.Status.CanUpdateStatus(req.GetStatus())
 	if !ok {
-		return responsepb.ErrInvalidUpdateRelationAction, nil
+		return responsepb.Code_InvalidUpdateRelationAction.BaseResponse(), nil
 	}
 
 	f.SetStatus(req.GetStatus())
 	if err := s.friendDao.UpdateFriendStatus(ctx, f); err != nil {
-		return responsepb.ErrUnknown.SetMsg(err.Error()), nil
+		return responsepb.NewBaseResponse(responsepb.Code_UnknownError, err.Error()), nil
 	}
 
-	return responsepb.OK, nil
+	return responsepb.Code_OK.BaseResponse(), nil
 }

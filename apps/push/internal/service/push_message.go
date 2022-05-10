@@ -7,7 +7,7 @@ import (
 
 	"github.com/gorilla/websocket"
 
-	apiresp "github.com/yusank/goim/api/transport/response"
+	responsepb "github.com/yusank/goim/api/transport/response"
 	"github.com/yusank/goim/pkg/log"
 
 	messagev1 "github.com/yusank/goim/api/message/v1"
@@ -37,9 +37,9 @@ func GetPushMessager() *PushMessager {
 	return pm
 }
 
-func (p *PushMessager) PushMessage(ctx context.Context, req *messagev1.PushMessageReq) (resp *apiresp.BaseResponse, err error) {
+func (p *PushMessager) PushMessage(ctx context.Context, req *messagev1.PushMessageReq) (resp *responsepb.BaseResponse, err error) {
 	log.Info("PUSH receive msg|", req.String())
-	resp = apiresp.OK
+	resp = responsepb.Code_OK.BaseResponse()
 	if req.GetPushMessageType() == messagev1.PushMessageType_Broadcast {
 		// cannot use request ctx in async function.It may kill the goroutine after this request finished.
 		go p.handleBroadcastAsync(context.Background(), req)
@@ -49,7 +49,7 @@ func (p *PushMessager) PushMessage(ctx context.Context, req *messagev1.PushMessa
 	c := pool.Get(req.GetToUser())
 	if c == nil {
 		log.Info("PUSH| user conn not found=", req.GetToUser())
-		resp = apiresp.ErrUserNotOnline
+		resp = responsepb.Code_UserNotOnline.BaseResponse()
 		return
 	}
 
@@ -59,7 +59,7 @@ func (p *PushMessager) PushMessage(ctx context.Context, req *messagev1.PushMessa
 	}
 
 	log.Info("PUSH| push err=", err1)
-	resp = apiresp.ErrUnknown.SetMsg(err1.Error())
+	resp = responsepb.NewBaseResponse(responsepb.Code_UnknownError, err1.Error())
 	return
 }
 

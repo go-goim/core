@@ -22,13 +22,22 @@ func GetOfflineMessageService() *OfflineMessageService {
 }
 
 func (s *OfflineMessageService) QueryOfflineMsg(ctx context.Context, req *messagev1.QueryOfflineMessageReq) (
-	*messagev1.QueryOfflineMessageResp, error) {
+	[]*messagev1.BriefMessage, error) {
 	cc, err := s.loadConn(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	return messagev1.NewOfflineMessageClient(cc).QueryOfflineMessage(ctx, req)
+	rsp, err := messagev1.NewOfflineMessageClient(cc).QueryOfflineMessage(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+
+	if !rsp.Response.Success() {
+		return nil, rsp.Response
+	}
+
+	return rsp.GetMessages(), nil
 }
 
 func (s *OfflineMessageService) loadConn(ctx context.Context) (*ggrpc.ClientConn, error) {

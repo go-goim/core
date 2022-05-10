@@ -8,7 +8,7 @@ import (
 	"github.com/apache/rocketmq-client-go/v2/primitive"
 	redisv8 "github.com/go-redis/redis/v8"
 
-	apiresp "github.com/yusank/goim/api/transport/response"
+	responsepb "github.com/yusank/goim/api/transport/response"
 	"github.com/yusank/goim/pkg/consts"
 	"github.com/yusank/goim/pkg/log"
 
@@ -23,16 +23,14 @@ type OfflineMessageService struct {
 func (o *OfflineMessageService) QueryOfflineMessage(ctx context.Context, req *messagev1.QueryOfflineMessageReq) (
 	*messagev1.QueryOfflineMessageResp, error) {
 	rsp := &messagev1.QueryOfflineMessageResp{
-		Response: apiresp.OK,
+		Response: responsepb.Code_OK.BaseResponse(),
 	}
-
-	rsp.Response.GetOrNewMeta().SetPaging(int(req.GetPage()), int(req.GetPageSize()))
 
 	log.Info("req=", req.String())
 	msgID, err := primitive.UnmarshalMsgID([]byte(req.GetLastMsgSeq()))
 	if err != nil {
 		log.Info("unmarshal msg id err=", err)
-		rsp.Response.SetBaseResponse(apiresp.ErrUnknown.SetMsg(err.Error())) // nolint: errcheck
+		rsp.Response.SetCode(responsepb.Code_UnknownError).SetMsg(err.Error()) // nolint: errcheck
 		return rsp, nil
 	}
 
@@ -44,11 +42,11 @@ func (o *OfflineMessageService) QueryOfflineMessage(ctx context.Context, req *me
 		strconv.FormatInt(msgID.Offset+1, 10),
 		"+inf").Result()
 	if err != nil {
-		rsp.Response.SetBaseResponse(apiresp.ErrUnknown.SetMsg(err.Error())) // nolint: errcheck
+		rsp.Response.SetCode(responsepb.Code_UnknownError).SetMsg(err.Error()) // nolint: errcheck
 		return rsp, nil
 	}
 
-	rsp.Response.GetOrNewMeta().SetTotal(int(cnt))
+	rsp.Total = int32(cnt)
 	if req.GetOnlyCount() {
 		return rsp, nil
 	}
@@ -62,7 +60,7 @@ func (o *OfflineMessageService) QueryOfflineMessage(ctx context.Context, req *me
 			Count:  int64(req.GetPageSize()),
 		}).Result()
 	if err != nil {
-		rsp.Response.SetBaseResponse(apiresp.ErrUnknown.SetMsg(err.Error())) // nolint: errcheck
+		rsp.Response.SetCode(responsepb.Code_UnknownError).SetMsg(err.Error()) // nolint: errcheck
 		return rsp, nil
 	}
 
@@ -71,7 +69,7 @@ func (o *OfflineMessageService) QueryOfflineMessage(ctx context.Context, req *me
 		str := result.Member.(string)
 		msg := new(messagev1.BriefMessage)
 		if err = json.Unmarshal([]byte(str), msg); err != nil {
-			rsp.Response.SetBaseResponse(apiresp.ErrUnknown.SetMsg(err.Error())) // nolint: errcheck
+			rsp.Response.SetCode(responsepb.Code_UnknownError).SetMsg(err.Error()) // nolint: errcheck
 			return rsp, nil
 		}
 

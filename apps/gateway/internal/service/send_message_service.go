@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"sync"
 
-	apiresp "github.com/yusank/goim/api/transport/response"
+	responsepb "github.com/yusank/goim/api/transport/response"
 	"github.com/yusank/goim/pkg/log"
 
 	messagev1 "github.com/yusank/goim/api/message/v1"
@@ -34,8 +34,8 @@ func (s *SendMessageService) SendMessage(ctx context.Context, req *messagev1.Sen
 	rsp := new(messagev1.SendMessageResp)
 	// check req params
 	if err := req.Validate(); err != nil {
-		rsp.Response = apiresp.ErrInvalidParams.SetMsg(err.Error())
-		return rsp, nil
+		rsp.Response = responsepb.NewBaseResponse(responsepb.Code_InvalidParams, err.Error())
+		return nil, rsp.Response
 	}
 
 	mm := &messagev1.MqMessage{
@@ -46,15 +46,24 @@ func (s *SendMessageService) SendMessage(ctx context.Context, req *messagev1.Sen
 		Content:         req.GetContent(),
 	}
 
-	return s.sendMessage(ctx, mm)
+	rsp, err := s.sendMessage(ctx, mm)
+	if err != nil {
+		return nil, err
+	}
+
+	if !rsp.Response.Success() {
+		return nil, rsp.Response
+	}
+
+	return rsp, nil
 }
 
 func (s *SendMessageService) Broadcast(ctx context.Context, req *messagev1.SendMessageReq) (*messagev1.SendMessageResp, error) {
 	rsp := new(messagev1.SendMessageResp)
 	// check req params
 	if err := req.Validate(); err != nil {
-		rsp.Response = apiresp.ErrInvalidParams.SetMsg(err.Error())
-		return rsp, nil
+		rsp.Response = responsepb.NewBaseResponse(responsepb.Code_InvalidParams, err.Error())
+		return nil, rsp.Response
 	}
 
 	mm := &messagev1.MqMessage{
@@ -65,7 +74,16 @@ func (s *SendMessageService) Broadcast(ctx context.Context, req *messagev1.SendM
 		Content:         req.GetContent(),
 	}
 
-	return s.sendMessage(ctx, mm)
+	rsp, err := s.sendMessage(ctx, mm)
+	if err != nil {
+		return nil, err
+	}
+
+	if !rsp.Response.Success() {
+		return nil, rsp.Response
+	}
+
+	return rsp, nil
 }
 
 func (s *SendMessageService) sendMessage(ctx context.Context, mm *messagev1.MqMessage) (*messagev1.SendMessageResp, error) {
@@ -73,14 +91,14 @@ func (s *SendMessageService) sendMessage(ctx context.Context, mm *messagev1.MqMe
 
 	b, err := json.Marshal(mm)
 	if err != nil {
-		rsp.Response = apiresp.ErrUnknown.SetMsg(err.Error())
+		rsp.Response = responsepb.NewBaseResponse(responsepb.Code_UnknownError, err.Error())
 		return rsp, nil
 	}
 
 	// todo: maybe use another topic for all broadcast messages
 	rs, err := app.GetApplication().Producer.SendSync(ctx, mq.NewMessage("def_topic", b))
 	if err != nil {
-		rsp.Response = apiresp.ErrUnknown.SetMsg(err.Error())
+		rsp.Response = responsepb.NewBaseResponse(responsepb.Code_UnknownError, err.Error())
 		return rsp, nil
 	}
 

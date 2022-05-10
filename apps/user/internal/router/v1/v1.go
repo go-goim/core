@@ -17,5 +17,4 @@ func NewRouter() *Router {
 }
 
 func (r *Router) Init() {
-	r.Register("/user", NewUserRouter())
 }

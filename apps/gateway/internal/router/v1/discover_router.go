@@ -39,7 +39,7 @@ func (r *DiscoverRouter) handleDiscoverPushServer(c *gin.Context) {
 		return
 	}
 
-	response.SuccessWithData(c, gin.H{
+	response.SuccessResp(c, gin.H{
 		"agentId": agentID,
 	})
 }
