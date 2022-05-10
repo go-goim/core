@@ -25,12 +25,13 @@ func (x *Meta) SetTotal(total int) *Meta {
 }
 
 func (x *Meta) SetPaging(page, size int) *Meta {
-	if x.Pagination == nil {
-		x.Pagination = &Pagination{}
-	}
+	var (
+		p = int32(page)
+		s = int32(size)
+	)
 
-	x.Pagination.Page = int32(page)
-	x.Pagination.PageSize = int32(size)
+	x.Page = &p
+	x.PageSize = &s
 
 	return x
 }
@@ -80,8 +81,10 @@ func (x *Meta) Merge(src *Meta) *Meta {
 		x.Total = src.Total
 	}
 
-	if src.Pagination != nil {
-		x.Pagination = src.Pagination
+	if src.Page != nil {
+		// page and size are set in the same time
+		x.Page = src.Page
+		x.PageSize = src.PageSize
 	}
 
 	if src.Extra != nil {

@@ -22,8 +22,8 @@ func NewUserRouter() *UserRouter {
 }
 
 func (r *UserRouter) Load(router *gin.RouterGroup) {
-	relation := NewUserRelationRouter()
-	relation.Load(router.Group("/relation", mid.AuthJwtCookie))
+	friend := NewFriendRouter()
+	friend.Load(router.Group("/friend", mid.AuthJwtCookie))
 
 	router.POST("/login", r.login)
 	router.POST("/register", r.register)
@@ -48,7 +48,7 @@ func (r *UserRouter) login(c *gin.Context) {
 		return
 	}
 
-	response.SuccessResp(c, user)
+	response.SuccessWithData(c, user)
 }
 
 func (r *UserRouter) register(c *gin.Context) {
@@ -64,7 +64,7 @@ func (r *UserRouter) register(c *gin.Context) {
 		return
 	}
 
-	response.SuccessResp(c, user)
+	response.SuccessWithData(c, user)
 }
 
 func (r *UserRouter) updateUserInfo(c *gin.Context) {
@@ -80,5 +80,5 @@ func (r *UserRouter) updateUserInfo(c *gin.Context) {
 		return
 	}
 
-	response.SuccessResp(c, user)
+	response.SuccessWithData(c, user)
 }

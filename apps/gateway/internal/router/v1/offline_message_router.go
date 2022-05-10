@@ -38,5 +38,5 @@ func (r *OfflineMessageRouter) handleQueryOfflineMessage(c *gin.Context) {
 		return
 	}
 
-	response.SuccessResp(c, rsp)
+	response.SuccessResp(c, rsp.Response, rsp.Messages)
 }

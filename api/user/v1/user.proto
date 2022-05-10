@@ -32,8 +32,8 @@ message UserInternal {
   // 0: first time login, need connect to push server
   // 1: already login, no need connect to push server
   LoginStatus login_status = 8;
-  int64 create_at = 9;
-  int64 update_at = 10;
+  int64 created_at = 9;
+  int64 updated_at = 10;
 }
 
 // User use for return user info to client.
