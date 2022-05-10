@@ -90,7 +90,8 @@ message QueryOfflineMessageReq {
 
 message QueryOfflineMessageResp {
   transport.response.BaseResponse response = 1;
-  repeated BriefMessage messages = 2;
+  int32 total = 2;
+  repeated BriefMessage messages = 3;
 }
 
 service OfflineMessage {

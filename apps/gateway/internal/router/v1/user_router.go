@@ -48,7 +48,7 @@ func (r *UserRouter) login(c *gin.Context) {
 		return
 	}
 
-	response.SuccessWithData(c, user)
+	response.SuccessResp(c, user)
 }
 
 func (r *UserRouter) register(c *gin.Context) {
@@ -64,7 +64,7 @@ func (r *UserRouter) register(c *gin.Context) {
 		return
 	}
 
-	response.SuccessWithData(c, user)
+	response.SuccessResp(c, user)
 }
 
 func (r *UserRouter) updateUserInfo(c *gin.Context) {
@@ -80,5 +80,5 @@ func (r *UserRouter) updateUserInfo(c *gin.Context) {
 		return
 	}
 
-	response.SuccessWithData(c, user)
+	response.SuccessResp(c, user)
 }

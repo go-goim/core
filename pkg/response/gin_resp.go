@@ -11,18 +11,18 @@ import (
 
 func ErrorResp(c *gin.Context, err error) {
 	log.Error("ErrorResp", "err", err)
-	c.JSON(http.StatusOK, NewResponseFromPb(errorResp(err)))
+	c.JSON(http.StatusOK, errorResp(err))
 }
 
 func ErrorRespWithStatus(c *gin.Context, httpCode int, err error) {
 	log.Error("ErrorResp", "err", err)
-	c.JSON(httpCode, NewResponseFromPb(errorResp(err)))
+	c.JSON(httpCode, errorResp(err))
 }
 
-func SuccessResp(c *gin.Context, baseResp *responsepb.BaseResponse, body interface{}) {
-	resp := NewResponseFromPb(baseResp)
-	if body != nil {
-		resp.SetData(body)
+func SuccessResp(c *gin.Context, body interface{}, sf ...SetFunc) {
+	resp := NewResponseFromCode(responsepb.Code_OK).SetData(body)
+	for _, f := range sf {
+		f(resp.BaseResponse)
 	}
 
 	c.JSON(http.StatusOK, resp)
@@ -30,22 +30,28 @@ func SuccessResp(c *gin.Context, baseResp *responsepb.BaseResponse, body interfa
 
 // OK is a shortcut for c.JSON(http.StatusOK, NewResponseFromPb(responsepb.OK))
 func OK(c *gin.Context) {
-	c.JSON(http.StatusOK, NewResponseFromPb(responsepb.OK))
+	c.JSON(http.StatusOK, NewResponseFromCode(responsepb.Code_OK))
 }
 
-func SuccessWithData(c *gin.Context, data interface{}) {
-	c.JSON(http.StatusOK, NewResponseFromPb(responsepb.OK).SetData(data))
-}
-
-func SuccessWithBaseResp(c *gin.Context, baseResp *responsepb.BaseResponse) {
-	c.JSON(http.StatusOK, NewResponseFromPb(baseResp))
-}
-
-func errorResp(err error) *responsepb.BaseResponse {
+func errorResp(err error) *Response {
 	switch t := err.(type) {
 	case *responsepb.BaseResponse:
-		return t
+		return NewResponseFromPb(t)
 	default:
-		return responsepb.ErrUnknown.SetMsg(err.Error())
+		return NewResponseFromCode(responsepb.Code_UnknownError).SetMsg(err.Error())
+	}
+}
+
+type SetFunc func(resp *BaseResponse)
+
+func SetPaging(page, size int) SetFunc {
+	return func(resp *BaseResponse) {
+		_ = resp.SetPaging(page, size)
+	}
+}
+
+func SetTotal(total int) SetFunc {
+	return func(resp *BaseResponse) {
+		_ = resp.SetTotal(total)
 	}
 }

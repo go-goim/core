@@ -43,8 +43,8 @@ func (r *MsgRouter) handleSendSingleUserMsg(c *gin.Context) {
 		return
 	}
 
-	response.SuccessResp(c, rsp.Response, gin.H{
-		"msg_seq": rsp.MsgSeq,
+	response.SuccessResp(c, gin.H{
+		"msg_seq": rsp.GetMsgSeq(),
 	})
 }
 
@@ -61,7 +61,7 @@ func (r *MsgRouter) handleSendBroadcastMsg(c *gin.Context) {
 		return
 	}
 
-	response.SuccessResp(c, rsp.Response, gin.H{
-		"msg_seq": rsp.MsgSeq,
+	response.SuccessResp(c, gin.H{
+		"msg_seq": rsp.GetMsgSeq(),
 	})
 }

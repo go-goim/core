@@ -8,7 +8,7 @@ import (
 	"github.com/go-kratos/kratos/v2/transport/grpc"
 	ggrpc "google.golang.org/grpc"
 
-	apiresp "github.com/yusank/goim/api/transport/response"
+	responsepb "github.com/yusank/goim/api/transport/response"
 	userv1 "github.com/yusank/goim/api/user/v1"
 	"github.com/yusank/goim/apps/gateway/internal/app"
 	"github.com/yusank/goim/apps/gateway/internal/dao"
@@ -64,7 +64,7 @@ func (s *UserService) Login(ctx context.Context, req *userv1.UserLoginRequest) (
 	user := rsp.GetUser()
 
 	if user.GetPassword() != util.HashString(req.GetPassword()) {
-		return nil, apiresp.ErrInvalidUserOrPassword
+		return nil, responsepb.Code_InvalidUsernameOrPassword.BaseResponse()
 	}
 
 	agentID, err := s.userDao.GetUserOnlineAgent(ctx, user.GetUid())

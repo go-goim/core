@@ -7,119 +7,133 @@ import (
 	"github.com/go-kratos/kratos/v2/transport/grpc"
 	ggrpc "google.golang.org/grpc"
 
-	responsepb "github.com/yusank/goim/api/transport/response"
 	friendpb "github.com/yusank/goim/api/user/friend/v1"
 	"github.com/yusank/goim/apps/gateway/internal/app"
 	"github.com/yusank/goim/pkg/conn/pool"
 	"github.com/yusank/goim/pkg/conn/wrapper"
 )
 
-type UserRelationService struct {
+type FriendService struct {
 }
 
 var (
-	userRelationService     *UserRelationService
+	userRelationService     *FriendService
 	userRelationServiceOnce sync.Once
 )
 
-func GetUserRelationService() *UserRelationService {
+func GetUserRelationService() *FriendService {
 	userRelationServiceOnce.Do(func() {
-		userRelationService = &UserRelationService{}
+		userRelationService = &FriendService{}
 	})
 	return userRelationService
 }
 
-func (s *UserRelationService) AddFriend(ctx context.Context, req *friendpb.BaseFriendRequest) (*friendpb.AddFriendResponse, error) {
+func (s *FriendService) AddFriend(ctx context.Context, req *friendpb.BaseFriendRequest) (*friendpb.AddFriendResult, error) {
 	cc, err := s.loadConn(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	return friendpb.NewFriendServiceClient(cc).AddFriend(ctx, req)
+	rsp, err := friendpb.NewFriendServiceClient(cc).AddFriend(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+
+	if !rsp.Response.Success() {
+		return nil, rsp.GetResponse()
+	}
+
+	return rsp.GetResult(), nil
 }
 
-func (s *UserRelationService) ListUserRelation(ctx context.Context, req *friendpb.QueryFriendListRequest) (
-	*friendpb.QueryFriendListResponse, error) {
+func (s *FriendService) ListUserRelation(ctx context.Context, req *friendpb.QueryFriendListRequest) (
+	[]*friendpb.Friend, error) {
 
 	cc, err := s.loadConn(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	return friendpb.NewFriendServiceClient(cc).QueryFriendList(ctx, req)
-}
-
-func (s *UserRelationService) AcceptFriend(ctx context.Context, req *friendpb.BaseFriendRequest) (*responsepb.BaseResponse, error) {
-	cc, err := s.loadConn(ctx)
+	rsp, err := friendpb.NewFriendServiceClient(cc).QueryFriendList(ctx, req)
 	if err != nil {
 		return nil, err
+	}
+
+	if rsp.Response.Success() {
+		return rsp.GetFriendList(), nil
+	}
+
+	return nil, rsp.GetResponse()
+}
+
+func (s *FriendService) AcceptFriend(ctx context.Context, req *friendpb.BaseFriendRequest) error {
+	return s.confirmFriendRequest(ctx, req, friendpb.ConfirmFriendRequestAction_ACCEPT)
+}
+
+func (s *FriendService) RejectFriend(ctx context.Context, req *friendpb.BaseFriendRequest) error {
+	return s.confirmFriendRequest(ctx, req, friendpb.ConfirmFriendRequestAction_REJECT)
+}
+
+func (s *FriendService) confirmFriendRequest(ctx context.Context, req *friendpb.BaseFriendRequest,
+	action friendpb.ConfirmFriendRequestAction) error {
+	cc, err := s.loadConn(ctx)
+	if err != nil {
+		return err
 	}
 
 	updateReq := &friendpb.ConfirmFriendRequestReq{
 		Info:   req,
-		Action: friendpb.ConfirmFriendRequestAction_ACCEPT,
+		Action: action,
 	}
 
-	return friendpb.NewFriendServiceClient(cc).ConfirmFriendRequest(ctx, updateReq)
+	rsp, err := friendpb.NewFriendServiceClient(cc).ConfirmFriendRequest(ctx, updateReq)
+	if err != nil {
+		return err
+	}
+
+	if !rsp.Success() {
+		return rsp
+	}
+
+	return nil
 }
 
-func (s *UserRelationService) RejectFriend(ctx context.Context, req *friendpb.BaseFriendRequest) (*responsepb.BaseResponse, error) {
-	cc, err := s.loadConn(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	updateReq := &friendpb.ConfirmFriendRequestReq{
-		Info:   req,
-		Action: friendpb.ConfirmFriendRequestAction_REJECT,
-	}
-
-	return friendpb.NewFriendServiceClient(cc).ConfirmFriendRequest(ctx, updateReq)
+func (s *FriendService) BlockFriend(ctx context.Context, req *friendpb.BaseFriendRequest) error {
+	return s.updateFriendStatus(ctx, req, friendpb.FriendStatus_BLOCKED)
 }
 
-func (s *UserRelationService) BlockFriend(ctx context.Context, req *friendpb.BaseFriendRequest) (*responsepb.BaseResponse, error) {
+func (s *FriendService) UnblockFriend(ctx context.Context, req *friendpb.BaseFriendRequest) error {
+	return s.updateFriendStatus(ctx, req, friendpb.FriendStatus_UNBLOCKED)
+}
+
+func (s *FriendService) DeleteFriend(ctx context.Context, req *friendpb.BaseFriendRequest) error {
+	return s.updateFriendStatus(ctx, req, friendpb.FriendStatus_STRANGER)
+}
+
+func (s *FriendService) updateFriendStatus(ctx context.Context, req *friendpb.BaseFriendRequest, status friendpb.FriendStatus) error { // nolint: lll
 	cc, err := s.loadConn(ctx)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	updateReq := &friendpb.UpdateFriendStatusRequest{
 		Info:   req,
-		Status: friendpb.FriendStatus_BLOCKED,
+		Status: status,
 	}
 
-	return friendpb.NewFriendServiceClient(cc).UpdateFriendStatus(ctx, updateReq)
-}
-
-func (s *UserRelationService) UnblockFriend(ctx context.Context, req *friendpb.BaseFriendRequest) (*responsepb.BaseResponse, error) {
-	cc, err := s.loadConn(ctx)
+	rsp, err := friendpb.NewFriendServiceClient(cc).UpdateFriendStatus(ctx, updateReq)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	updateReq := &friendpb.UpdateFriendStatusRequest{
-		Info:   req,
-		Status: friendpb.FriendStatus_UNBLOCKED,
+	if !rsp.Success() {
+		return rsp
 	}
 
-	return friendpb.NewFriendServiceClient(cc).UpdateFriendStatus(ctx, updateReq)
+	return nil
 }
 
-func (s *UserRelationService) DeleteFriend(ctx context.Context, req *friendpb.BaseFriendRequest) (*responsepb.BaseResponse, error) {
-	cc, err := s.loadConn(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	updateReq := &friendpb.UpdateFriendStatusRequest{
-		Info:   req,
-		Status: friendpb.FriendStatus_STRANGER,
-	}
-
-	return friendpb.NewFriendServiceClient(cc).UpdateFriendStatus(ctx, updateReq)
-}
-
-func (s *UserRelationService) loadConn(ctx context.Context) (*ggrpc.ClientConn, error) {
+func (s *FriendService) loadConn(ctx context.Context) (*ggrpc.ClientConn, error) {
 	var ck = "discovery://dc1/goim.user.service"
 	c := pool.Get(ck)
 	if c != nil {

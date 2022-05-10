@@ -29,10 +29,6 @@ enum FriendStatus {
   UNBLOCKED = 3;
 }
 
-message FriendList {
-  repeated Friend friend_list = 1;
-}
-
 message UpdateFriendStatusRequest {
   BaseFriendRequest info = 1;
   FriendStatus status = 2;
@@ -82,8 +78,12 @@ message BaseFriendRequest {
 
 message AddFriendResponse {
   transport.response.BaseResponse response = 1;
-  AddFriendStatus status = 2;
-  FriendRequest friend_request = 3;
+  AddFriendResult result = 2;
+}
+
+message AddFriendResult {
+  AddFriendStatus status = 1;
+  FriendRequest friend_request = 2;
 }
 
 enum AddFriendStatus {

@@ -10,32 +10,28 @@ type BaseResponse struct {
 	Meta *Meta  `json:"meta,omitempty"`
 }
 
-type Meta struct {
-	Total    int               `json:"total"`
-	Page     int               `json:"page"`
-	PageSize int               `json:"page_size"`
-	Extra    map[string]string `json:"extra,omitempty"`
+func (r *BaseResponse) SetTotal(t int) *BaseResponse {
+	if r.Meta == nil {
+		r.Meta = &Meta{}
+	}
+
+	r.Meta.Total = t
+	return r
 }
 
-func BaseResponseFromPb(pb *responsepb.BaseResponse) *BaseResponse {
-	return &BaseResponse{
-		Code: int(pb.Code),
-		Msg:  pb.Msg,
-		Meta: MetaFromPbMeta(pb.Meta),
+func (r *BaseResponse) SetPaging(page, size int) *BaseResponse {
+	if r.Meta == nil {
+		r.Meta = &Meta{}
 	}
+
+	r.Meta.Page = page
+	r.Meta.PageSize = size
+	return r
 }
 
-func MetaFromPbMeta(pb *responsepb.Meta) *Meta {
-	if pb == nil {
-		return nil
-	}
-
-	return &Meta{
-		Total:    int(pb.GetTotal()),
-		Page:     int(pb.GetPage()),
-		PageSize: int(pb.GetPageSize()),
-		Extra:    pb.GetExtra(),
-	}
+func (r *BaseResponse) SetMsg(msg string) *BaseResponse {
+	r.Msg = msg
+	return r
 }
 
 type Response struct {
@@ -43,24 +39,40 @@ type Response struct {
 	Data interface{} `json:"data,omitempty"`
 }
 
-func NewResponse(code int, msg string, data interface{}) *Response {
+func NewResponse(code int, msg string) *Response {
 	return &Response{
 		BaseResponse: &BaseResponse{
 			Code: code,
 			Msg:  msg,
 		},
-		Data: data,
 	}
 }
 
 func NewResponseFromPb(base *responsepb.BaseResponse) *Response {
 	return &Response{
-		BaseResponse: BaseResponseFromPb(base),
+		BaseResponse: &BaseResponse{
+			Code: int(base.Code),
+			Msg:  base.Msg,
+		},
+	}
+}
+
+func NewResponseFromCode(code responsepb.Code) *Response {
+	return &Response{
+		BaseResponse: &BaseResponse{
+			Code: int(code),
+			Msg:  code.String(),
+		},
 	}
 }
 
 func (r *Response) SetData(data interface{}) *Response {
 	r.Data = data
 
+	return r
+}
+
+func (r *Response) SetMsg(msg string) *Response {
+	r.Msg = msg
 	return r
 }

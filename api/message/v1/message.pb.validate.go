@@ -832,6 +832,8 @@ func (m *QueryOfflineMessageResp) validate(all bool) error {
 		}
 	}
 
+	// no validation rules for Total
+
 	for idx, item := range m.GetMessages() {
 		_, _ = idx, item
 
