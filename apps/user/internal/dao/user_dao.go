@@ -12,6 +12,7 @@ import (
 
 	"github.com/yusank/goim/apps/user/internal/app"
 	"github.com/yusank/goim/apps/user/internal/data"
+	"github.com/yusank/goim/pkg/cache"
 	"github.com/yusank/goim/pkg/consts"
 	"github.com/yusank/goim/pkg/db"
 	"github.com/yusank/goim/pkg/log"
@@ -25,7 +26,6 @@ var (
 
 type UserDao struct {
 	rdb *redisv8.Client
-	// mysql.DB get from context, because we may need use transaction
 }
 
 func GetUserDao() *UserDao {
@@ -54,19 +54,20 @@ func (u *UserDao) GetUser(ctx context.Context, id int64) (*data.User, error) {
 	return user, nil
 }
 
-func (u *UserDao) getUserFromRedis(ctx context.Context, uid string) (*data.User, error) {
-	log.Debug("getUserFromRedis", "uid", uid)
+func (u *UserDao) getUserFromCache(ctx context.Context, uid string) (*data.User, error) {
+	log.Debug("getUserFromCache", "uid", uid)
 	user := &data.User{}
 	key := fmt.Sprintf("user:%s", uid)
-	val, err := u.rdb.Get(ctx, key).Result()
+	val, err := cache.Get(ctx, key) // use default cache
 	if err != nil {
-		if err == redisv8.Nil {
+		if err == cache.ErrCacheMiss {
 			return nil, nil
 		}
+
 		return nil, err
 	}
 
-	err = json.Unmarshal([]byte(val), user)
+	err = json.Unmarshal(val, user)
 	if err != nil {
 		return nil, err
 	}
@@ -74,10 +75,22 @@ func (u *UserDao) getUserFromRedis(ctx context.Context, uid string) (*data.User,
 	return user, nil
 }
 
+func (u *UserDao) setUserToCache(ctx context.Context, user *data.User) error {
+	log.Debug("setUserToCache", "uid", user.ID)
+	key := fmt.Sprintf("user:%s", user.UID)
+	val, err := json.Marshal(user)
+	if err != nil {
+		return err
+	}
+
+	return cache.Set(ctx, key, val, time.Duration(data.UserCacheExpire+util.RandIntn(data.UserCacheExpire/10))*time.Second)
+
+}
+
 // GetUserByUID get user by uid
 func (u *UserDao) GetUserByUID(ctx context.Context, uid string) (*data.User, error) {
-	user, err := u.getUserFromRedis(ctx, uid)
-	log.Debug("getUserFromRedis result", "user", user, "err", err)
+	user, err := u.getUserFromCache(ctx, uid)
+	log.Debug("getUserFromCache result", "user", user, "err", err)
 	if err != nil {
 		return user, nil
 	}
@@ -95,14 +108,9 @@ func (u *UserDao) GetUserByUID(ctx context.Context, uid string) (*data.User, err
 		return nil, tx.Error
 	}
 
-	// put data to redis
-	b, err := json.Marshal(user)
+	// put data to cache
+	err = u.setUserToCache(ctx, user)
 	if err != nil {
-		return nil, err
-	}
-	if err = u.rdb.Set(ctx, fmt.Sprintf("user:%s", uid), b,
-		// expire in 24 hours + random(0-2.4 hours)
-		time.Duration(data.UserCacheExpire+util.RandIntn(data.UserCacheExpire/10))*time.Second).Err(); err != nil {
 		return nil, err
 	}
 

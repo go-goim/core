@@ -15,34 +15,37 @@ type redisCache struct {
 
 var _ Cache = &redisCache{}
 
-// newRedisCache creates a new redisCache instance.
-func newRedisCache(cli *redisv8.Client) *redisCache { //nolint:deadcode,unused
+// NewRedisCache creates a new redisCache instance.
+func NewRedisCache(cli *redisv8.Client) Cache { //nolint:deadcode,unused
 	return &redisCache{
 		client: cli,
 	}
 }
 
-func (r *redisCache) Get(key string) ([]byte, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
-	defer cancel()
+func (r *redisCache) Get(ctx context.Context, key string) ([]byte, error) {
+	if ctx == nil {
+		ctx = context.Background()
+	}
 
 	return r.client.Get(ctx, key).Bytes()
 }
 
-func (r *redisCache) Set(key string, value []byte, expire time.Duration) error {
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
-	defer cancel()
+func (r *redisCache) Set(ctx context.Context, key string, value []byte, expire time.Duration) error {
+	if ctx == nil {
+		ctx = context.Background()
+	}
 
 	return r.client.Set(ctx, key, value, expire).Err()
 }
 
-func (r *redisCache) Delete(key string) error {
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
-	defer cancel()
+func (r *redisCache) Delete(ctx context.Context, key string) error {
+	if ctx == nil {
+		ctx = context.Background()
+	}
 
 	return r.client.Del(ctx, key).Err()
 }
 
-func (r *redisCache) Close() error {
+func (r *redisCache) Close(_ context.Context) error {
 	return r.client.Close()
 }

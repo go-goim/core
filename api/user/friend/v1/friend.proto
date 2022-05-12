@@ -119,11 +119,15 @@ message QueryFriendRequestListResponse {
 }
 
 service FriendService {
+  // friend request
   rpc AddFriend(BaseFriendRequest) returns (AddFriendResponse);
   rpc ConfirmFriendRequest(ConfirmFriendRequestReq) returns (transport.response.BaseResponse);
-  rpc UpdateFriendStatus(UpdateFriendStatusRequest) returns (transport.response.BaseResponse);
-  rpc GetFriend(BaseFriendRequest) returns (GetFriendResponse);
-  rpc QueryFriendList(QueryFriendListRequest) returns (QueryFriendListResponse);
   rpc GetFriendRequest(BaseFriendRequest) returns (GetFriendRequestResponse);
   rpc QueryFriendRequestList(QueryFriendRequestListRequest) returns (QueryFriendRequestListResponse);
+
+  // friend
+  rpc UpdateFriendStatus(UpdateFriendStatusRequest) returns (transport.response.BaseResponse);
+  rpc IsFriend(BaseFriendRequest) returns (transport.response.BaseResponse);
+  rpc GetFriend(BaseFriendRequest) returns (GetFriendResponse);
+  rpc QueryFriendList(QueryFriendListRequest) returns (QueryFriendListResponse);
 }
