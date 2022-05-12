@@ -1,12 +1,13 @@
 package cache
 
 import (
+	"context"
 	"errors"
 	"time"
 )
 
 var (
-	globalCache Cache = newMemoryCache()
+	globalCache Cache = NewMemoryCache()
 )
 
 var (
@@ -25,21 +26,21 @@ func GetGlobalCache() Cache {
 }
 
 // Get is wrapper for global cache.Get.
-func Get(key string) ([]byte, error) {
-	return globalCache.Get(key)
+func Get(ctx context.Context, key string) ([]byte, error) {
+	return globalCache.Get(ctx, key)
 }
 
 // Set is wrapper for global cache.Set.
-func Set(key string, value []byte, expire time.Duration) error {
-	return globalCache.Set(key, value, expire)
+func Set(ctx context.Context, key string, value []byte, expire time.Duration) error {
+	return globalCache.Set(ctx, key, value, expire)
 }
 
 // Delete is wrapper for global cache.Delete.
-func Delete(key string) error {
-	return globalCache.Delete(key)
+func Delete(ctx context.Context, key string) error {
+	return globalCache.Delete(ctx, key)
 }
 
 // Close is wrapper for global cache.Close.
-func Close() error {
-	return globalCache.Close()
+func Close(ctx context.Context) error {
+	return globalCache.Close(ctx)
 }

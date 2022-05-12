@@ -6,9 +6,12 @@ import (
 
 	responsepb "github.com/yusank/goim/api/transport/response"
 	friendpb "github.com/yusank/goim/api/user/friend/v1"
+	"github.com/yusank/goim/apps/user/internal/app"
 	"github.com/yusank/goim/apps/user/internal/dao"
 	"github.com/yusank/goim/apps/user/internal/data"
 	"github.com/yusank/goim/pkg/db"
+	"github.com/yusank/goim/pkg/log"
+	"github.com/yusank/goim/pkg/util/retry"
 )
 
 // FriendService implements friendpb.FriendServiceServer
@@ -260,6 +263,26 @@ func (s *FriendService) ConfirmFriendRequest(ctx context.Context, req *friendpb.
 		return responsepb.NewBaseResponse(responsepb.Code_UnknownError, err.Error()), nil
 	}
 
+	// set friend status in the cache
+	// only set when the friend request is accepted.
+	if err = s.friendDao.SetFriendStatusToCache(ctx, info.GetUid(), info.GetFriendUid()); err != nil {
+		log.Error("set friend status to cache error",
+			"err", err, "uid", info.GetUid(), "friend_uid", info.GetFriendUid())
+
+		// too complicated handling of retry, need to think about it
+		err1 := retry.RetryWithQueue(func() error {
+			return s.friendDao.SetFriendStatusToCache(ctx, info.GetUid(), info.GetFriendUid())
+		}, app.GetApplication().Producer, "retry_event_topic", map[string]interface{}{
+			"uid":        info.GetUid(),
+			"friend_uid": info.GetFriendUid(),
+			"event":      "set_friend_status_to_cache",
+		})
+
+		if err1 != nil {
+			log.Error("retry set friend status to cache error", "err", err1, "uid", info.GetUid(), "friend_uid", info.GetFriendUid())
+		}
+	}
+
 	return responsepb.Code_OK.BaseResponse(), nil
 
 }
@@ -323,6 +346,20 @@ func (s *FriendService) QueryFriendRequestList(ctx context.Context, req *friendp
 /*
  * handle friend logic
  */
+
+func (s *FriendService) IsFriend(ctx context.Context, req *friendpb.BaseFriendRequest) (
+	*responsepb.BaseResponse, error) {
+	ok, err := s.friendDao.GetFriendStatusFromCache(ctx, req.GetUid(), req.GetFriendUid())
+	if err != nil {
+		return responsepb.NewBaseResponse(responsepb.Code_CacheError, err.Error()), nil
+	}
+
+	if ok {
+		return responsepb.Code_OK.BaseResponse(), nil
+	}
+
+	return responsepb.Code_RelationNotExist.BaseResponse(), nil
+}
 
 func (s *FriendService) GetFriend(ctx context.Context, req *friendpb.BaseFriendRequest) (
 	*friendpb.GetFriendResponse, error) {
@@ -398,10 +435,50 @@ func (s *FriendService) UpdateFriendStatus(ctx context.Context, req *friendpb.Up
 		return responsepb.Code_InvalidUpdateRelationAction.BaseResponse(), nil
 	}
 
+	if f.Status == req.GetStatus() {
+		return responsepb.Code_OK.BaseResponse(), nil
+	}
+
+	// unfriend action, need remove friend status from cache
+	if req.GetStatus() == friendpb.FriendStatus_STRANGER || req.GetStatus() == friendpb.FriendStatus_BLOCKED {
+		err = s.onUnfriend(ctx, info.GetUid(), info.GetFriendUid())
+		if err != nil {
+			return responsepb.NewBaseResponse(responsepb.Code_CacheError, err.Error()), nil
+		}
+	}
+
+	// restore friend status to cache
+	if req.GetStatus() == friendpb.FriendStatus_UNBLOCKED {
+		err = s.onUnblock(ctx, info.GetUid(), info.GetFriendUid())
+		if err != nil {
+			return responsepb.NewBaseResponse(responsepb.Code_CacheError, err.Error()), nil
+		}
+	}
+
 	f.SetStatus(req.GetStatus())
 	if err := s.friendDao.UpdateFriendStatus(ctx, f); err != nil {
 		return responsepb.NewBaseResponse(responsepb.Code_UnknownError, err.Error()), nil
 	}
 
 	return responsepb.Code_OK.BaseResponse(), nil
+}
+
+// delete or block friend.
+func (s *FriendService) onUnfriend(ctx context.Context, uid, friendUID string) error {
+	return s.friendDao.DeleteFriendStatusFromCache(ctx, uid, friendUID)
+}
+
+func (s *FriendService) onUnblock(ctx context.Context, uid, friendUID string) error {
+	// check if friend is blocked me.
+	friend, err := s.friendDao.GetFriend(ctx, friendUID, uid)
+	if err != nil {
+		return err
+	}
+
+	if friend != nil && friend.IsFriend() {
+		// set cache.
+		return s.friendDao.SetFriendStatusToCache(ctx, friendUID, uid)
+	}
+
+	return nil
 }

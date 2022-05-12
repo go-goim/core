@@ -9,6 +9,8 @@ enum Code {
   // common error codes
   UnknownError = 10001;
   InvalidParams = 10002;
+  DBError = 10003;
+  CacheError = 10004;
 
   // user error codes
   UserNotExist = 20001;

@@ -1,6 +1,7 @@
 package cache
 
 import (
+	"context"
 	"sync"
 	"time"
 )
@@ -26,7 +27,7 @@ const (
 	defaultSize = 1024
 )
 
-func newMemoryCache() *memoryCache {
+func NewMemoryCache() Cache {
 	return &memoryCache{
 		size:  defaultSize,
 		items: make(map[string]*memoryCacheItem, defaultSize),
@@ -34,7 +35,7 @@ func newMemoryCache() *memoryCache {
 	}
 }
 
-func (m *memoryCache) Get(key string) ([]byte, error) {
+func (m *memoryCache) Get(_ context.Context, key string) ([]byte, error) {
 	m.mu.RLock()
 	defer m.mu.RUnlock()
 
@@ -44,13 +45,14 @@ func (m *memoryCache) Get(key string) ([]byte, error) {
 	}
 
 	if item.expireAt.Before(time.Now()) {
+		go m.Delete(context.TODO(), key) //nolint:errcheck
 		return nil, ErrCacheMiss
 	}
 
 	return item.value.([]byte), nil
 }
 
-func (m *memoryCache) Set(key string, value []byte, expire time.Duration) error {
+func (m *memoryCache) Set(_ context.Context, key string, value []byte, expire time.Duration) error {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
@@ -70,7 +72,7 @@ func (m *memoryCache) Set(key string, value []byte, expire time.Duration) error 
 	return nil
 }
 
-func (m *memoryCache) Delete(key string) error {
+func (m *memoryCache) Delete(_ context.Context, key string) error {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
@@ -78,7 +80,7 @@ func (m *memoryCache) Delete(key string) error {
 	return nil
 }
 
-func (m *memoryCache) Close() error {
+func (m *memoryCache) Close(_ context.Context) error {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
