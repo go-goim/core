@@ -7,6 +7,7 @@ import (
 	"github.com/go-kratos/kratos/v2/transport/grpc"
 	ggrpc "google.golang.org/grpc"
 
+	responsepb "github.com/yusank/goim/api/transport/response"
 	friendpb "github.com/yusank/goim/api/user/friend/v1"
 	"github.com/yusank/goim/apps/gateway/internal/app"
 	"github.com/yusank/goim/pkg/conn/pool"
@@ -28,7 +29,7 @@ func GetUserRelationService() *FriendService {
 	return userRelationService
 }
 
-func (s *FriendService) AddFriend(ctx context.Context, req *friendpb.BaseFriendRequest) (*friendpb.AddFriendResult, error) {
+func (s *FriendService) AddFriend(ctx context.Context, req *friendpb.AddFriendRequest) (*friendpb.AddFriendResult, error) {
 	cc, err := s.loadConn(ctx)
 	if err != nil {
 		return nil, err
@@ -66,27 +67,31 @@ func (s *FriendService) ListUserRelation(ctx context.Context, req *friendpb.Quer
 	return nil, rsp.GetResponse()
 }
 
-func (s *FriendService) AcceptFriend(ctx context.Context, req *friendpb.BaseFriendRequest) error {
-	return s.confirmFriendRequest(ctx, req, friendpb.ConfirmFriendRequestAction_ACCEPT)
+func (s *FriendService) AcceptFriend(ctx context.Context, req *friendpb.ConfirmFriendRequestReq) error {
+	req.Action = friendpb.ConfirmFriendRequestAction_ACCEPT
+	if err := req.Validate(); err != nil {
+		return responsepb.NewBaseResponse(responsepb.Code_InvalidParams, err.Error())
+	}
+
+	return s.confirmFriendRequest(ctx, req)
 }
 
-func (s *FriendService) RejectFriend(ctx context.Context, req *friendpb.BaseFriendRequest) error {
-	return s.confirmFriendRequest(ctx, req, friendpb.ConfirmFriendRequestAction_REJECT)
+func (s *FriendService) RejectFriend(ctx context.Context, req *friendpb.ConfirmFriendRequestReq) error {
+	req.Action = friendpb.ConfirmFriendRequestAction_REJECT
+	if err := req.Validate(); err != nil {
+		return responsepb.NewBaseResponse(responsepb.Code_InvalidParams, err.Error())
+	}
+
+	return s.confirmFriendRequest(ctx, req)
 }
 
-func (s *FriendService) confirmFriendRequest(ctx context.Context, req *friendpb.BaseFriendRequest,
-	action friendpb.ConfirmFriendRequestAction) error {
+func (s *FriendService) confirmFriendRequest(ctx context.Context, req *friendpb.ConfirmFriendRequestReq) error {
 	cc, err := s.loadConn(ctx)
 	if err != nil {
 		return err
 	}
 
-	updateReq := &friendpb.ConfirmFriendRequestReq{
-		Info:   req,
-		Action: action,
-	}
-
-	rsp, err := friendpb.NewFriendServiceClient(cc).ConfirmFriendRequest(ctx, updateReq)
+	rsp, err := friendpb.NewFriendServiceClient(cc).ConfirmFriendRequest(ctx, req)
 	if err != nil {
 		return err
 	}

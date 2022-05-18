@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"net/http"
 
+	"github.com/gin-gonic/gin/binding"
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/proto"
 
@@ -12,9 +13,26 @@ import (
 	"github.com/yusank/goim/pkg/mid"
 )
 
-type PbJSONBinding struct{}
+type PbJSONBinding struct {
+	validate bool
+}
 
-func (PbJSONBinding) Name() string {
+var (
+	_ binding.Binding = PbJSONBinding{}
+)
+
+var (
+	// NonValidatePbJSONBinding is a PbJSONBinding without validation.
+	NonValidatePbJSONBinding = PbJSONBinding{
+		validate: false,
+	}
+	// ValidatePbJSONBinding is a PbJSONBinding with validation.
+	ValidatePbJSONBinding = PbJSONBinding{
+		validate: true,
+	}
+)
+
+func (b PbJSONBinding) Name() string {
 	return "protobuf/json"
 }
 
@@ -26,7 +44,7 @@ func (b PbJSONBinding) Bind(req *http.Request, obj interface{}) error {
 	return b.BindBody(buf, obj)
 }
 
-func (PbJSONBinding) BindBody(body []byte, obj interface{}) error {
+func (b PbJSONBinding) BindBody(body []byte, obj interface{}) error {
 	o := protojson.UnmarshalOptions{
 		DiscardUnknown: true,
 	}
@@ -38,6 +56,10 @@ func (PbJSONBinding) BindBody(body []byte, obj interface{}) error {
 
 	if err := o.Unmarshal(body, pbObj); err != nil {
 		return err
+	}
+
+	if !b.validate {
+		return nil
 	}
 
 	validate, ok := pbObj.(mid.Validator)
