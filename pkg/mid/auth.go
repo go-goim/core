@@ -100,3 +100,11 @@ func AuthJwtCookie(c *gin.Context) {
 	c.Set("uid", claims.UserID)
 	c.Next()
 }
+
+func GetUID(c *gin.Context) string {
+	if uid, ok := c.Get("uid"); ok {
+		return uid.(string)
+	}
+
+	return ""
+}

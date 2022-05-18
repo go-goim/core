@@ -43,9 +43,9 @@ func GetFriendService() *FriendService {
  * handle friend request logic
  */
 
-func (s *FriendService) AddFriend(ctx context.Context, req *friendpb.BaseFriendRequest) (
+func (s *FriendService) AddFriend(ctx context.Context, req *friendpb.AddFriendRequest) (
 	*friendpb.AddFriendResponse, error) {
-	friendUser, err := s.userDao.GetUserByUID(ctx, req.GetFriendUid())
+	friendUser, err := GetUserService().loadUserByEmailOrPhone(ctx, req.GetEmail(), req.GetPhone())
 	if err != nil {
 		return nil, err
 	}
@@ -60,12 +60,12 @@ func (s *FriendService) AddFriend(ctx context.Context, req *friendpb.BaseFriendR
 		return rsp, nil
 	}
 
-	me, err := s.friendDao.GetFriend(ctx, req.GetUid(), req.GetFriendUid())
+	me, err := s.friendDao.GetFriend(ctx, req.GetUid(), friendUser.UID)
 	if err != nil {
 		return nil, err
 	}
 
-	friend, err := s.friendDao.GetFriend(ctx, req.GetFriendUid(), req.GetUid())
+	friend, err := s.friendDao.GetFriend(ctx, friendUser.UID, req.GetUid())
 	if err != nil {
 		return nil, err
 	}
@@ -85,8 +85,12 @@ func (s *FriendService) AddFriend(ctx context.Context, req *friendpb.BaseFriendR
 		return rsp, nil
 	}
 
+	base := &friendpb.BaseFriendRequest{
+		Uid:       req.GetUid(),
+		FriendUid: friendUser.UID,
+	}
 	// send friend request
-	err = s.sendFriendRequest(ctx, req, rsp)
+	err = s.sendFriendRequest(ctx, base, rsp)
 	if err != nil {
 		return nil, err
 	}
@@ -200,13 +204,16 @@ func (s *FriendService) sendFriendRequest(ctx context.Context, req *friendpb.Bas
 
 func (s *FriendService) ConfirmFriendRequest(ctx context.Context, req *friendpb.ConfirmFriendRequestReq) (
 	*responsepb.BaseResponse, error) {
-	info := req.GetInfo()
-	fr, err := s.friendRequestDao.GetFriendRequest(ctx, info.GetUid(), info.GetFriendUid())
+	fr, err := s.friendRequestDao.GetFriendRequestByID(ctx, req.GetFriendRequestId())
 	if err != nil {
 		return nil, err
 	}
 
 	if fr == nil {
+		return responsepb.Code_FriendRequestNotExist.BaseResponse(), nil
+	}
+
+	if fr.UID != req.GetUid() {
 		return responsepb.Code_FriendRequestNotExist.BaseResponse(), nil
 	}
 
@@ -228,12 +235,12 @@ func (s *FriendService) ConfirmFriendRequest(ctx context.Context, req *friendpb.
 
 	// accept the friend request
 
-	me, err := s.friendDao.GetFriend(ctx, info.GetUid(), info.GetFriendUid())
+	me, err := s.friendDao.GetFriend(ctx, fr.UID, fr.FriendUID)
 	if err != nil {
 		return nil, err
 	}
 
-	friend, err := s.friendDao.GetFriend(ctx, info.GetFriendUid(), info.GetUid())
+	friend, err := s.friendDao.GetFriend(ctx, fr.FriendUID, fr.UID)
 	if err != nil {
 		return nil, err
 	}
@@ -247,12 +254,12 @@ func (s *FriendService) ConfirmFriendRequest(ctx context.Context, req *friendpb.
 		}
 
 		// step 2: create or update friend relationship me -> friend
-		if err = s.createOrSetFriend(ctx2, info.GetUid(), info.GetFriendUid(), me); err != nil {
+		if err = s.createOrSetFriend(ctx2, fr.UID, fr.FriendUID, me); err != nil {
 			return err
 		}
 
 		// step 3: create or update friend relationship friend -> me
-		if err = s.createOrSetFriend(ctx2, info.GetFriendUid(), info.GetUid(), friend); err != nil {
+		if err = s.createOrSetFriend(ctx2, fr.FriendUID, fr.UID, friend); err != nil {
 			return err
 		}
 
@@ -265,21 +272,21 @@ func (s *FriendService) ConfirmFriendRequest(ctx context.Context, req *friendpb.
 
 	// set friend status in the cache
 	// only set when the friend request is accepted.
-	if err = s.friendDao.SetFriendStatusToCache(ctx, info.GetUid(), info.GetFriendUid()); err != nil {
+	if err = s.friendDao.SetFriendStatusToCache(ctx, fr.UID, fr.FriendUID); err != nil {
 		log.Error("set friend status to cache error",
-			"err", err, "uid", info.GetUid(), "friend_uid", info.GetFriendUid())
+			"err", err, "uid", fr.UID, "friend_uid", fr.FriendUID)
 
 		// too complicated handling of retry, need to think about it
 		err1 := retry.RetryWithQueue(func() error {
-			return s.friendDao.SetFriendStatusToCache(ctx, info.GetUid(), info.GetFriendUid())
+			return s.friendDao.SetFriendStatusToCache(ctx, fr.UID, fr.FriendUID)
 		}, app.GetApplication().Producer, "retry_event_topic", map[string]interface{}{
-			"uid":        info.GetUid(),
-			"friend_uid": info.GetFriendUid(),
+			"uid":        fr.UID,
+			"friend_uid": fr.FriendUID,
 			"event":      "set_friend_status_to_cache",
 		})
 
 		if err1 != nil {
-			log.Error("retry set friend status to cache error", "err", err1, "uid", info.GetUid(), "friend_uid", info.GetFriendUid())
+			log.Error("retry set friend status to cache error", "err", err1, "uid", fr.UID, "friend_uid", fr.FriendUID)
 		}
 	}
 

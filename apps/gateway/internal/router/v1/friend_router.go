@@ -3,6 +3,7 @@ package v1
 import (
 	"github.com/gin-gonic/gin"
 
+	responsepb "github.com/yusank/goim/api/transport/response"
 	friendpb "github.com/yusank/goim/api/user/friend/v1"
 	"github.com/yusank/goim/apps/gateway/internal/service"
 	"github.com/yusank/goim/pkg/mid"
@@ -48,9 +49,15 @@ func (r *FriendRouter) listRelation(c *gin.Context) {
 }
 
 func (r *FriendRouter) addFriend(c *gin.Context) {
-	req := &friendpb.BaseFriendRequest{}
-	if err := c.ShouldBindWith(req, request.PbJSONBinding{}); err != nil {
+	req := &friendpb.AddFriendRequest{}
+	if err := c.ShouldBindWith(req, request.NonValidatePbJSONBinding); err != nil {
 		response.ErrorResp(c, err)
+		return
+	}
+
+	req.Uid = mid.GetUID(c)
+	if err := req.Validate(); err != nil {
+		response.ErrorResp(c, responsepb.NewBaseResponse(responsepb.Code_InvalidParams, err.Error()))
 		return
 	}
 
@@ -80,8 +87,8 @@ func (r *FriendRouter) deleteFriend(c *gin.Context) {
 }
 
 func (r *FriendRouter) acceptFriend(c *gin.Context) {
-	req := &friendpb.BaseFriendRequest{}
-	if err := c.ShouldBindWith(req, request.PbJSONBinding{}); err != nil {
+	req := &friendpb.ConfirmFriendRequestReq{}
+	if err := c.ShouldBindWith(req, request.NonValidatePbJSONBinding); err != nil {
 		response.ErrorResp(c, err)
 		return
 	}
@@ -96,8 +103,8 @@ func (r *FriendRouter) acceptFriend(c *gin.Context) {
 }
 
 func (r *FriendRouter) rejectFriend(c *gin.Context) {
-	req := &friendpb.BaseFriendRequest{}
-	if err := c.ShouldBindWith(req, request.PbJSONBinding{}); err != nil {
+	req := &friendpb.ConfirmFriendRequestReq{}
+	if err := c.ShouldBindWith(req, request.NonValidatePbJSONBinding); err != nil {
 		response.ErrorResp(c, err)
 		return
 	}
