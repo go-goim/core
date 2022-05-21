@@ -28,5 +28,5 @@ func main() {
 	g := gin.New()
 	g.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
-	g.Run(":8080")
+	_ = g.Run(":8080")
 }
