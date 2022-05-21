@@ -7,7 +7,7 @@ enum Code {
   OK = 0;
 
   // common error codes
-  UnknownError = 10001;
+  InternalError = 10001;
   InvalidParams = 10002;
   DBError = 10003;
   CacheError = 10004;
@@ -33,5 +33,6 @@ enum Code {
 // BaseResponse use as define response code and message
 message BaseResponse {
   Code code = 1;
-  string msg = 2;
+  string reason = 2;
+  string message = 3;
 }

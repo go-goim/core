@@ -5,9 +5,10 @@ import (
 )
 
 type BaseResponse struct {
-	Code int    `json:"code"`
-	Msg  string `json:"msg"`
-	Meta *Meta  `json:"meta,omitempty"`
+	Code    int    `json:"code"`
+	Reason  string `json:"reason"`
+	Message string `json:"message"`
+	Meta    *Meta  `json:"meta,omitempty"`
 }
 
 func (r *BaseResponse) SetTotal(t int) *BaseResponse {
@@ -30,7 +31,7 @@ func (r *BaseResponse) SetPaging(page, size int) *BaseResponse {
 }
 
 func (r *BaseResponse) SetMsg(msg string) *BaseResponse {
-	r.Msg = msg
+	r.Message = msg
 	return r
 }
 
@@ -39,31 +40,18 @@ type Response struct {
 	Data interface{} `json:"data,omitempty"`
 }
 
-func NewResponse(code int, msg string) *Response {
-	return &Response{
-		BaseResponse: &BaseResponse{
-			Code: code,
-			Msg:  msg,
-		},
-	}
-}
-
 func NewResponseFromPb(base *responsepb.BaseResponse) *Response {
 	return &Response{
 		BaseResponse: &BaseResponse{
-			Code: int(base.Code),
-			Msg:  base.Msg,
+			Code:    int(base.Code),
+			Reason:  base.Reason,
+			Message: base.Message,
 		},
 	}
 }
 
 func NewResponseFromCode(code responsepb.Code) *Response {
-	return &Response{
-		BaseResponse: &BaseResponse{
-			Code: int(code),
-			Msg:  code.String(),
-		},
-	}
+	return NewResponseFromPb(code.BaseResponse())
 }
 
 func (r *Response) SetData(data interface{}) *Response {
@@ -73,6 +61,6 @@ func (r *Response) SetData(data interface{}) *Response {
 }
 
 func (r *Response) SetMsg(msg string) *Response {
-	r.Msg = msg
+	r.Message = msg
 	return r
 }

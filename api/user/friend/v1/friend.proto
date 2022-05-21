@@ -54,14 +54,15 @@ message QueryFriendListResponse {
 
 // FriendRequest is the request data for adding friend
 message FriendRequest {
-  string uid = 1;
-  string friend_uid = 2;
-  FriendRequestStatus status = 3;
-  int64 created_at = 4;
-  int64 updated_at = 5;
+  int64 id = 1;
+  string uid = 2;
+  string friend_uid = 3;
+  FriendRequestStatus status = 4;
+  int64 created_at = 5;
+  int64 updated_at = 6;
   // friend info for view
-  string friend_name = 6;
-  string friend_avatar = 7;
+  string friend_name = 7;
+  string friend_avatar = 8;
 }
 
 enum FriendRequestStatus {
@@ -75,11 +76,7 @@ enum FriendRequestStatus {
 
 message AddFriendRequest {
   string uid = 1 [(validate.rules).string = {min_len: 20, max_len: 24}];
-  oneof friend_info {
-    option (validate.required) = true;
-    string email = 2 [(validate.rules).string.email = true];
-    string phone = 3 [(validate.rules).string.pattern = "^1[3-9]\\d{9}$"];
-  }
+  string friend_uid = 2 [(validate.rules).string = {min_len: 20, max_len: 24}];
 }
 
 message BaseFriendRequest {

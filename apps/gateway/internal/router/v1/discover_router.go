@@ -26,8 +26,17 @@ func (r *DiscoverRouter) Load(g *gin.RouterGroup) {
 	g.GET("/discover", mid.AuthJwtCookie, r.handleDiscoverPushServer)
 }
 
+// @Summary 获取推送服务器
+// @Description 获取推送服务器 agentID
+// @Tags [gateway]discover
+// @Produce  json
+// @Param   token query string true "token"
+// @Success 200 {object} response.Response
+// @Failure 200 {object} response.Response
+// @Failure 401 {null} null
+// @Router /gateway/v1/discovery/discover [get]
 func (r *DiscoverRouter) handleDiscoverPushServer(c *gin.Context) {
-	uid := c.GetHeader("uid")
+	uid := c.GetString("uid")
 	if uid == "" {
 		response.ErrorResp(c, fmt.Errorf("uid is empty"))
 		return
@@ -40,6 +49,6 @@ func (r *DiscoverRouter) handleDiscoverPushServer(c *gin.Context) {
 	}
 
 	response.SuccessResp(c, gin.H{
-		"agentId": agentID,
+		"agentID": agentID,
 	})
 }

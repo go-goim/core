@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"os"
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-kratos/kratos/v2/log"
@@ -15,10 +16,15 @@ import (
 	"github.com/yusank/goim/pkg/mid"
 )
 
-var jwtSecret string
+var (
+	jwtSecret string
+	agentID   string // use hostname as agentID in default.
+)
 
 func init() {
+	agentID, _ = os.Hostname()
 	cmd.GlobalFlagSet.StringVar(&jwtSecret, "jwt-secret", "", "jwt secret")
+	cmd.GlobalFlagSet.StringVar(&agentID, "agent-id", agentID, "agent id")
 }
 
 func main() {
@@ -31,7 +37,11 @@ func main() {
 	}
 	mid.SetJwtHmacSecret(jwtSecret)
 
-	application, err := app.InitApplication()
+	if agentID == "" {
+		panic("agent id is empty")
+	}
+
+	application, err := app.InitApplication(agentID)
 	if err != nil {
 		log.Fatal(err)
 	}

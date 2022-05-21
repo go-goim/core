@@ -7,18 +7,18 @@ import (
 
 	"github.com/go-kratos/kratos/v2/transport/grpc"
 	ggrpc "google.golang.org/grpc"
+	"google.golang.org/grpc/connectivity"
 
 	responsepb "github.com/yusank/goim/api/transport/response"
 	userv1 "github.com/yusank/goim/api/user/v1"
 	"github.com/yusank/goim/apps/gateway/internal/app"
 	"github.com/yusank/goim/apps/gateway/internal/dao"
-	"github.com/yusank/goim/pkg/conn/pool"
-	"github.com/yusank/goim/pkg/conn/wrapper"
 	"github.com/yusank/goim/pkg/util"
 )
 
 type UserService struct {
-	userDao *dao.UserDao
+	userDao         *dao.UserDao
+	userServiceConn *ggrpc.ClientConn
 }
 
 var (
@@ -37,7 +37,7 @@ func GetUserService() *UserService {
 
 // Login check user login status and return user info
 func (s *UserService) Login(ctx context.Context, req *userv1.UserLoginRequest) (*userv1.User, error) {
-	cc, err := s.loadConn(ctx)
+	err := s.checkGrpcConn(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -52,7 +52,7 @@ func (s *UserService) Login(ctx context.Context, req *userv1.UserLoginRequest) (
 		return nil, fmt.Errorf("invalid user login request")
 	}
 
-	rsp, err := userv1.NewUserServiceClient(cc).QueryUser(ctx, queryReq)
+	rsp, err := userv1.NewUserServiceClient(s.userServiceConn).QueryUser(ctx, queryReq)
 	if err != nil {
 		return nil, err
 	}
@@ -86,13 +86,13 @@ func (s *UserService) Login(ctx context.Context, req *userv1.UserLoginRequest) (
 
 // Register register user.
 func (s *UserService) Register(ctx context.Context, req *userv1.CreateUserRequest) (*userv1.User, error) {
-	cc, err := s.loadConn(ctx)
+	err := s.checkGrpcConn(ctx)
 	if err != nil {
 		return nil, err
 	}
 
 	// do check user exist and create.
-	rsp, err := userv1.NewUserServiceClient(cc).CreateUser(ctx, req)
+	rsp, err := userv1.NewUserServiceClient(s.userServiceConn).CreateUser(ctx, req)
 	if err != nil {
 		return nil, err
 	}
@@ -106,13 +106,13 @@ func (s *UserService) Register(ctx context.Context, req *userv1.CreateUserReques
 
 // UpdateUser update user info.
 func (s *UserService) UpdateUser(ctx context.Context, req *userv1.UpdateUserRequest) (*userv1.User, error) {
-	cc, err := s.loadConn(ctx)
+	err := s.checkGrpcConn(ctx)
 	if err != nil {
 		return nil, err
 	}
 
 	// do check user exist and update.
-	rsp, err := userv1.NewUserServiceClient(cc).UpdateUser(ctx, req)
+	rsp, err := userv1.NewUserServiceClient(s.userServiceConn).UpdateUser(ctx, req)
 	if err != nil {
 		return nil, err
 	}
@@ -124,22 +124,29 @@ func (s *UserService) UpdateUser(ctx context.Context, req *userv1.UpdateUserRequ
 	return rsp.GetUser().ToUser(), nil
 }
 
-func (s *UserService) loadConn(ctx context.Context) (*ggrpc.ClientConn, error) {
-	var ck = "discovery://dc1/goim.user.service"
-	c := pool.Get(ck)
-	if c != nil {
-		wc := c.(*wrapper.GrpcWrapper)
-		return wc.ClientConn, nil
+func (s *UserService) checkGrpcConn(ctx context.Context) error {
+	if s.userServiceConn != nil {
+		switch s.userServiceConn.GetState() {
+		case connectivity.Idle:
+			return nil
+		case connectivity.Connecting:
+			return nil
+		case connectivity.Ready:
+			return nil
+		default:
+			// reconnect
+		}
 	}
+
+	var ck = fmt.Sprintf("discovery://dc1/%s", app.GetApplication().Config.SrvConfig.UserService)
 
 	cc, err := grpc.DialInsecure(ctx,
 		grpc.WithDiscovery(app.GetApplication().Register),
 		grpc.WithEndpoint(ck))
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	pool.Add(wrapper.WrapGrpc(context.Background(), cc, ck))
-
-	return cc, nil
+	s.userServiceConn = cc
+	return nil
 }

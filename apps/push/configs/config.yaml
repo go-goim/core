@@ -1,4 +1,4 @@
-name: goim.push.service
+name: service.goim.push
 version: v0.0.0
 http:
   scheme: http
@@ -14,3 +14,9 @@ metadata:
   grpcSrv: yes
 redis:
   addr: 127.0.0.1:6379
+# services name
+gatewayService: service.goim.gateway
+userService: service.goim.user
+pushService: service.goim.push
+storeService: service.goim.store
+msgService: service.goim.msg

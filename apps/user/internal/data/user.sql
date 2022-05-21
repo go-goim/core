@@ -27,10 +27,10 @@ create table if not exists goim.user (
 -- mock data
 insert into goim.user (`id`, `uid`, `name`, `password`, `email`, `phone`, `avatar`, `status`, `created_at`, `updated_at`)
 values
-    (10000, '4F8DSQByUsEUMoETzTCabh', 'user1', '8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92', 'user0@example.com', ' ', ' ', 1, 1528894200, 1528894200),
-    (10001, 'C6CtUjpC6h5e5SW9tBFNVX', 'user2', '8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92', 'user1@example.com', ' ', ' ', 0, 1528894200, 1528894200),
-    (10002, '7mRZLYedtK1EwxzC5X1Lxf', 'user3', '8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92', 'user2@example.com', ' ', ' ', 0, 1528894200, 1528894200),
-    (10003, 'WmbtshDDMUgb3KWFisWZ4E', 'user4', '8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92', 'user3@example.com', ' ', ' ', 0, 1528894200, 1528894200);
+    (10000, '4F8DSQByUsEUMoETzTCabh', 'user1', '8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92', 'user1@example.com', ' ', ' ', 1, 1528894200, 1528894200),
+    (10001, 'C6CtUjpC6h5e5SW9tBFNVX', 'user2', '8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92', 'user2@example.com', ' ', ' ', 0, 1528894200, 1528894200),
+    (10002, '7mRZLYedtK1EwxzC5X1Lxf', 'user3', '8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92', 'user3@example.com', ' ', ' ', 0, 1528894200, 1528894200),
+    (10003, 'WmbtshDDMUgb3KWFisWZ4E', 'user4', '8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92', 'user4@example.com', ' ', ' ', 0, 1528894200, 1528894200);
 
 -- define friend table based on go structure Friend in current directory
 DROP TABLE IF EXISTS goim.friend;

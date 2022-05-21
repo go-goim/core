@@ -30,6 +30,15 @@ func (r *UserRouter) Load(router *gin.RouterGroup) {
 	router.POST("/update", mid.AuthJwtCookie, r.updateUserInfo)
 }
 
+// @Summary 登录
+// @Description 用户登录
+// @Tags [gateway]用户
+// @Accept json
+// @Produce json
+// @Param   req body userv1.UserLoginRequest true "req"
+// @Success 200 {object} userv1.User
+// @Failure 200 {object} response.Response
+// @Router /gateway/v1/user/login [post]
 func (r *UserRouter) login(c *gin.Context) {
 	var req = &userv1.UserLoginRequest{}
 	if err := c.ShouldBindWith(req, &request.PbJSONBinding{}); err != nil {
@@ -51,6 +60,15 @@ func (r *UserRouter) login(c *gin.Context) {
 	response.SuccessResp(c, user)
 }
 
+// @Summary 注册
+// @Description 用户注册
+// @Tags [gateway]用户
+// @Accept json
+// @Produce json
+// @Param   req body userv1.CreateUserRequest true "req"
+// @Success 200 {object} userv1.User
+// @Failure 200 {object} response.Response
+// @Router /gateway/v1/user/register [post]
 func (r *UserRouter) register(c *gin.Context) {
 	var req = &userv1.CreateUserRequest{}
 	if err := c.ShouldBindWith(req, &request.PbJSONBinding{}); err != nil {
@@ -67,6 +85,15 @@ func (r *UserRouter) register(c *gin.Context) {
 	response.SuccessResp(c, user)
 }
 
+// @Summary 更新用户信息
+// @Description 更新用户信息
+// @Tags [gateway]用户
+// @Accept json
+// @Produce json
+// @Param   req body userv1.UpdateUserRequest true "req"
+// @Success 200 {object} userv1.User
+// @Failure 200 {object} response.Response
+// @Router /gateway/v1/user/update [post]
 func (r *UserRouter) updateUserInfo(c *gin.Context) {
 	var req = &userv1.UpdateUserRequest{}
 	if err := c.ShouldBindWith(req, &request.PbJSONBinding{}); err != nil {

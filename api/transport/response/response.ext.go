@@ -12,35 +12,54 @@ import (
 
 var _ error = &BaseResponse{}
 
-func NewBaseResponse(code Code, msg string) *BaseResponse {
+func NewBaseResponse(code Code) *BaseResponse {
 	return &BaseResponse{
-		Code: code,
-		Msg:  msg,
+		Code:   code,
+		Reason: code.String(),
+	}
+}
+
+func NewBaseResponseWithMessage(code Code, msg string) *BaseResponse {
+	return &BaseResponse{
+		Code:    code,
+		Reason:  code.String(),
+		Message: msg,
+	}
+}
+
+func NewBaseResponseWithError(err error) *BaseResponse {
+	return &BaseResponse{
+		Code:    Code_InternalError,
+		Reason:  Code_InternalError.String(),
+		Message: err.Error(),
 	}
 }
 
 func (x *BaseResponse) Error() string {
-	return fmt.Sprintf("Code: %d, Msg: %s", x.Code, x.Msg)
+	return fmt.Sprintf("Code: %d, Reason: %s, Message: %s", x.Code, x.Reason, x.Message)
 }
 
 func (x *BaseResponse) Success() bool {
 	return x.Code == Code_OK
 }
 
-func (x *BaseResponse) SetCode(code Code) *BaseResponse {
-	x.Code = code
-	return x
-}
-
-func (x *BaseResponse) SetMsg(msg string) *BaseResponse {
-	x.Msg = msg
+func (x *BaseResponse) SetMessage(msg string) *BaseResponse {
+	x.Message = msg
 	return x
 }
 
 /*
- * Define ResponseCode
+ * Code
  */
 
 func (x Code) BaseResponse() *BaseResponse {
-	return NewBaseResponse(x, x.String())
+	return NewBaseResponse(x)
+}
+
+func (x Code) BaseResponseWithMessage(msg string) *BaseResponse {
+	return NewBaseResponseWithMessage(x, msg)
+}
+
+func (x Code) BaseResponseWithError(err error) *BaseResponse {
+	return NewBaseResponseWithMessage(x, err.Error())
 }

@@ -1,8 +1,6 @@
 package app
 
 import (
-	"github.com/google/uuid"
-
 	"github.com/yusank/goim/pkg/app"
 )
 
@@ -15,12 +13,12 @@ var (
 	application *Application
 )
 
-func InitApplication() (*Application, error) {
+func InitApplication(agentID string) (*Application, error) {
 	cfg := app.ParseConfig()
 	// do some own biz logic if needed
-	application = &Application{agentID: uuid.NewString()}
+	application = &Application{agentID: agentID}
 
-	cfg.SrvConfig.GetMetadata()["agentId"] = application.agentID
+	cfg.SrvConfig.GetMetadata()["agentID"] = application.agentID
 	a, err := app.InitApplication(cfg)
 	if err != nil {
 		return nil, err

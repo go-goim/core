@@ -1,4 +1,4 @@
-name: goim.msg.service
+name: service.goim.msg
 version: v0.0.0
 grpc:
   scheme: grpc
@@ -12,3 +12,9 @@ redis:
 mq:
   addr:
     - 127.0.0.1:9876
+# services name
+gatewayService: service.goim.gateway
+userService: service.goim.user
+pushService: service.goim.push
+storeService: service.goim.store
+msgService: service.goim.msg

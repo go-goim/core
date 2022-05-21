@@ -59,7 +59,7 @@ func (p *PushMessager) PushMessage(ctx context.Context, req *messagev1.PushMessa
 	}
 
 	log.Info("PUSH| push err=", err1)
-	resp = responsepb.NewBaseResponse(responsepb.Code_UnknownError, err1.Error())
+	resp = responsepb.NewBaseResponseWithError(err1)
 	return
 }
 
