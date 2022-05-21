@@ -2,8 +2,9 @@ package worker
 
 // worker run tasks
 type worker struct {
-	ws  *workerSet
-	err error
+	ws    *workerSet
+	err   error
+	state int // 0: idle, 1: working, 2: done
 }
 
 func newWorker(ws *workerSet) *worker {
@@ -12,13 +13,24 @@ func newWorker(ws *workerSet) *worker {
 	}
 }
 
-func (w *worker) run() {
-	defer w.ws.done()
+func (w *worker) isIdle() bool {
+	return w.state == 0
+}
 
+func (w *worker) setRunning() {
+	w.state = 1
+}
+
+func (w *worker) setDone() {
+	w.state = 2
+	w.ws.done()
+}
+
+func (w *worker) run() {
 	var ec = make(chan error, 1)
-	defer close(ec)
 	go func() {
 		ec <- w.ws.task.tf()
+		close(ec)
 	}()
 
 	select {
@@ -26,4 +38,6 @@ func (w *worker) run() {
 		w.err = e
 	case <-w.ws.ctx.Done():
 	}
+
+	w.setDone()
 }

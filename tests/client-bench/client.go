@@ -131,7 +131,7 @@ func getPushServerAddr(gatewayAddr, uid string) (addr string, err error) {
 		return "", err
 	}
 
-	return result["agentId"], nil
+	return result["agentID"], nil
 }
 
 func connectWs(addr string, h http.Header) (*websocket.Conn, error) {

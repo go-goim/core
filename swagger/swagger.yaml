@@ -1,0 +1,625 @@
+basePath: /
+definitions:
+  response.BaseResponse:
+    properties:
+      code:
+        type: integer
+      message:
+        type: string
+      reason:
+        type: string
+    type: object
+  response.Meta:
+    properties:
+      extra:
+        additionalProperties:
+          type: string
+        type: object
+      page:
+        type: integer
+      page_size:
+        type: integer
+      total:
+        type: integer
+    type: object
+  response.Response:
+    properties:
+      code:
+        type: integer
+      data: {}
+      message:
+        type: string
+      meta:
+        $ref: '#/definitions/response.Meta'
+      reason:
+        type: string
+    type: object
+  v1.AddFriendRequest:
+    properties:
+      friend_uid:
+        type: string
+      uid:
+        type: string
+    type: object
+  v1.AddFriendResult:
+    properties:
+      friend_request:
+        $ref: '#/definitions/v1.FriendRequest'
+      status:
+        type: integer
+    type: object
+  v1.BaseFriendRequest:
+    properties:
+      friend_uid:
+        type: string
+      uid:
+        type: string
+    type: object
+  v1.BriefMessage:
+    properties:
+      content:
+        type: string
+      content_type:
+        type: integer
+      from_user:
+        type: string
+      msg_seq:
+        type: string
+      to_user:
+        type: string
+    type: object
+  v1.ConfirmFriendRequestReq:
+    properties:
+      action:
+        type: integer
+      friend_request_id:
+        type: integer
+      uid:
+        type: string
+    type: object
+  v1.CreateUserRequest:
+    properties:
+      name:
+        type: string
+      password:
+        type: string
+      user:
+        description: "Types that are assignable to User:\n\t*CreateUserRequest_Email\n\t*CreateUserRequest_Phone"
+    type: object
+  v1.Friend:
+    properties:
+      created_at:
+        type: integer
+      friend_avatar:
+        type: string
+      friend_name:
+        type: string
+      friend_uid:
+        type: string
+      status:
+        type: integer
+      uid:
+        type: string
+      updated_at:
+        type: integer
+    type: object
+  v1.FriendRequest:
+    properties:
+      created_at:
+        type: integer
+      friend_avatar:
+        type: string
+      friend_name:
+        description: friend info for view
+        type: string
+      friend_uid:
+        type: string
+      id:
+        type: integer
+      status:
+        type: integer
+      uid:
+        type: string
+      updated_at:
+        type: integer
+    type: object
+  v1.QueryFriendListResponse:
+    properties:
+      friend_list:
+        items:
+          $ref: '#/definitions/v1.Friend'
+        type: array
+      response:
+        $ref: '#/definitions/response.BaseResponse'
+    type: object
+  v1.QueryOfflineMessageReq:
+    properties:
+      last_msg_seq:
+        type: string
+      onlyCount:
+        type: boolean
+      page:
+        type: integer
+      page_size:
+        type: integer
+      user_id:
+        type: string
+    type: object
+  v1.QueryOfflineMessageResp:
+    properties:
+      messages:
+        items:
+          $ref: '#/definitions/v1.BriefMessage'
+        type: array
+      response:
+        $ref: '#/definitions/response.BaseResponse'
+      total:
+        type: integer
+    type: object
+  v1.SendMessageReq:
+    properties:
+      content:
+        type: string
+      content_type:
+        type: integer
+      from_user:
+        type: string
+      to_user:
+        type: string
+    type: object
+  v1.SendMessageResp:
+    properties:
+      msg_seq:
+        description: MsgSeq is unique seq of a message
+        type: string
+      response:
+        $ref: '#/definitions/response.BaseResponse'
+    type: object
+  v1.UpdateUserRequest:
+    properties:
+      avatar:
+        type: string
+      email:
+        type: string
+      name:
+        type: string
+      phone:
+        type: string
+      uid:
+        type: string
+    type: object
+  v1.User:
+    properties:
+      agent_id:
+        description: AgentID only valid when user already login.
+        type: string
+      avatar:
+        type: string
+      email:
+        type: string
+      login_status:
+        description: |-
+          0: first time login, need connect to push server
+          1: already login, no need connect to push server
+        type: integer
+      name:
+        type: string
+      phone:
+        type: string
+      uid:
+        type: string
+    type: object
+  v1.UserLoginRequest:
+    properties:
+      login_type:
+        description: |-
+          0: try login , do nothing if already login
+          1: force login , logout if already login
+        type: integer
+      password:
+        type: string
+      user:
+        description: "Types that are assignable to User:\n\t*UserLoginRequest_Email\n\t*UserLoginRequest_Phone"
+    type: object
+info:
+  contact:
+    email: yusankurban@gmail.com
+    name: Yusank
+    url: https://yusank.space
+  description: GoIM 服务器接口文档
+  license:
+    name: MIT
+    url: https://github.com/yusank/goim/blob/main/LICENSE
+  termsOfService: http://yusank.github.io/goim/
+  title: GoIM Swagger
+  version: "1.0"
+paths:
+  /friend/accept-friend:
+    post:
+      consumes:
+      - application/json
+      description: 接受好友请求
+      parameters:
+      - description: token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: body
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/v1.ConfirmFriendRequestReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Success
+          schema:
+            $ref: '#/definitions/response.BaseResponse'
+        "400":
+          description: err
+          schema:
+            $ref: '#/definitions/response.BaseResponse'
+      summary: 接受好友请求
+      tags:
+      - '[gateway]好友'
+  /friend/add-friend:
+    post:
+      consumes:
+      - application/json
+      description: 添加好友
+      parameters:
+      - description: token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: body
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/v1.AddFriendRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/v1.AddFriendResult'
+        "400":
+          description: err
+          schema:
+            $ref: '#/definitions/response.BaseResponse'
+      summary: 添加好友
+      tags:
+      - '[gateway]好友'
+  /friend/block-friend:
+    post:
+      consumes:
+      - application/json
+      description: 屏蔽好友
+      parameters:
+      - description: token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: body
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/v1.BaseFriendRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Success
+          schema:
+            $ref: '#/definitions/response.BaseResponse'
+        "400":
+          description: err
+          schema:
+            $ref: '#/definitions/response.BaseResponse'
+      summary: 屏蔽好友
+      tags:
+      - '[gateway]好友'
+  /friend/delete-friend:
+    post:
+      consumes:
+      - application/json
+      description: 删除好友
+      parameters:
+      - description: token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: body
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/v1.BaseFriendRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Success
+          schema:
+            $ref: '#/definitions/response.BaseResponse'
+        "400":
+          description: err
+          schema:
+            $ref: '#/definitions/response.BaseResponse'
+      summary: 删除好友
+      tags:
+      - '[gateway]好友'
+  /friend/list:
+    get:
+      consumes:
+      - application/json
+      description: 获取好友列表
+      parameters:
+      - description: token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/v1.QueryFriendListResponse'
+        "400":
+          description: err
+          schema:
+            $ref: '#/definitions/response.BaseResponse'
+      summary: 获取好友列表
+      tags:
+      - '[gateway]好友'
+  /friend/reject-friend:
+    post:
+      consumes:
+      - application/json
+      description: 拒绝好友请求
+      parameters:
+      - description: token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: body
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/v1.ConfirmFriendRequestReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Success
+          schema:
+            $ref: '#/definitions/response.BaseResponse'
+        "400":
+          description: err
+          schema:
+            $ref: '#/definitions/response.BaseResponse'
+      summary: 拒绝好友请求
+      tags:
+      - '[gateway]好友'
+  /friend/unblock-friend:
+    post:
+      consumes:
+      - application/json
+      description: 取消屏蔽好友
+      parameters:
+      - description: token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: body
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/v1.BaseFriendRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Success
+          schema:
+            $ref: '#/definitions/response.BaseResponse'
+        "400":
+          description: err
+          schema:
+            $ref: '#/definitions/response.BaseResponse'
+      summary: 取消屏蔽好友
+      tags:
+      - '[gateway]好友'
+  /gateway/v1/discovery/discover:
+    get:
+      description: 获取推送服务器 agentID
+      parameters:
+      - description: token
+        in: query
+        name: token
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            type: "null"
+      summary: 获取推送服务器
+      tags:
+      - '[gateway]discover'
+  /gateway/v1/message/broadcast:
+    post:
+      consumes:
+      - application/json
+      description: 发送广播消息
+      parameters:
+      - description: token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: req
+        in: body
+        name: req
+        required: true
+        schema:
+          $ref: '#/definitions/v1.SendMessageReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            type: "null"
+      summary: 发送广播消息
+      tags:
+      - '[gateway]message'
+  /gateway/v1/message/send_msg:
+    post:
+      consumes:
+      - application/json
+      description: 发送单聊消息
+      parameters:
+      - description: token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: req
+        in: body
+        name: req
+        required: true
+        schema:
+          $ref: '#/definitions/v1.SendMessageReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            type: "null"
+      summary: 发送单聊消息
+      tags:
+      - '[gateway]message'
+  /gateway/v1/offline_message/query:
+    post:
+      consumes:
+      - application/json
+      description: 查询离线消息
+      parameters:
+      - description: req
+        in: body
+        name: req
+        required: true
+        schema:
+          $ref: '#/definitions/v1.QueryOfflineMessageReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            type: "null"
+      summary: 查询离线消息
+      tags:
+      - '[gateway]offline_message'
+  /gateway/v1/user/login:
+    post:
+      consumes:
+      - application/json
+      description: 用户登录
+      parameters:
+      - description: req
+        in: body
+        name: req
+        required: true
+        schema:
+          $ref: '#/definitions/v1.UserLoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Response'
+      summary: 登录
+      tags:
+      - '[gateway]用户'
+  /gateway/v1/user/register:
+    post:
+      consumes:
+      - application/json
+      description: 用户注册
+      parameters:
+      - description: req
+        in: body
+        name: req
+        required: true
+        schema:
+          $ref: '#/definitions/v1.CreateUserRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Response'
+      summary: 注册
+      tags:
+      - '[gateway]用户'
+  /gateway/v1/user/update:
+    post:
+      consumes:
+      - application/json
+      description: 更新用户信息
+      parameters:
+      - description: req
+        in: body
+        name: req
+        required: true
+        schema:
+          $ref: '#/definitions/v1.UpdateUserRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Response'
+      summary: 更新用户信息
+      tags:
+      - '[gateway]用户'
+swagger: "2.0"

@@ -84,7 +84,7 @@ func (z *zapLogger) Log(level configv1.Level, msg string, kvs ...interface{}) {
 		z.logger.Debug(msg, kv2ZapFields(kvs...)...)
 	case configv1.Level_INFO:
 		z.logger.Info(msg, kv2ZapFields(kvs...)...)
-	case configv1.Level_WARING:
+	case configv1.Level_WARNING:
 		z.logger.Warn(msg, kv2ZapFields(kvs...)...)
 	case configv1.Level_ERROR:
 		z.logger.Error(msg, kv2ZapFields(kvs...)...)

@@ -98,7 +98,7 @@ func (c *Client) ListServices(ctx context.Context) ([]*registry.ServiceInstance,
 		return nil, err
 	}
 
-	var services []*registry.ServiceInstance
+	var services = make([]*registry.ServiceInstance, 0, len(rsp))
 
 	for service := range rsp {
 		services = append(services, &registry.ServiceInstance{Name: service})

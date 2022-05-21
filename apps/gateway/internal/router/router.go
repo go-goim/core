@@ -3,9 +3,28 @@ package router
 import (
 	"github.com/gin-gonic/gin"
 
-	"github.com/yusank/goim/apps/gateway/internal/router/v1"
+	v1 "github.com/yusank/goim/apps/gateway/internal/router/v1"
+	"github.com/yusank/goim/pkg/router"
 )
 
+type rootRouter struct {
+	router.Router
+}
+
+func newRootRouter() *rootRouter {
+	r := &rootRouter{
+		Router: &router.BaseRouter{},
+	}
+
+	r.init()
+	return r
+}
+
+func (r *rootRouter) init() {
+	r.Register("/v1", v1.NewRouter())
+}
+
 func RegisterRouter(g *gin.RouterGroup) {
-	v1.Register(g.Group("/v1"))
+	r := newRootRouter()
+	r.Load(g)
 }

@@ -8,6 +8,7 @@ import (
 
 	registryv1 "github.com/yusank/goim/api/config/registry/v1"
 	configv1 "github.com/yusank/goim/api/config/v1"
+	"github.com/yusank/goim/pkg/cmd"
 	"github.com/yusank/goim/pkg/log"
 )
 
@@ -20,6 +21,11 @@ type Config struct {
 
 func (c *Config) Validate() error {
 	return nil
+}
+
+// Debug returns true if service is running in debug mode.
+func (c *Config) Debug() bool {
+	return c.SrvConfig.Log.Level == configv1.Level_DEBUG
 }
 
 // ServiceConfig contains service config
@@ -47,10 +53,18 @@ func NewRegistry() *RegistryConfig {
 	}
 }
 
-func ParseConfig(fp string) *Config {
+var (
+	confPath string
+)
+
+func init() {
+	cmd.GlobalFlagSet.StringVar(&confPath, "conf", "./configs", "set config path")
+}
+
+func ParseConfig() *Config {
 	c := config.New(
 		config.WithSource(
-			file.NewSource(fp),
+			file.NewSource(confPath),
 		),
 	)
 	if err := c.Load(); err != nil {
@@ -62,7 +76,13 @@ func ParseConfig(fp string) *Config {
 	if err := c.Scan(cfg); err != nil {
 		panic(err)
 	}
-	cfg.FilePath = fp
+
+	// validate config
+	if err := cfg.ValidateAll(); err != nil {
+		panic(err)
+	}
+
+	cfg.FilePath = confPath
 	slice := strings.Split(cfg.GetName(), ".")
 	if len(slice) < 3 {
 		log.Fatal("invalid service name=", cfg.GetName())
@@ -75,7 +95,13 @@ func ParseConfig(fp string) *Config {
 	if err := c.Scan(reg); err != nil {
 		panic(err)
 	}
-	reg.FilePath = fp
+
+	// validate config
+	if err := reg.ValidateAll(); err != nil {
+		panic(err)
+	}
+
+	reg.FilePath = confPath
 	log.Debug("registry content", "registry", reg)
 	reg.Name = cfg.GetName()
 
