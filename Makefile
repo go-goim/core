@@ -3,15 +3,17 @@ SHELL:=/usr/bin/env bash
 .DEFAULT_GOAL:=help
 
 Srv ?= push
-BinPath ?= bin/$(Srv)
+BinPath ?= bin/service.goim.$(Srv)
 CmdPath ?= apps/$(Srv)/cmd/main.go
-CfgPath ?= apps/$(Srv)/config
-ProtoFile ?= api/config/v1/config.proto
+CfgPath ?= apps/$(Srv)/configs
 IMAGE ?= goim/$(Srv)
 VERSION ?= $(shell git describe --exact-match --tags 2> /dev/null || git rev-parse --abbrev-ref HEAD)
 
 ## env
 export ROCKETMQ_GO_LOG_LEVEL=warn
+
+## jwt
+export JWT_SECRET="goim"
 
 ##################################################
 # Development                                    #
@@ -19,13 +21,13 @@ export ROCKETMQ_GO_LOG_LEVEL=warn
 
 ##@ Development
 
-.PHONY: vet
-vet: ## Run go vet against code.
-	go vet -v ./...
-
 .PHONY: lint
 lint: ## Run go lint against code.
 	golangci-lint run ./... -v
+
+.PHONY: vet
+vet: ## Run go vet against code.
+	go vet -v ./...
 
 .PHONEY: test
 test: ## Run test against code.
@@ -37,9 +39,14 @@ test: ## Run test against code.
 
 ##@ Generate
 
-.PHONY: protoc
-protoc: ## Run protoc command to generate pb code.
-	protoc -I. --go_out=. --go-grpc_out=. $(ProtoFile)
+.PHONY: gen-protoc
+gen-protoc: ## Run protoc command to generate pb code.
+	# call gen_proto.sh
+	./gen_proto.sh api
+
+.PHONY: tools-install
+tools-install: ## Install tools.
+	go get -u github.com/golang/protobuf/protoc-gen-go
 
 ##################################################
 # Build                                          #
@@ -56,6 +63,7 @@ build-all: ## build all apps
 	make build Srv=push
 	make build Srv=gateway
 	make build Srv=msg
+	make build Srv=user
 ##################################################
 # Docker                                         #
 ##################################################
@@ -77,6 +85,24 @@ docker-build: ## build docker image
 .PHONY: run
 run: build ## run provided server
 	./$(BinPath) --conf $(CfgPath)
+
+.PHONY: run-all
+run-all: build-all ## run all apps
+	nohup make run Srv=push > push.stderr.log 2>&1 & \
+	nohup make run Srv=gateway > gateway.stderr.log 2>&1 & \
+	nohup make run Srv=msg > msg.stderr.log 2>&1 & \
+	nohup make run Srv=user > user.stderr.log 2>&1 &
+
+.PHONY: stop
+stop: ## stop all apps
+	ps -ef | grep -v grep | grep 'service.goim' | awk '{print $$2}' | xargs kill -15
+
+.PHONY: restart
+restart: stop run-all
+
+.PHONY: swagger
+swagger: ## generate swagger file
+	go generate ./... && go run swagger.go
 
 ##################################################
 # General                                        #

@@ -13,6 +13,7 @@ import (
 	"github.com/go-kratos/kratos/v2/transport/http"
 	redisv8 "github.com/go-redis/redis/v8"
 
+	"github.com/yusank/goim/pkg/db/mysql"
 	"github.com/yusank/goim/pkg/db/redis"
 	"github.com/yusank/goim/pkg/errors"
 	"github.com/yusank/goim/pkg/mq"
@@ -101,6 +102,13 @@ func InitApplication(cfg *Config) (*Application, error) {
 		application.Redis = rdb
 	}
 
+	if cfg.SrvConfig.GetMysql() != nil {
+		err := mysql.InitDB(mysql.WithConfig(cfg.SrvConfig.GetMysql()), mysql.Debug(cfg.Debug()))
+		if err != nil {
+			return nil, err
+		}
+	}
+
 	var options = []kratos.Option{
 		kratos.Name(cfg.SrvConfig.GetName()),
 		kratos.Version(cfg.SrvConfig.GetVersion()),
@@ -170,6 +178,7 @@ func (a *Application) Shutdown(ctx context.Context) error {
 	}
 
 	for _, consumer := range a.Consumer {
+		consumer := consumer
 		checkCtxAndExecute(func() error {
 			if err := consumer.Shutdown(); err != nil {
 				return fmt.Errorf("shutdown consumer error: %w", err)

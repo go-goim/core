@@ -6,13 +6,12 @@ import (
 	"math/rand"
 	"strings"
 
+	"github.com/yusank/goim/apps/gateway/internal/app"
 	"github.com/yusank/goim/pkg/registry"
 )
 
 func LoadMatchedPushServer(ctx context.Context) (string, error) {
-
-	// todo read service name from config
-	list, err := registry.GetService(ctx, "goim.push.service")
+	list, err := registry.GetService(ctx, app.GetApplication().Config.SrvConfig.PushService)
 	if err != nil {
 		return "", err
 	}
@@ -33,5 +32,5 @@ func LoadMatchedPushServer(ctx context.Context) (string, error) {
 		return "", fmt.Errorf("no matched service")
 	}
 
-	return eps[rand.Int()%len(eps)], nil
+	return eps[rand.Int()%len(eps)], nil // nolint:gosec
 }

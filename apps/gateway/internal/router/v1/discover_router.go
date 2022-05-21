@@ -2,28 +2,53 @@ package v1
 
 import (
 	"context"
-	"log"
-	"net/http"
+	"fmt"
 
 	"github.com/gin-gonic/gin"
 
 	"github.com/yusank/goim/apps/gateway/internal/service"
+	"github.com/yusank/goim/pkg/mid"
+	"github.com/yusank/goim/pkg/response"
+	"github.com/yusank/goim/pkg/router"
 )
 
-func handleDiscoverPushServer(c *gin.Context) {
-	uid := c.GetHeader("uid")
+type DiscoverRouter struct {
+	router.Router
+}
+
+func NewDiscoverRouter() *DiscoverRouter {
+	return &DiscoverRouter{
+		Router: &router.BaseRouter{},
+	}
+}
+
+func (r *DiscoverRouter) Load(g *gin.RouterGroup) {
+	g.GET("/discover", mid.AuthJwtCookie, r.handleDiscoverPushServer)
+}
+
+// @Summary 获取推送服务器
+// @Description 获取推送服务器 agentID
+// @Tags [gateway]discover
+// @Produce  json
+// @Param   token query string true "token"
+// @Success 200 {object} response.Response
+// @Failure 200 {object} response.Response
+// @Failure 401 {null} null
+// @Router /gateway/v1/discovery/discover [get]
+func (r *DiscoverRouter) handleDiscoverPushServer(c *gin.Context) {
+	uid := c.GetString("uid")
 	if uid == "" {
-		log.Println("uid not found")
-		c.JSON(http.StatusOK, gin.H{"err": "uid not found"})
+		response.ErrorResp(c, fmt.Errorf("uid is empty"))
 		return
 	}
 
 	agentID, err := service.LoadMatchedPushServer(context.Background())
 	if err != nil {
-		log.Println(err)
-		c.JSON(http.StatusOK, gin.H{"err": err.Error()})
+		response.ErrorResp(c, err)
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"agentId": agentID})
+	response.SuccessResp(c, gin.H{
+		"agentID": agentID,
+	})
 }

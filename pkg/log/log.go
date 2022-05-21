@@ -28,7 +28,7 @@ func Info(msg string, keyvals ...interface{}) {
 
 // Warn logs a message at warn level.
 func Warn(msg string, keyvals ...interface{}) {
-	global.Log(configv1.Level_WARING, msg, keyvals...)
+	global.Log(configv1.Level_WARNING, msg, keyvals...)
 }
 
 // Error logs a message at error level.

@@ -129,7 +129,7 @@ func getPushServerAddr() (addr string, err error) {
 		return "", err
 	}
 
-	return result["agentId"], nil
+	return result["agentID"], nil
 }
 
 func readMsgFromConn(conn *websocket.Conn) (chan []byte, chan error) {

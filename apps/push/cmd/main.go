@@ -2,48 +2,65 @@ package main
 
 import (
 	"context"
-	"flag"
+	"os"
 
 	"github.com/gin-gonic/gin"
-	"github.com/yusank/goim/pkg/log"
+	"github.com/go-kratos/kratos/v2/log"
 
 	messagev1 "github.com/yusank/goim/api/message/v1"
 	"github.com/yusank/goim/apps/push/internal/app"
 	"github.com/yusank/goim/apps/push/internal/router"
 	"github.com/yusank/goim/apps/push/internal/service"
+	"github.com/yusank/goim/pkg/cmd"
 	"github.com/yusank/goim/pkg/graceful"
+	"github.com/yusank/goim/pkg/mid"
 )
 
 var (
-	flagconf string
+	jwtSecret string
+	agentID   string // use hostname as agentID in default.
 )
 
 func init() {
-	flag.StringVar(&flagconf, "conf", "../config", "config path, eg: --conf config.yaml")
+	agentID, _ = os.Hostname()
+	cmd.GlobalFlagSet.StringVar(&jwtSecret, "jwt-secret", "", "jwt secret")
+	cmd.GlobalFlagSet.StringVar(&agentID, "agent-id", agentID, "agent id")
 }
 
 func main() {
-	flag.Parse()
+	if err := cmd.ParseFlags(); err != nil {
+		panic(err)
+	}
 
-	application, err := app.InitApplication(flagconf)
+	if jwtSecret == "" {
+		panic("jwt secret is empty")
+	}
+	mid.SetJwtHmacSecret(jwtSecret)
+
+	if agentID == "" {
+		panic("agent id is empty")
+	}
+
+	application, err := app.InitApplication(agentID)
 	if err != nil {
-		log.Fatal("InitApplication got err", "error", err)
+		log.Fatal(err)
 	}
 
 	// register grpc
 	messagev1.RegisterPushMessagerServer(application.GrpcSrv, service.GetPushMessager())
 
 	// register router
-	g := gin.Default()
+	g := gin.New()
+	g.Use(gin.Recovery(), mid.Logger)
 	router.RegisterRouter(g.Group("/push/service"))
 	application.HTTPSrv.HandlePrefix("/", g)
 
 	if err = application.Run(); err != nil {
-		log.Error("application run got error", "error", err)
+		log.Fatal(err)
 	}
 
 	graceful.Register(application.Shutdown)
 	if err = graceful.Shutdown(context.TODO()); err != nil {
-		log.Error("graceful shutdown got error", "error", err)
+		log.Infof("graceful shutdown error: %s", err)
 	}
 }

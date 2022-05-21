@@ -12,18 +12,19 @@ import (
 	"github.com/go-kratos/kratos/v2/selector"
 	"github.com/go-kratos/kratos/v2/transport/grpc"
 	redisv8 "github.com/go-redis/redis/v8"
-	"github.com/yusank/goim/pkg/log"
 	ggrpc "google.golang.org/grpc"
+
+	"github.com/yusank/goim/pkg/consts"
+	"github.com/yusank/goim/pkg/log"
 
 	messagev1 "github.com/yusank/goim/api/message/v1"
 	"github.com/yusank/goim/apps/msg/internal/app"
-	"github.com/yusank/goim/apps/msg/internal/data"
 	"github.com/yusank/goim/pkg/conn/pool"
 	"github.com/yusank/goim/pkg/conn/wrapper"
 )
 
 type MqMessageService struct {
-	rdb *redisv8.Client
+	rdb *redisv8.Client // remove to dao
 }
 
 var (
@@ -78,7 +79,7 @@ func (s *MqMessageService) handleSingleMsg(ctx context.Context, msg *primitive.M
 		return s.broadcast(ctx, in)
 	}
 
-	str, err := s.rdb.Get(ctx, data.GetUserOnlineAgentKey(req.GetToUser())).Result()
+	str, err := s.rdb.Get(ctx, consts.GetUserOnlineAgentKey(req.GetToUser())).Result()
 	if err != nil {
 		if err == redisv8.Nil {
 			log.Info("user offline, put to offline queue", "user_id", req.GetToUser())
@@ -99,15 +100,15 @@ func (s *MqMessageService) handleSingleMsg(ctx context.Context, msg *primitive.M
 		return err
 	}
 
-	if out.GetStatus() != messagev1.PushMessageRespStatus_OK {
-		return fmt.Errorf(out.GetReason())
+	if !out.Success() {
+		return out
 	}
 
 	return nil
 }
 
 func (s *MqMessageService) broadcast(ctx context.Context, req *messagev1.PushMessageReq) error {
-	list, err := app.GetApplication().Register.GetService(ctx, "goim.push.service")
+	list, err := app.GetApplication().Register.GetService(ctx, app.GetApplication().Config.SrvConfig.PushService)
 	if err != nil {
 		return err
 	}
@@ -138,8 +139,8 @@ func (s *MqMessageService) broadcastToEndpoint(ctx context.Context, req *message
 		return err
 	}
 
-	if rsp.GetStatus() != messagev1.PushMessageRespStatus_OK {
-		return fmt.Errorf("push message status=%d, reason=%s", rsp.GetStatus(), rsp.GetReason())
+	if !rsp.Success() {
+		return rsp
 	}
 
 	return nil
@@ -166,7 +167,7 @@ func (s *MqMessageService) putToRedis(ctx context.Context, ext *primitive.Messag
 		return err
 	}
 
-	key := data.GetUserOfflineQueueKey(req.GetToUser())
+	key := consts.GetUserOfflineQueueKey(req.GetToUser())
 
 	// add to queue
 	pp := s.rdb.Pipeline()
@@ -175,9 +176,9 @@ func (s *MqMessageService) putToRedis(ctx context.Context, ext *primitive.Messag
 		Member: string(body),
 	}))
 	// set key expire
-	_ = pp.Process(ctx, s.rdb.Expire(ctx, key, data.UserOfflineQueueKeyExpire))
+	_ = pp.Process(ctx, s.rdb.Expire(ctx, key, consts.UserOfflineQueueKeyExpire))
 	// trim old messages
-	_ = pp.Process(ctx, s.rdb.ZRemRangeByRank(ctx, key, 0, -int64(data.UserOfflineQueueMemberMax+1)))
+	_ = pp.Process(ctx, s.rdb.ZRemRangeByRank(ctx, key, 0, -int64(consts.UserOfflineQueueMemberMax+1)))
 
 	_, err = pp.Exec(ctx)
 	if err != nil {
@@ -187,9 +188,10 @@ func (s *MqMessageService) putToRedis(ctx context.Context, ext *primitive.Messag
 	return nil
 }
 
+// todo: is there any better way to do this?
 func (s *MqMessageService) loadGrpcConn(ctx context.Context, agentID string) (cc *ggrpc.ClientConn, err error) {
 	var (
-		ep = "discovery://dc1/goim.push.service"
+		ep = fmt.Sprintf("discovery://dc1/%s", app.GetApplication().Config.SrvConfig.PushService)
 		ck = fmt.Sprintf("%s:%s", ep, agentID)
 	)
 	c := pool.Get(ck)
@@ -202,6 +204,7 @@ func (s *MqMessageService) loadGrpcConn(ctx context.Context, agentID string) (cc
 		grpc.WithDiscovery(app.GetApplication().Register),
 		grpc.WithEndpoint(ep),
 		grpc.WithFilter(getFilter(agentID)))
+
 	if err != nil {
 		return
 	}
@@ -215,7 +218,7 @@ func getFilter(agentID string) selector.Filter {
 		var filtered = make([]selector.Node, 0)
 		for i, n := range nodes {
 			log.Info("filter", n.ServiceName(), n.Address(), n.Metadata())
-			if n.Metadata()["agentId"] == agentID {
+			if n.Metadata()["agentID"] == agentID {
 				filtered = append(filtered, nodes[i])
 			}
 		}

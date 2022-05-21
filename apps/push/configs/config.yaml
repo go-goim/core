@@ -1,0 +1,22 @@
+name: service.goim.push
+version: v0.0.0
+http:
+  scheme: http
+  port: 18081
+grpc:
+  scheme: grpc
+  port: 18083
+log:
+  level: DEBUG
+  enable_console: true
+metadata:
+  httpSrv: yes
+  grpcSrv: yes
+redis:
+  addr: 127.0.0.1:6379
+# services name
+gatewayService: service.goim.gateway
+userService: service.goim.user
+pushService: service.goim.push
+storeService: service.goim.store
+msgService: service.goim.msg
