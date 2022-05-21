@@ -229,21 +229,10 @@ func (m *Service) validate(all bool) error {
 
 	var errors []error
 
-	if !strings.HasPrefix(m.GetName(), "goim.") {
+	if !strings.HasPrefix(m.GetName(), "service.goim") {
 		err := ServiceValidationError{
 			field:  "Name",
-			reason: "value does not have prefix \"goim.\"",
-		}
-		if !all {
-			return err
-		}
-		errors = append(errors, err)
-	}
-
-	if !strings.HasSuffix(m.GetName(), ".service") {
-		err := ServiceValidationError{
-			field:  "Name",
-			reason: "value does not have suffix \".service\"",
+			reason: "value does not have prefix \"service.goim\"",
 		}
 		if !all {
 			return err
@@ -378,6 +367,61 @@ func (m *Service) validate(all bool) error {
 				cause:  err,
 			}
 		}
+	}
+
+	if m.GetGatewayService() != "service.goim.gateway" {
+		err := ServiceValidationError{
+			field:  "GatewayService",
+			reason: "value must equal service.goim.gateway",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if m.GetUserService() != "service.goim.user" {
+		err := ServiceValidationError{
+			field:  "UserService",
+			reason: "value must equal service.goim.user",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if m.GetPushService() != "service.goim.push" {
+		err := ServiceValidationError{
+			field:  "PushService",
+			reason: "value must equal service.goim.push",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if m.GetStoreService() != "service.goim.store" {
+		err := ServiceValidationError{
+			field:  "StoreService",
+			reason: "value must equal service.goim.store",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if m.GetMsgService() != "service.goim.msg" {
+		err := ServiceValidationError{
+			field:  "MsgService",
+			reason: "value must equal service.goim.msg",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
 	}
 
 	if m.Http != nil {

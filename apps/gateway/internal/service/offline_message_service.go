@@ -2,17 +2,18 @@ package service
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/go-kratos/kratos/v2/transport/grpc"
 	ggrpc "google.golang.org/grpc"
+	"google.golang.org/grpc/connectivity"
 
 	messagev1 "github.com/yusank/goim/api/message/v1"
 	"github.com/yusank/goim/apps/gateway/internal/app"
-	"github.com/yusank/goim/pkg/conn/pool"
-	"github.com/yusank/goim/pkg/conn/wrapper"
 )
 
 type OfflineMessageService struct {
+	msgServiceConn *ggrpc.ClientConn
 }
 
 var offlineMsgSrc = &OfflineMessageService{}
@@ -23,12 +24,12 @@ func GetOfflineMessageService() *OfflineMessageService {
 
 func (s *OfflineMessageService) QueryOfflineMsg(ctx context.Context, req *messagev1.QueryOfflineMessageReq) (
 	[]*messagev1.BriefMessage, error) {
-	cc, err := s.loadConn(ctx)
+	err := s.checkGrpcConn(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	rsp, err := messagev1.NewOfflineMessageClient(cc).QueryOfflineMessage(ctx, req)
+	rsp, err := messagev1.NewOfflineMessageClient(s.msgServiceConn).QueryOfflineMessage(ctx, req)
 	if err != nil {
 		return nil, err
 	}
@@ -40,22 +41,28 @@ func (s *OfflineMessageService) QueryOfflineMsg(ctx context.Context, req *messag
 	return rsp.GetMessages(), nil
 }
 
-func (s *OfflineMessageService) loadConn(ctx context.Context) (*ggrpc.ClientConn, error) {
-	var ck = "discovery://dc1/goim.msg.service"
-	c := pool.Get(ck)
-	if c != nil {
-		wc := c.(*wrapper.GrpcWrapper)
-		return wc.ClientConn, nil
+func (s *OfflineMessageService) checkGrpcConn(ctx context.Context) error {
+	if s.msgServiceConn != nil {
+		switch s.msgServiceConn.GetState() {
+		case connectivity.Idle:
+			return nil
+		case connectivity.Connecting:
+			return nil
+		case connectivity.Ready:
+			return nil
+		default:
+			// reconnect
+		}
 	}
 
+	var ck = fmt.Sprintf("discovery://dc1/%s", app.GetApplication().Config.SrvConfig.MsgService)
 	cc, err := grpc.DialInsecure(ctx,
 		grpc.WithDiscovery(app.GetApplication().Register),
 		grpc.WithEndpoint(ck))
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	pool.Add(wrapper.WrapGrpc(context.Background(), cc, ck))
-
-	return cc, nil
+	s.msgServiceConn = cc
+	return nil
 }

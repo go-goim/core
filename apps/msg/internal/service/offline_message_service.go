@@ -30,7 +30,7 @@ func (o *OfflineMessageService) QueryOfflineMessage(ctx context.Context, req *me
 	msgID, err := primitive.UnmarshalMsgID([]byte(req.GetLastMsgSeq()))
 	if err != nil {
 		log.Info("unmarshal msg id err=", err)
-		rsp.Response.SetCode(responsepb.Code_UnknownError).SetMsg(err.Error()) // nolint: errcheck
+		rsp.Response = responsepb.NewBaseResponseWithError(err)
 		return rsp, nil
 	}
 
@@ -42,7 +42,7 @@ func (o *OfflineMessageService) QueryOfflineMessage(ctx context.Context, req *me
 		strconv.FormatInt(msgID.Offset+1, 10),
 		"+inf").Result()
 	if err != nil {
-		rsp.Response.SetCode(responsepb.Code_UnknownError).SetMsg(err.Error()) // nolint: errcheck
+		rsp.Response = responsepb.NewBaseResponseWithError(err)
 		return rsp, nil
 	}
 
@@ -60,7 +60,7 @@ func (o *OfflineMessageService) QueryOfflineMessage(ctx context.Context, req *me
 			Count:  int64(req.GetPageSize()),
 		}).Result()
 	if err != nil {
-		rsp.Response.SetCode(responsepb.Code_UnknownError).SetMsg(err.Error()) // nolint: errcheck
+		rsp.Response = responsepb.NewBaseResponseWithError(err)
 		return rsp, nil
 	}
 
@@ -69,7 +69,7 @@ func (o *OfflineMessageService) QueryOfflineMessage(ctx context.Context, req *me
 		str := result.Member.(string)
 		msg := new(messagev1.BriefMessage)
 		if err = json.Unmarshal([]byte(str), msg); err != nil {
-			rsp.Response.SetCode(responsepb.Code_UnknownError).SetMsg(err.Error()) // nolint: errcheck
+			rsp.Response = responsepb.NewBaseResponseWithError(err)
 			return rsp, nil
 		}
 

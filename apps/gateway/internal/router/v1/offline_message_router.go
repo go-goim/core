@@ -25,6 +25,16 @@ func (r *OfflineMessageRouter) Load(g *gin.RouterGroup) {
 	g.POST("/query", r.handleQueryOfflineMessage)
 }
 
+// @Summary 查询离线消息
+// @Description 查询离线消息
+// @Tags [gateway]offline_message
+// @Accept  json
+// @Produce  json
+// @Param   req body messagev1.QueryOfflineMessageReq true "req"
+// @Success 200 {object} messagev1.QueryOfflineMessageResp
+// @Failure 200 {object} response.Response
+// @Failure 401 {null} null
+// @Router /gateway/v1/offline_message/query [post]
 func (r *OfflineMessageRouter) handleQueryOfflineMessage(c *gin.Context) {
 	req := new(messagev1.QueryOfflineMessageReq)
 	if err := c.ShouldBindWith(req, request.PbJSONBinding{}); err != nil {

@@ -69,7 +69,7 @@ func (b PbJSONBinding) BindBody(body []byte, obj interface{}) error {
 
 	err := validate.Validate()
 	if err != nil {
-		return responsepb.NewBaseResponse(responsepb.Code_InvalidParams, err.Error())
+		return responsepb.NewBaseResponseWithMessage(responsepb.Code_InvalidParams, err.Error())
 	}
 
 	return nil

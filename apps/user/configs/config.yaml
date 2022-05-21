@@ -1,4 +1,4 @@
-name: goim.user.service
+name: service.goim.user
 version: v0.0.0
 http:
   scheme: http
@@ -18,3 +18,9 @@ mysql:
   user: root
   password: goim123456
   db: goim
+# services name
+gatewayService: service.goim.gateway
+userService: service.goim.user
+pushService: service.goim.push
+storeService: service.goim.store
+msgService: service.goim.msg

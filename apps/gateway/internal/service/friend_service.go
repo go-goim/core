@@ -2,19 +2,20 @@ package service
 
 import (
 	"context"
+	"fmt"
 	"sync"
 
 	"github.com/go-kratos/kratos/v2/transport/grpc"
 	ggrpc "google.golang.org/grpc"
+	"google.golang.org/grpc/connectivity"
 
 	responsepb "github.com/yusank/goim/api/transport/response"
 	friendpb "github.com/yusank/goim/api/user/friend/v1"
 	"github.com/yusank/goim/apps/gateway/internal/app"
-	"github.com/yusank/goim/pkg/conn/pool"
-	"github.com/yusank/goim/pkg/conn/wrapper"
 )
 
 type FriendService struct {
+	friendServiceConn *ggrpc.ClientConn
 }
 
 var (
@@ -30,12 +31,12 @@ func GetUserRelationService() *FriendService {
 }
 
 func (s *FriendService) AddFriend(ctx context.Context, req *friendpb.AddFriendRequest) (*friendpb.AddFriendResult, error) {
-	cc, err := s.loadConn(ctx)
+	err := s.checkGrpcConn(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	rsp, err := friendpb.NewFriendServiceClient(cc).AddFriend(ctx, req)
+	rsp, err := friendpb.NewFriendServiceClient(s.friendServiceConn).AddFriend(ctx, req)
 	if err != nil {
 		return nil, err
 	}
@@ -50,12 +51,12 @@ func (s *FriendService) AddFriend(ctx context.Context, req *friendpb.AddFriendRe
 func (s *FriendService) ListUserRelation(ctx context.Context, req *friendpb.QueryFriendListRequest) (
 	[]*friendpb.Friend, error) {
 
-	cc, err := s.loadConn(ctx)
+	err := s.checkGrpcConn(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	rsp, err := friendpb.NewFriendServiceClient(cc).QueryFriendList(ctx, req)
+	rsp, err := friendpb.NewFriendServiceClient(s.friendServiceConn).QueryFriendList(ctx, req)
 	if err != nil {
 		return nil, err
 	}
@@ -70,7 +71,7 @@ func (s *FriendService) ListUserRelation(ctx context.Context, req *friendpb.Quer
 func (s *FriendService) AcceptFriend(ctx context.Context, req *friendpb.ConfirmFriendRequestReq) error {
 	req.Action = friendpb.ConfirmFriendRequestAction_ACCEPT
 	if err := req.Validate(); err != nil {
-		return responsepb.NewBaseResponse(responsepb.Code_InvalidParams, err.Error())
+		return responsepb.NewBaseResponseWithMessage(responsepb.Code_InvalidParams, err.Error())
 	}
 
 	return s.confirmFriendRequest(ctx, req)
@@ -79,19 +80,19 @@ func (s *FriendService) AcceptFriend(ctx context.Context, req *friendpb.ConfirmF
 func (s *FriendService) RejectFriend(ctx context.Context, req *friendpb.ConfirmFriendRequestReq) error {
 	req.Action = friendpb.ConfirmFriendRequestAction_REJECT
 	if err := req.Validate(); err != nil {
-		return responsepb.NewBaseResponse(responsepb.Code_InvalidParams, err.Error())
+		return responsepb.NewBaseResponseWithMessage(responsepb.Code_InvalidParams, err.Error())
 	}
 
 	return s.confirmFriendRequest(ctx, req)
 }
 
 func (s *FriendService) confirmFriendRequest(ctx context.Context, req *friendpb.ConfirmFriendRequestReq) error {
-	cc, err := s.loadConn(ctx)
+	err := s.checkGrpcConn(ctx)
 	if err != nil {
 		return err
 	}
 
-	rsp, err := friendpb.NewFriendServiceClient(cc).ConfirmFriendRequest(ctx, req)
+	rsp, err := friendpb.NewFriendServiceClient(s.friendServiceConn).ConfirmFriendRequest(ctx, req)
 	if err != nil {
 		return err
 	}
@@ -116,7 +117,7 @@ func (s *FriendService) DeleteFriend(ctx context.Context, req *friendpb.BaseFrie
 }
 
 func (s *FriendService) updateFriendStatus(ctx context.Context, req *friendpb.BaseFriendRequest, status friendpb.FriendStatus) error { // nolint: lll
-	cc, err := s.loadConn(ctx)
+	err := s.checkGrpcConn(ctx)
 	if err != nil {
 		return err
 	}
@@ -126,7 +127,7 @@ func (s *FriendService) updateFriendStatus(ctx context.Context, req *friendpb.Ba
 		Status: status,
 	}
 
-	rsp, err := friendpb.NewFriendServiceClient(cc).UpdateFriendStatus(ctx, updateReq)
+	rsp, err := friendpb.NewFriendServiceClient(s.friendServiceConn).UpdateFriendStatus(ctx, updateReq)
 	if err != nil {
 		return err
 	}
@@ -138,22 +139,29 @@ func (s *FriendService) updateFriendStatus(ctx context.Context, req *friendpb.Ba
 	return nil
 }
 
-func (s *FriendService) loadConn(ctx context.Context) (*ggrpc.ClientConn, error) {
-	var ck = "discovery://dc1/goim.user.service"
-	c := pool.Get(ck)
-	if c != nil {
-		wc := c.(*wrapper.GrpcWrapper)
-		return wc.ClientConn, nil
+func (s *FriendService) checkGrpcConn(ctx context.Context) error {
+	if s.friendServiceConn != nil {
+		switch s.friendServiceConn.GetState() {
+		case connectivity.Idle:
+			return nil
+		case connectivity.Connecting:
+			return nil
+		case connectivity.Ready:
+			return nil
+		default:
+			// reconnect
+		}
 	}
+
+	var ck = fmt.Sprintf("discovery://dc1/%s", app.GetApplication().Config.SrvConfig.UserService)
 
 	cc, err := grpc.DialInsecure(ctx,
 		grpc.WithDiscovery(app.GetApplication().Register),
 		grpc.WithEndpoint(ck))
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	pool.Add(wrapper.WrapGrpc(context.Background(), cc, ck))
-
-	return cc, nil
+	s.friendServiceConn = cc
+	return nil
 }

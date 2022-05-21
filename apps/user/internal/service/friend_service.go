@@ -45,7 +45,7 @@ func GetFriendService() *FriendService {
 
 func (s *FriendService) AddFriend(ctx context.Context, req *friendpb.AddFriendRequest) (
 	*friendpb.AddFriendResponse, error) {
-	friendUser, err := GetUserService().loadUserByEmailOrPhone(ctx, req.GetEmail(), req.GetPhone())
+	friendUser, err := s.userDao.GetUserByUID(ctx, req.GetFriendUid())
 	if err != nil {
 		return nil, err
 	}
@@ -220,7 +220,7 @@ func (s *FriendService) ConfirmFriendRequest(ctx context.Context, req *friendpb.
 	// cannot confirm friend request if the friend request is not requested
 	// it means the friend request is accepted or rejected
 	if !fr.IsRequested() {
-		return responsepb.NewBaseResponse(responsepb.Code_FriendRequestStatusError,
+		return responsepb.NewBaseResponseWithMessage(responsepb.Code_FriendRequestStatusError,
 			"current friend request status cannot be confirmed"), nil
 	}
 
@@ -267,7 +267,7 @@ func (s *FriendService) ConfirmFriendRequest(ctx context.Context, req *friendpb.
 	})
 
 	if err != nil {
-		return responsepb.NewBaseResponse(responsepb.Code_UnknownError, err.Error()), nil
+		return responsepb.NewBaseResponseWithError(err), nil
 	}
 
 	// set friend status in the cache
@@ -358,7 +358,7 @@ func (s *FriendService) IsFriend(ctx context.Context, req *friendpb.BaseFriendRe
 	*responsepb.BaseResponse, error) {
 	ok, err := s.friendDao.GetFriendStatusFromCache(ctx, req.GetUid(), req.GetFriendUid())
 	if err != nil {
-		return responsepb.NewBaseResponse(responsepb.Code_CacheError, err.Error()), nil
+		return responsepb.NewBaseResponseWithMessage(responsepb.Code_CacheError, err.Error()), nil
 	}
 
 	if ok {
@@ -450,7 +450,7 @@ func (s *FriendService) UpdateFriendStatus(ctx context.Context, req *friendpb.Up
 	if req.GetStatus() == friendpb.FriendStatus_STRANGER || req.GetStatus() == friendpb.FriendStatus_BLOCKED {
 		err = s.onUnfriend(ctx, info.GetUid(), info.GetFriendUid())
 		if err != nil {
-			return responsepb.NewBaseResponse(responsepb.Code_CacheError, err.Error()), nil
+			return responsepb.NewBaseResponseWithMessage(responsepb.Code_CacheError, err.Error()), nil
 		}
 	}
 
@@ -458,13 +458,13 @@ func (s *FriendService) UpdateFriendStatus(ctx context.Context, req *friendpb.Up
 	if req.GetStatus() == friendpb.FriendStatus_UNBLOCKED {
 		err = s.onUnblock(ctx, info.GetUid(), info.GetFriendUid())
 		if err != nil {
-			return responsepb.NewBaseResponse(responsepb.Code_CacheError, err.Error()), nil
+			return responsepb.NewBaseResponseWithMessage(responsepb.Code_CacheError, err.Error()), nil
 		}
 	}
 
 	f.SetStatus(req.GetStatus())
 	if err := s.friendDao.UpdateFriendStatus(ctx, f); err != nil {
-		return responsepb.NewBaseResponse(responsepb.Code_UnknownError, err.Error()), nil
+		return responsepb.NewBaseResponseWithError(err), nil
 	}
 
 	return responsepb.Code_OK.BaseResponse(), nil

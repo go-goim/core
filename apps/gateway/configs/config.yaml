@@ -1,4 +1,4 @@
-name: goim.gateway.service
+name: service.goim.gateway
 version: v0.0.0
 http:
   scheme: http
@@ -16,3 +16,9 @@ redis:
 mq:
   addr:
     - http://127.0.0.1:9876
+# services name
+gatewayService: service.goim.gateway
+userService: service.goim.user
+pushService: service.goim.push
+storeService: service.goim.store
+msgService: service.goim.msg

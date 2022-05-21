@@ -24,7 +24,7 @@ import (
 )
 
 type MqMessageService struct {
-	rdb *redisv8.Client
+	rdb *redisv8.Client // remove to dao
 }
 
 var (
@@ -108,7 +108,7 @@ func (s *MqMessageService) handleSingleMsg(ctx context.Context, msg *primitive.M
 }
 
 func (s *MqMessageService) broadcast(ctx context.Context, req *messagev1.PushMessageReq) error {
-	list, err := app.GetApplication().Register.GetService(ctx, "goim.push.service")
+	list, err := app.GetApplication().Register.GetService(ctx, app.GetApplication().Config.SrvConfig.PushService)
 	if err != nil {
 		return err
 	}
@@ -188,9 +188,10 @@ func (s *MqMessageService) putToRedis(ctx context.Context, ext *primitive.Messag
 	return nil
 }
 
+// todo: is there any better way to do this?
 func (s *MqMessageService) loadGrpcConn(ctx context.Context, agentID string) (cc *ggrpc.ClientConn, err error) {
 	var (
-		ep = "discovery://dc1/goim.push.service"
+		ep = fmt.Sprintf("discovery://dc1/%s", app.GetApplication().Config.SrvConfig.PushService)
 		ck = fmt.Sprintf("%s:%s", ep, agentID)
 	)
 	c := pool.Get(ck)
@@ -203,6 +204,7 @@ func (s *MqMessageService) loadGrpcConn(ctx context.Context, agentID string) (cc
 		grpc.WithDiscovery(app.GetApplication().Register),
 		grpc.WithEndpoint(ep),
 		grpc.WithFilter(getFilter(agentID)))
+
 	if err != nil {
 		return
 	}
@@ -216,7 +218,7 @@ func getFilter(agentID string) selector.Filter {
 		var filtered = make([]selector.Node, 0)
 		for i, n := range nodes {
 			log.Info("filter", n.ServiceName(), n.Address(), n.Metadata())
-			if n.Metadata()["agentId"] == agentID {
+			if n.Metadata()["agentID"] == agentID {
 				filtered = append(filtered, nodes[i])
 			}
 		}

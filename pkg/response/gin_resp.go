@@ -38,7 +38,7 @@ func errorResp(err error) *Response {
 	case *responsepb.BaseResponse:
 		return NewResponseFromPb(t)
 	default:
-		return NewResponseFromCode(responsepb.Code_UnknownError).SetMsg(err.Error())
+		return NewResponseFromPb(responsepb.NewBaseResponseWithError(err))
 	}
 }
 
