@@ -4,6 +4,8 @@ import (
 	"context"
 
 	"github.com/gin-gonic/gin"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 
 	messagev1 "github.com/yusank/goim/api/message/v1"
 	"github.com/yusank/goim/apps/gateway/internal/app"
@@ -13,6 +15,10 @@ import (
 	"github.com/yusank/goim/pkg/graceful"
 	"github.com/yusank/goim/pkg/log"
 	"github.com/yusank/goim/pkg/mid"
+
+	_ "github.com/swaggo/swag"
+
+	_ "github.com/yusank/goim/swagger"
 )
 
 var (
@@ -45,8 +51,10 @@ func main() {
 
 	g := gin.New()
 	g.Use(gin.Recovery(), mid.Logger)
-	router.RegisterRouter(g.Group("/gateway/service"))
+	router.RegisterRouter(g.Group("/gateway"))
 	application.HTTPSrv.HandlePrefix("/", g)
+	// register swagger
+	g.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	if err = application.Run(); err != nil {
 		log.Error("application run got error", "error", err)

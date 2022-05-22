@@ -1,16 +1,6 @@
 //go:generate swag init -g swagger.go -o ./swagger
 package main
 
-import (
-	"github.com/gin-gonic/gin"
-	swaggerFiles "github.com/swaggo/files"
-	ginSwagger "github.com/swaggo/gin-swagger"
-
-	_ "github.com/swaggo/swag"
-
-	_ "github.com/yusank/goim/swagger"
-)
-
 // @title GoIM Swagger
 // @version 1.0
 // @description GoIM 服务器接口文档
@@ -24,9 +14,4 @@ import (
 // @license.url https://github.com/yusank/goim/blob/main/LICENSE
 
 // @BasePath /
-func main() {
-	g := gin.New()
-	g.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
-
-	_ = g.Run(":8080")
-}
+func main() {}

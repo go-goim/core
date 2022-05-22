@@ -30,14 +30,22 @@ func (r *UserRouter) Load(router *gin.RouterGroup) {
 	router.POST("/update", mid.AuthJwtCookie, r.updateUserInfo)
 }
 
+type LoginRequestForSwagger struct {
+	// Email and Phone only one can be set
+	Email     *string `json:"email" example:"user1@example.com"`
+	Phone     *string `json:"phone" example:"13800138000"`
+	Password  string  `json:"password" example:"123456"`
+	LoginType int     `json:"loginType" example:"0"`
+}
+
 // @Summary 登录
 // @Description 用户登录
 // @Tags [gateway]用户
 // @Accept json
 // @Produce json
-// @Param   req body userv1.UserLoginRequest true "req"
-// @Success 200 {object} userv1.User
-// @Failure 200 {object} response.Response
+// @Param   req body LoginRequestForSwagger true "req"
+// @Success 200 {object} response.Response{data=userv1.User}
+// @Header  200 {string} Authorization "Bearer "
 // @Router /gateway/v1/user/login [post]
 func (r *UserRouter) login(c *gin.Context) {
 	var req = &userv1.UserLoginRequest{}

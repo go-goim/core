@@ -30,7 +30,12 @@ values
     (10000, '4F8DSQByUsEUMoETzTCabh', 'user1', '8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92', 'user1@example.com', ' ', ' ', 1, 1528894200, 1528894200),
     (10001, 'C6CtUjpC6h5e5SW9tBFNVX', 'user2', '8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92', 'user2@example.com', ' ', ' ', 0, 1528894200, 1528894200),
     (10002, '7mRZLYedtK1EwxzC5X1Lxf', 'user3', '8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92', 'user3@example.com', ' ', ' ', 0, 1528894200, 1528894200),
-    (10003, 'WmbtshDDMUgb3KWFisWZ4E', 'user4', '8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92', 'user4@example.com', ' ', ' ', 0, 1528894200, 1528894200);
+    (10003, 'WmbtshDDMUgb3KWFisWZ4E', 'user4', '8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92', 'user4@example.com', ' ', ' ', 0, 1528894200, 1528894200),
+    (10004, 'Vf4gA6vQdeF81YHV7DU4pP', 'user5', '8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92', 'user5@example.com', ' ', ' ', 0, 1528894200, 1528894200),
+    (10005, 'Pzu74cyA3BJhnj1fx2oSuz', 'user6', '8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92', 'user6@example.com', ' ', ' ', 0, 1528894200, 1528894200),
+    (10006, 'KWZs8sLE1dNQRCscx4rs3q', 'user7', '8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92', 'user7@example.com', ' ', ' ', 0, 1528894200, 1528894200),
+    (10007, 'KmFExCJdsVJ2ws8uZzg49d', 'user8', '8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92', 'user8@example.com', ' ', ' ', 0, 1528894200, 1528894200),
+    (10008, 'URM38EZ2A1LA3qkyLuoS3D', 'user9', '8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92', 'user9@example.com', ' ', ' ', 0, 1528894200, 1528894200);
 
 -- define friend table based on go structure Friend in current directory
 DROP TABLE IF EXISTS goim.friend;
@@ -46,20 +51,6 @@ CREATE TABLE IF NOT EXISTS goim.friend (
     unique key (`uid`, `friend_uid`),
     key (`uid`)
 ) auto_increment = 10000 engine = innodb charset = utf8mb4;
-
--- mock data
-insert into goim.friend (`id`, `uid`, `friend_uid`, `status`, `created_at`, `updated_at`)
-values
-    (10000, '4F8DSQByUsEUMoETzTCabh', 'C6CtUjpC6h5e5SW9tBFNVX', 1, 1528894200, 1528894200),
-    (10001, 'C6CtUjpC6h5e5SW9tBFNVX', '4F8DSQByUsEUMoETzTCabh', 1, 1528894200, 1528894200),
-    (10002, 'C6CtUjpC6h5e5SW9tBFNVX', '7mRZLYedtK1EwxzC5X1Lxf', 1, 1528894200, 1528894200),
-    (10003, 'C6CtUjpC6h5e5SW9tBFNVX', 'WmbtshDDMUgb3KWFisWZ4E', 1, 1528894200, 1528894200),
-    (10004, '7mRZLYedtK1EwxzC5X1Lxf', '4F8DSQByUsEUMoETzTCabh', 1, 1528894200, 1528894200),
-    (10005, '7mRZLYedtK1EwxzC5X1Lxf', 'C6CtUjpC6h5e5SW9tBFNVX', 1, 1528894200, 1528894200),
-    (10006, '7mRZLYedtK1EwxzC5X1Lxf', 'WmbtshDDMUgb3KWFisWZ4E', 1, 1528894200, 1528894200),
-    (10007, 'WmbtshDDMUgb3KWFisWZ4E', '4F8DSQByUsEUMoETzTCabh', 1, 1528894200, 1528894200),
-    (10008, 'WmbtshDDMUgb3KWFisWZ4E', 'C6CtUjpC6h5e5SW9tBFNVX', 1, 1528894200, 1528894200),
-    (10009, 'WmbtshDDMUgb3KWFisWZ4E', '7mRZLYedtK1EwxzC5X1Lxf', 1, 1528894200, 1528894200);
 
 -- define friend_request table based on go structure FriendRequest in current directory
 DROP TABLE IF EXISTS goim.friend_request;
