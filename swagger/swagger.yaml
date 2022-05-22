@@ -123,14 +123,21 @@ definitions:
       updated_at:
         type: integer
     type: object
-  v1.QueryFriendListResponse:
+  v1.LoginRequestForSwagger:
     properties:
-      friend_list:
-        items:
-          $ref: '#/definitions/v1.Friend'
-        type: array
-      response:
-        $ref: '#/definitions/response.BaseResponse'
+      email:
+        description: Email and Phone only one can be set
+        example: user1@example.com
+        type: string
+      loginType:
+        example: 0
+        type: integer
+      password:
+        example: "123456"
+        type: string
+      phone:
+        example: "13800138000"
+        type: string
     type: object
   v1.QueryOfflineMessageReq:
     properties:
@@ -209,18 +216,6 @@ definitions:
       uid:
         type: string
     type: object
-  v1.UserLoginRequest:
-    properties:
-      login_type:
-        description: |-
-          0: try login , do nothing if already login
-          1: force login , logout if already login
-        type: integer
-      password:
-        type: string
-      user:
-        description: "Types that are assignable to User:\n\t*UserLoginRequest_Email\n\t*UserLoginRequest_Phone"
-    type: object
 info:
   contact:
     email: yusankurban@gmail.com
@@ -234,217 +229,6 @@ info:
   title: GoIM Swagger
   version: "1.0"
 paths:
-  /friend/accept-friend:
-    post:
-      consumes:
-      - application/json
-      description: 接受好友请求
-      parameters:
-      - description: token
-        in: header
-        name: Authorization
-        required: true
-        type: string
-      - description: body
-        in: body
-        name: body
-        required: true
-        schema:
-          $ref: '#/definitions/v1.ConfirmFriendRequestReq'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: Success
-          schema:
-            $ref: '#/definitions/response.BaseResponse'
-        "400":
-          description: err
-          schema:
-            $ref: '#/definitions/response.BaseResponse'
-      summary: 接受好友请求
-      tags:
-      - '[gateway]好友'
-  /friend/add-friend:
-    post:
-      consumes:
-      - application/json
-      description: 添加好友
-      parameters:
-      - description: token
-        in: header
-        name: Authorization
-        required: true
-        type: string
-      - description: body
-        in: body
-        name: body
-        required: true
-        schema:
-          $ref: '#/definitions/v1.AddFriendRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/v1.AddFriendResult'
-        "400":
-          description: err
-          schema:
-            $ref: '#/definitions/response.BaseResponse'
-      summary: 添加好友
-      tags:
-      - '[gateway]好友'
-  /friend/block-friend:
-    post:
-      consumes:
-      - application/json
-      description: 屏蔽好友
-      parameters:
-      - description: token
-        in: header
-        name: Authorization
-        required: true
-        type: string
-      - description: body
-        in: body
-        name: body
-        required: true
-        schema:
-          $ref: '#/definitions/v1.BaseFriendRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: Success
-          schema:
-            $ref: '#/definitions/response.BaseResponse'
-        "400":
-          description: err
-          schema:
-            $ref: '#/definitions/response.BaseResponse'
-      summary: 屏蔽好友
-      tags:
-      - '[gateway]好友'
-  /friend/delete-friend:
-    post:
-      consumes:
-      - application/json
-      description: 删除好友
-      parameters:
-      - description: token
-        in: header
-        name: Authorization
-        required: true
-        type: string
-      - description: body
-        in: body
-        name: body
-        required: true
-        schema:
-          $ref: '#/definitions/v1.BaseFriendRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: Success
-          schema:
-            $ref: '#/definitions/response.BaseResponse'
-        "400":
-          description: err
-          schema:
-            $ref: '#/definitions/response.BaseResponse'
-      summary: 删除好友
-      tags:
-      - '[gateway]好友'
-  /friend/list:
-    get:
-      consumes:
-      - application/json
-      description: 获取好友列表
-      parameters:
-      - description: token
-        in: header
-        name: Authorization
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/v1.QueryFriendListResponse'
-        "400":
-          description: err
-          schema:
-            $ref: '#/definitions/response.BaseResponse'
-      summary: 获取好友列表
-      tags:
-      - '[gateway]好友'
-  /friend/reject-friend:
-    post:
-      consumes:
-      - application/json
-      description: 拒绝好友请求
-      parameters:
-      - description: token
-        in: header
-        name: Authorization
-        required: true
-        type: string
-      - description: body
-        in: body
-        name: body
-        required: true
-        schema:
-          $ref: '#/definitions/v1.ConfirmFriendRequestReq'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: Success
-          schema:
-            $ref: '#/definitions/response.BaseResponse'
-        "400":
-          description: err
-          schema:
-            $ref: '#/definitions/response.BaseResponse'
-      summary: 拒绝好友请求
-      tags:
-      - '[gateway]好友'
-  /friend/unblock-friend:
-    post:
-      consumes:
-      - application/json
-      description: 取消屏蔽好友
-      parameters:
-      - description: token
-        in: header
-        name: Authorization
-        required: true
-        type: string
-      - description: body
-        in: body
-        name: body
-        required: true
-        schema:
-          $ref: '#/definitions/v1.BaseFriendRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: Success
-          schema:
-            $ref: '#/definitions/response.BaseResponse'
-        "400":
-          description: err
-          schema:
-            $ref: '#/definitions/response.BaseResponse'
-      summary: 取消屏蔽好友
-      tags:
-      - '[gateway]好友'
   /gateway/v1/discovery/discover:
     get:
       description: 获取推送服务器 agentID
@@ -556,6 +340,224 @@ paths:
       summary: 查询离线消息
       tags:
       - '[gateway]offline_message'
+  /gateway/v1/user/friend/accept-friend:
+    post:
+      consumes:
+      - application/json
+      description: 接受好友请求
+      parameters:
+      - description: token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: body
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/v1.ConfirmFriendRequestReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Success
+          schema:
+            $ref: '#/definitions/response.BaseResponse'
+        "400":
+          description: err
+          schema:
+            $ref: '#/definitions/response.BaseResponse'
+      summary: 接受好友请求
+      tags:
+      - '[gateway]好友'
+  /gateway/v1/user/friend/add-friend:
+    post:
+      consumes:
+      - application/json
+      description: 添加好友
+      parameters:
+      - description: token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: body
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/v1.AddFriendRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/v1.AddFriendResult'
+        "400":
+          description: err
+          schema:
+            $ref: '#/definitions/response.BaseResponse'
+      summary: 添加好友
+      tags:
+      - '[gateway]好友'
+  /gateway/v1/user/friend/block-friend:
+    post:
+      consumes:
+      - application/json
+      description: 屏蔽好友
+      parameters:
+      - description: token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: body
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/v1.BaseFriendRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Success
+          schema:
+            $ref: '#/definitions/response.BaseResponse'
+        "400":
+          description: err
+          schema:
+            $ref: '#/definitions/response.BaseResponse'
+      summary: 屏蔽好友
+      tags:
+      - '[gateway]好友'
+  /gateway/v1/user/friend/delete-friend:
+    post:
+      consumes:
+      - application/json
+      description: 删除好友
+      parameters:
+      - description: token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: body
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/v1.BaseFriendRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Success
+          schema:
+            $ref: '#/definitions/response.BaseResponse'
+        "400":
+          description: err
+          schema:
+            $ref: '#/definitions/response.BaseResponse'
+      summary: 删除好友
+      tags:
+      - '[gateway]好友'
+  /gateway/v1/user/friend/list:
+    get:
+      consumes:
+      - application/json
+      description: 获取好友列表
+      parameters:
+      - description: token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Success
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/v1.Friend'
+                  type: array
+              type: object
+        "400":
+          description: err
+          schema:
+            $ref: '#/definitions/response.Response'
+      summary: 获取好友列表
+      tags:
+      - '[gateway]好友'
+  /gateway/v1/user/friend/reject-friend:
+    post:
+      consumes:
+      - application/json
+      description: 拒绝好友请求
+      parameters:
+      - description: token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: body
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/v1.ConfirmFriendRequestReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Success
+          schema:
+            $ref: '#/definitions/response.BaseResponse'
+        "400":
+          description: err
+          schema:
+            $ref: '#/definitions/response.BaseResponse'
+      summary: 拒绝好友请求
+      tags:
+      - '[gateway]好友'
+  /gateway/v1/user/friend/unblock-friend:
+    post:
+      consumes:
+      - application/json
+      description: 取消屏蔽好友
+      parameters:
+      - description: token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: body
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/v1.BaseFriendRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Success
+          schema:
+            $ref: '#/definitions/response.BaseResponse'
+        "400":
+          description: err
+          schema:
+            $ref: '#/definitions/response.BaseResponse'
+      summary: 取消屏蔽好友
+      tags:
+      - '[gateway]好友'
   /gateway/v1/user/login:
     post:
       consumes:
@@ -567,14 +569,23 @@ paths:
         name: req
         required: true
         schema:
-          $ref: '#/definitions/v1.UserLoginRequest'
+          $ref: '#/definitions/v1.LoginRequestForSwagger'
       produces:
       - application/json
       responses:
         "200":
           description: OK
+          headers:
+            Authorization:
+              description: 'Bearer '
+              type: string
           schema:
-            $ref: '#/definitions/response.Response'
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/v1.User'
+              type: object
       summary: 登录
       tags:
       - '[gateway]用户'

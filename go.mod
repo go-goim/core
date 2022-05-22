@@ -15,7 +15,6 @@ require (
 	github.com/gorilla/websocket v1.5.0
 	github.com/hashicorp/consul/api v1.12.0
 	github.com/jroimartin/gocui v0.5.0
-	github.com/lithammer/shortuuid/v4 v4.0.0
 	github.com/mattn/go-colorable v0.1.6
 	github.com/spf13/pflag v1.0.5
 	github.com/stretchr/testify v1.7.0

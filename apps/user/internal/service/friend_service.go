@@ -213,7 +213,8 @@ func (s *FriendService) ConfirmFriendRequest(ctx context.Context, req *friendpb.
 		return responsepb.Code_FriendRequestNotExist.BaseResponse(), nil
 	}
 
-	if fr.UID != req.GetUid() {
+	// check if the friend request is send to me
+	if fr.FriendUID != req.GetUid() {
 		return responsepb.Code_FriendRequestNotExist.BaseResponse(), nil
 	}
 

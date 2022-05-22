@@ -100,9 +100,9 @@ stop: ## stop all apps
 .PHONY: restart
 restart: stop run-all
 
-.PHONY: swagger
-swagger: ## generate swagger file
-	go generate ./... && go run swagger.go
+.PHONY: generate
+generate: ## generate code by run go generate
+	go generate ./...
 
 ##################################################
 # General                                        #
