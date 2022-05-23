@@ -163,6 +163,16 @@ definitions:
       total:
         type: integer
     type: object
+  v1.QueryRequestForSwagger:
+    properties:
+      email:
+        description: Email and Phone only one can be set
+        example: user1@example.com
+        type: string
+      phone:
+        example: "13800138000"
+        type: string
+    type: object
   v1.SendMessageReq:
     properties:
       content:
@@ -587,6 +597,28 @@ paths:
                   $ref: '#/definitions/v1.User'
               type: object
       summary: 登录
+      tags:
+      - '[gateway]用户'
+  /gateway/v1/user/query:
+    post:
+      consumes:
+      - application/json
+      description: 查询用户信息
+      parameters:
+      - description: req
+        in: body
+        name: req
+        required: true
+        schema:
+          $ref: '#/definitions/v1.QueryRequestForSwagger'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Response'
+      summary: 查询用户信息
       tags:
       - '[gateway]用户'
   /gateway/v1/user/register:

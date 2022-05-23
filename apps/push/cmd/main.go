@@ -5,7 +5,6 @@ import (
 	"os"
 
 	"github.com/gin-gonic/gin"
-	"github.com/go-kratos/kratos/v2/log"
 
 	messagev1 "github.com/yusank/goim/api/message/v1"
 	"github.com/yusank/goim/apps/push/internal/app"
@@ -13,6 +12,7 @@ import (
 	"github.com/yusank/goim/apps/push/internal/service"
 	"github.com/yusank/goim/pkg/cmd"
 	"github.com/yusank/goim/pkg/graceful"
+	"github.com/yusank/goim/pkg/log"
 	"github.com/yusank/goim/pkg/mid"
 )
 
@@ -23,6 +23,7 @@ var (
 
 func init() {
 	agentID, _ = os.Hostname()
+	log.Debug("agent id", "agentID", agentID)
 	cmd.GlobalFlagSet.StringVar(&jwtSecret, "jwt-secret", "", "jwt secret")
 	cmd.GlobalFlagSet.StringVar(&agentID, "agent-id", agentID, "agent id")
 }
@@ -43,7 +44,7 @@ func main() {
 
 	application, err := app.InitApplication(agentID)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("initApplication got err", "error", err)
 	}
 
 	// register grpc
@@ -56,11 +57,11 @@ func main() {
 	application.HTTPSrv.HandlePrefix("/", g)
 
 	if err = application.Run(); err != nil {
-		log.Fatal(err)
+		log.Fatal("application run got error", "error", err)
 	}
 
 	graceful.Register(application.Shutdown)
 	if err = graceful.Shutdown(context.TODO()); err != nil {
-		log.Infof("graceful shutdown error: %s", err)
+		log.Info("graceful shutdown got error", "error", err)
 	}
 }

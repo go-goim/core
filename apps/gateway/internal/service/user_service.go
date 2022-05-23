@@ -35,6 +35,24 @@ func GetUserService() *UserService {
 	return userService
 }
 
+func (s *UserService) QueryUserInfo(ctx context.Context, req *userv1.QueryUserRequest) (*userv1.User, error) {
+	err := s.checkGrpcConn(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	rsp, err := userv1.NewUserServiceClient(s.userServiceConn).QueryUser(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+
+	if !rsp.GetResponse().Success() {
+		return nil, rsp.GetResponse()
+	}
+
+	return rsp.GetUser().ToUser(), nil
+}
+
 // Login check user login status and return user info
 func (s *UserService) Login(ctx context.Context, req *userv1.UserLoginRequest) (*userv1.User, error) {
 	err := s.checkGrpcConn(ctx)

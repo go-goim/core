@@ -581,6 +581,40 @@ const docTemplate = `{
                 }
             }
         },
+        "/gateway/v1/user/query": {
+            "post": {
+                "description": "查询用户信息",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "[gateway]用户"
+                ],
+                "summary": "查询用户信息",
+                "parameters": [
+                    {
+                        "description": "req",
+                        "name": "req",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/v1.QueryRequestForSwagger"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
         "/gateway/v1/user/register": {
             "post": {
                 "description": "用户注册",
@@ -896,6 +930,20 @@ const docTemplate = `{
                 },
                 "total": {
                     "type": "integer"
+                }
+            }
+        },
+        "v1.QueryRequestForSwagger": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "description": "Email and Phone only one can be set",
+                    "type": "string",
+                    "example": "user1@example.com"
+                },
+                "phone": {
+                    "type": "string",
+                    "example": "13800138000"
                 }
             }
         },

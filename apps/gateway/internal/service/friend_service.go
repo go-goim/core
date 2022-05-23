@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"sync"
+	"time"
 
 	"github.com/go-kratos/kratos/v2/transport/grpc"
 	ggrpc "google.golang.org/grpc"
@@ -69,7 +70,6 @@ func (s *FriendService) ListUserRelation(ctx context.Context, req *friendpb.Quer
 }
 
 func (s *FriendService) AcceptFriend(ctx context.Context, req *friendpb.ConfirmFriendRequestReq) error {
-	req.Action = friendpb.ConfirmFriendRequestAction_ACCEPT
 	if err := req.Validate(); err != nil {
 		return responsepb.NewBaseResponseWithMessage(responsepb.Code_InvalidParams, err.Error())
 	}
@@ -78,7 +78,6 @@ func (s *FriendService) AcceptFriend(ctx context.Context, req *friendpb.ConfirmF
 }
 
 func (s *FriendService) RejectFriend(ctx context.Context, req *friendpb.ConfirmFriendRequestReq) error {
-	req.Action = friendpb.ConfirmFriendRequestAction_REJECT
 	if err := req.Validate(); err != nil {
 		return responsepb.NewBaseResponseWithMessage(responsepb.Code_InvalidParams, err.Error())
 	}
@@ -157,7 +156,7 @@ func (s *FriendService) checkGrpcConn(ctx context.Context) error {
 
 	cc, err := grpc.DialInsecure(ctx,
 		grpc.WithDiscovery(app.GetApplication().Register),
-		grpc.WithEndpoint(ck))
+		grpc.WithEndpoint(ck), grpc.WithTimeout(time.Second*5))
 	if err != nil {
 		return err
 	}
