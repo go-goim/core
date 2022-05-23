@@ -51,6 +51,7 @@ func main() {
 
 	g := gin.New()
 	g.Use(gin.Recovery(), mid.Logger)
+	// Is this necessary to set a prefix? Cause this service name is gateway already.
 	router.RegisterRouter(g.Group("/gateway"))
 	application.HTTPSrv.HandlePrefix("/", g)
 	// register swagger

@@ -133,6 +133,8 @@ func (r *FriendRouter) acceptFriend(c *gin.Context) {
 		return
 	}
 
+	req.Uid = mid.GetUID(c)
+	req.Action = friendpb.ConfirmFriendRequestAction_ACCEPT
 	err := service.GetUserRelationService().AcceptFriend(mid.GetContext(c), req)
 	if err != nil {
 		response.ErrorResp(c, err)

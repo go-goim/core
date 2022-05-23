@@ -87,7 +87,7 @@ run: build ## run provided server
 	./$(BinPath) --conf $(CfgPath)
 
 .PHONY: run-all
-run-all: build-all ## run all apps
+run-all: ## run all apps
 	nohup make run Srv=push > push.stderr.log 2>&1 & \
 	nohup make run Srv=gateway > gateway.stderr.log 2>&1 & \
 	nohup make run Srv=msg > msg.stderr.log 2>&1 & \

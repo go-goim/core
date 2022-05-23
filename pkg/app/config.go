@@ -1,8 +1,6 @@
 package app
 
 import (
-	"strings"
-
 	"github.com/go-kratos/kratos/v2/config"
 	"github.com/go-kratos/kratos/v2/config/file"
 
@@ -32,7 +30,6 @@ func (c *Config) Debug() bool {
 type ServiceConfig struct {
 	*configv1.Service `json:",inline"`
 	FilePath          string
-	SimpleName        string
 }
 
 func NewConfig() *ServiceConfig {
@@ -83,12 +80,7 @@ func ParseConfig() *Config {
 	}
 
 	cfg.FilePath = confPath
-	slice := strings.Split(cfg.GetName(), ".")
-	if len(slice) < 3 {
-		log.Fatal("invalid service name=", cfg.GetName())
-	}
 
-	cfg.SimpleName = slice[1]
 	log.Debug("config content", "config", cfg)
 
 	reg := NewRegistry()
@@ -105,7 +97,7 @@ func ParseConfig() *Config {
 	log.Debug("registry content", "registry", reg)
 	reg.Name = cfg.GetName()
 
-	setLogger(cfg.SimpleName, cfg.Log)
+	setLogger(cfg.Name, cfg.Log)
 	return &Config{
 		SrvConfig: cfg,
 		RegConfig: reg,
