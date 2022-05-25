@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/apache/rocketmq-client-go/v2/consumer"
 	"github.com/apache/rocketmq-client-go/v2/primitive"
@@ -129,7 +130,7 @@ func (s *MqMessageService) broadcast(ctx context.Context, req *messagev1.PushMes
 }
 
 func (s *MqMessageService) broadcastToEndpoint(ctx context.Context, req *messagev1.PushMessageReq, ep string) error {
-	cc, err := grpc.DialInsecure(ctx, grpc.WithEndpoint(ep))
+	cc, err := grpc.DialInsecure(ctx, grpc.WithEndpoint(ep), grpc.WithTimeout(time.Second*5))
 	if err != nil {
 		return err
 	}
@@ -203,7 +204,9 @@ func (s *MqMessageService) loadGrpcConn(ctx context.Context, agentID string) (cc
 	cc, err = grpc.DialInsecure(ctx,
 		grpc.WithDiscovery(app.GetApplication().Register),
 		grpc.WithEndpoint(ep),
-		grpc.WithFilter(getFilter(agentID)))
+		grpc.WithFilter(getFilter(agentID)),
+		grpc.WithTimeout(time.Second*5),
+	)
 
 	if err != nil {
 		return

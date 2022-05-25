@@ -6,6 +6,7 @@ http:
 grpc:
   scheme: grpc
   port: 18053
+  timeout: 5s
 log:
   level: DEBUG
   enable_console: true
@@ -18,6 +19,7 @@ mysql:
   user: root
   password: goim123456
   db: goim
+  max_open_conns: 1000
 # services name
 gatewayService: service.goim.gateway
 userService: service.goim.user

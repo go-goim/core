@@ -95,6 +95,37 @@ func (m *Server) validate(all bool) error {
 		errors = append(errors, err)
 	}
 
+	if d := m.GetTimeout(); d != nil {
+		dur, err := d.AsDuration(), d.CheckValid()
+		if err != nil {
+			err = ServerValidationError{
+				field:  "Timeout",
+				reason: "value is not a valid duration",
+				cause:  err,
+			}
+			if !all {
+				return err
+			}
+			errors = append(errors, err)
+		} else {
+
+			lte := time.Duration(10*time.Second + 0*time.Nanosecond)
+			gte := time.Duration(0*time.Second + 10000000*time.Nanosecond)
+
+			if dur < gte || dur > lte {
+				err := ServerValidationError{
+					field:  "Timeout",
+					reason: "value must be inside range [10ms, 10s]",
+				}
+				if !all {
+					return err
+				}
+				errors = append(errors, err)
+			}
+
+		}
+	}
+
 	if len(errors) > 0 {
 		return ServerMultiError(errors)
 	}
@@ -726,12 +757,12 @@ func (m *Redis) validate(all bool) error {
 		} else {
 
 			lte := time.Duration(10*time.Second + 0*time.Nanosecond)
-			gte := time.Duration(0*time.Second + 1000000*time.Nanosecond)
+			gte := time.Duration(0*time.Second + 10000000*time.Nanosecond)
 
 			if dur < gte || dur > lte {
 				err := RedisValidationError{
 					field:  "DialTimeout",
-					reason: "value must be inside range [1ms, 10s]",
+					reason: "value must be inside range [10ms, 10s]",
 				}
 				if !all {
 					return err
@@ -757,12 +788,12 @@ func (m *Redis) validate(all bool) error {
 		} else {
 
 			lte := time.Duration(10*time.Second + 0*time.Nanosecond)
-			gte := time.Duration(0*time.Second + 1000000*time.Nanosecond)
+			gte := time.Duration(0*time.Second + 10000000*time.Nanosecond)
 
 			if dur < gte || dur > lte {
 				err := RedisValidationError{
 					field:  "IdleTimeout",
-					reason: "value must be inside range [1ms, 10s]",
+					reason: "value must be inside range [10ms, 10s]",
 				}
 				if !all {
 					return err

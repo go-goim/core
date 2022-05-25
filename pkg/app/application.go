@@ -3,6 +3,7 @@ package app
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"go.uber.org/atomic"
 
@@ -60,22 +61,33 @@ func InitApplication(cfg *Config) (*Application, error) {
 
 	var servers = make([]transport.Server, 0)
 	if cfg.SrvConfig.Http != nil {
+		var timeout = time.Second
+		if cfg.SrvConfig.Http.GetTimeout() != nil && cfg.SrvConfig.Http.GetTimeout().IsValid() {
+			timeout = cfg.SrvConfig.Http.GetTimeout().AsDuration()
+		}
+
 		httpSrv := http.NewServer(
 			http.Address(fmt.Sprintf("%s:%d", cfg.SrvConfig.Http.GetAddr(), cfg.SrvConfig.Http.GetPort())),
 			http.Middleware(
 				recovery.Recovery(),
 			),
+			http.Timeout(timeout),
 		)
 		application.HTTPSrv = httpSrv
 		servers = append(servers, httpSrv)
 	}
 	if cfg.SrvConfig.Grpc != nil {
+		var timeout = time.Second
+		if cfg.SrvConfig.Grpc.GetTimeout() != nil && cfg.SrvConfig.Grpc.GetTimeout().IsValid() {
+			timeout = cfg.SrvConfig.Grpc.GetTimeout().AsDuration()
+		}
 		// services
 		grpcSrv := grpc.NewServer(
 			grpc.Address(fmt.Sprintf("%s:%d", cfg.SrvConfig.Grpc.GetAddr(), cfg.SrvConfig.Grpc.GetPort())),
 			grpc.Middleware(
 				recovery.Recovery(),
 			),
+			grpc.Timeout(timeout),
 		)
 		application.GrpcSrv = grpcSrv
 		servers = append(servers, grpcSrv)
