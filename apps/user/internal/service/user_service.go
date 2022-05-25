@@ -85,7 +85,7 @@ func (s *UserService) loadUserByEmailOrPhone(ctx context.Context, email, phone s
 		value = phone
 		getFunc = s.userDao.GetUserByPhone
 	default:
-		return nil, fmt.Errorf("invalid query user request")
+		return nil, fmt.Errorf("invalid query user request, email: %s, phone: %s", email, phone)
 	}
 
 	user, err := getFunc(ctx, value)
@@ -110,10 +110,11 @@ func (s *UserService) CreateUser(ctx context.Context, req *userv1.CreateUserRequ
 		user = &data.User{
 			UID:      util.UUID(),
 			Name:     req.GetName(),
-			Email:    req.GetEmail(),
-			Phone:    req.GetPhone(),
 			Password: util.HashString(req.GetPassword()),
 		}
+
+		user.SetPhone(req.GetPhone())
+		user.SetEmail(req.GetEmail())
 
 		err = s.userDao.CreateUser(ctx, user)
 		if err != nil {
@@ -158,13 +159,8 @@ func (s *UserService) UpdateUser(ctx context.Context, req *userv1.UpdateUserRequ
 		return rsp, nil
 	}
 
-	if req.GetEmail() != "" {
-		user.Email = req.GetEmail()
-	}
-
-	if req.GetPhone() != "" {
-		user.Phone = req.GetPhone()
-	}
+	user.SetEmail(req.GetEmail())
+	user.SetPhone(req.GetPhone())
 
 	if req.GetName() != "" {
 		user.Password = req.GetName()

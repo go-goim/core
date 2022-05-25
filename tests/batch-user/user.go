@@ -8,7 +8,6 @@ import (
 	"log"
 	"net/http"
 	"strings"
-	"time"
 
 	userv1 "github.com/yusank/goim/api/user/v1"
 	"github.com/yusank/goim/pkg/response"
@@ -189,7 +188,6 @@ func (u *user) init(reg bool) error {
 func (u *user) run(max int) {
 	users := u.randomUsers(max)
 	for _, email := range users {
-		time.Sleep(time.Millisecond * 50)
 		uid, err := u.queryFriend(email)
 		if err != nil {
 			log.Printf("query friend user=%s, friend=%s, err= %s", u.email, email, err.Error())
@@ -203,14 +201,12 @@ func (u *user) run(max int) {
 	}
 }
 
-func (u *user) randomUsers(max int) [1000]string {
-	var (
-		users [1000]string
-	)
+func (u *user) randomUsers(max int) []string {
 	var maxFriend = 1000
 	if max < 1000 {
 		maxFriend = max - 1
 	}
+	users := make([]string, maxFriend)
 	for i := 0; i < maxFriend; i++ {
 		r := u.idx + i + 1
 		if r >= max {

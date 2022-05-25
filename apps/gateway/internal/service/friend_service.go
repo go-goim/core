@@ -156,7 +156,8 @@ func (s *FriendService) checkGrpcConn(ctx context.Context) error {
 
 	cc, err := grpc.DialInsecure(ctx,
 		grpc.WithDiscovery(app.GetApplication().Register),
-		grpc.WithEndpoint(ck), grpc.WithTimeout(time.Second*5))
+		grpc.WithEndpoint(ck),
+		grpc.WithTimeout(time.Second*5))
 	if err != nil {
 		return err
 	}

@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"sync"
+	"time"
 
 	"github.com/go-kratos/kratos/v2/transport/grpc"
 	ggrpc "google.golang.org/grpc"
@@ -13,6 +14,7 @@ import (
 	userv1 "github.com/yusank/goim/api/user/v1"
 	"github.com/yusank/goim/apps/gateway/internal/app"
 	"github.com/yusank/goim/apps/gateway/internal/dao"
+	"github.com/yusank/goim/pkg/log"
 	"github.com/yusank/goim/pkg/util"
 )
 
@@ -70,7 +72,15 @@ func (s *UserService) Login(ctx context.Context, req *userv1.UserLoginRequest) (
 		return nil, fmt.Errorf("invalid user login request")
 	}
 
-	rsp, err := userv1.NewUserServiceClient(s.userServiceConn).QueryUser(ctx, queryReq)
+	ddl, ok := ctx.Deadline()
+	if ok {
+		log.Debug("Login ctx deadline", "ddl", ddl)
+	}
+
+	ctx2, cancel := context.WithTimeout(ctx, 3*time.Second)
+	rsp, err := userv1.NewUserServiceClient(s.userServiceConn).QueryUser(ctx2, queryReq)
+	cancel()
+
 	if err != nil {
 		return nil, err
 	}
@@ -160,7 +170,8 @@ func (s *UserService) checkGrpcConn(ctx context.Context) error {
 
 	cc, err := grpc.DialInsecure(ctx,
 		grpc.WithDiscovery(app.GetApplication().Register),
-		grpc.WithEndpoint(ck))
+		grpc.WithEndpoint(ck),
+		grpc.WithTimeout(5*time.Second))
 	if err != nil {
 		return err
 	}
