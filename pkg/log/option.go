@@ -15,11 +15,12 @@ type option struct {
 	callerDepth    int
 	enableConsole  bool
 	onlyConsole    bool
+	meta           map[string]interface{}
 }
 
 func newOption() *option {
 	encoderConfig := zap.NewProductionEncoderConfig()
-	encoderConfig.EncodeTime = zapcore.RFC3339TimeEncoder
+	encoderConfig.EncodeTime = zapcore.ISO8601TimeEncoder
 	encoderConfig.EncodeLevel = zapcore.CapitalLevelEncoder
 	encoderConfig.EncodeCaller = zapcore.ShortCallerEncoder
 
@@ -39,7 +40,7 @@ func (o *option) apply(opts ...Option) {
 
 func (o *option) getEncoderConfigForConsole() zapcore.EncoderConfig {
 	encoderConfig := zap.NewDevelopmentEncoderConfig()
-	encoderConfig.EncodeTime = zapcore.RFC3339TimeEncoder
+	encoderConfig.EncodeTime = zapcore.ISO8601TimeEncoder
 	encoderConfig.EncodeLevel = zapcore.CapitalColorLevelEncoder
 	encoderConfig.EncodeCaller = zapcore.ShortCallerEncoder
 
@@ -87,5 +88,14 @@ func EnableConsole(enable bool) Option {
 func OnlyConsole(only bool) Option {
 	return func(o *option) {
 		o.onlyConsole = only
+	}
+}
+
+func Meta(key string, value interface{}) Option {
+	return func(o *option) {
+		if o.meta == nil {
+			o.meta = make(map[string]interface{})
+		}
+		o.meta[key] = value
 	}
 }

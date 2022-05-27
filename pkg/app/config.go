@@ -124,6 +124,8 @@ func setLogger(serviceName string, logConf *configv1.Log) {
 		log.FilenamePrefix("app."),
 		log.EnableConsole(logConf != nil && logConf.EnableConsole),
 		log.CallerDepth(2),
+		log.Meta("service", serviceName),
+		log.Meta("source", "app"),
 	))
 
 	log.SetKratosLogger(log.NewZapLogger(
@@ -132,5 +134,7 @@ func setLogger(serviceName string, logConf *configv1.Log) {
 		log.FilenamePrefix("kratos."),
 		log.EnableConsole(logConf != nil && logConf.EnableConsole),
 		log.CallerDepth(6),
+		log.Meta("service", serviceName),
+		log.Meta("source", "kratos"),
 	))
 }

@@ -88,9 +88,9 @@ run: build ## run provided server
 
 .PHONY: run-all
 run-all: ## run all apps
-	nohup make run Srv=push > push.stderr.log 2>&1 & \
-	nohup make run Srv=gateway > gateway.stderr.log 2>&1 & \
-	nohup make run Srv=msg > msg.stderr.log 2>&1 & \
+	nohup make run Srv=push > push.stderr.log 2>&1 &
+	nohup make run Srv=gateway > gateway.stderr.log 2>&1 &
+	nohup make run Srv=msg > msg.stderr.log 2>&1 &
 	nohup make run Srv=user > user.stderr.log 2>&1 &
 
 .PHONY: stop
