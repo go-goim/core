@@ -5,10 +5,11 @@ import (
 	"time"
 
 	"github.com/mattn/go-colorable"
-	configv1 "github.com/yusank/goim/api/config/v1"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	"gopkg.in/natefinch/lumberjack.v2"
+
+	configv1 "github.com/yusank/goim/api/config/v1"
 )
 
 type zapLogger struct {
@@ -77,6 +78,10 @@ func getCurrentDate() string {
 func (z *zapLogger) Log(level configv1.Level, msg string, kvs ...interface{}) {
 	if len(kvs)%2 != 0 {
 		kvs = append(kvs, "UNPAIRED_KEY")
+	}
+
+	for k, v := range z.option.meta {
+		kvs = append(kvs, k, v)
 	}
 
 	switch level {
