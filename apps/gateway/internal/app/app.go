@@ -15,9 +15,8 @@ var (
 )
 
 func InitApplication() (*Application, error) {
-	cfg := app.ParseConfig()
 	// do some own biz logic if needed
-	a, err := app.InitApplication(cfg)
+	a, err := app.InitApplication()
 	if err != nil {
 		return nil, err
 	}

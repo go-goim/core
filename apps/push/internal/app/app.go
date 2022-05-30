@@ -14,17 +14,15 @@ var (
 )
 
 func InitApplication(agentID string) (*Application, error) {
-	cfg := app.ParseConfig()
 	// do some own biz logic if needed
 	application = &Application{agentID: agentID}
 
-	cfg.SrvConfig.GetMetadata()["agentID"] = application.agentID
-	a, err := app.InitApplication(cfg)
+	a, err := app.InitApplication(app.WithMetadata("agentID", agentID))
 	if err != nil {
 		return nil, err
 	}
-	application.Application = a
 
+	application.Application = a
 	return application, nil
 }
 

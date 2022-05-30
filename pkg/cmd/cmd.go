@@ -18,11 +18,9 @@ func ParseFlags() error {
 
 func SetFlagsFromEnv() {
 	GlobalFlagSet.VisitAll(func(flag *pflag.Flag) {
-		if flag.Value.Type() == "string" {
-			val := os.Getenv(flagName2EnvName(flag.Name))
-			if val != "" {
-				flag.Value.Set(val) // nolint: errcheck
-			}
+		val := os.Getenv(flagName2EnvName(flag.Name))
+		if val != "" {
+			flag.Value.Set(val) // nolint: errcheck
 		}
 	})
 }

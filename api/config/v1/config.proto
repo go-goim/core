@@ -9,13 +9,9 @@ import "validate/validate.proto";
 
 message Server {
 	string scheme = 1 [(validate.rules).string = {in: ["http", "grpc", "tcp"]}];
-	string addr = 2 [(validate.rules).string = {
-		address: true,
-		ignore_empty: true,
-	}];
-	int32 port = 3 [(validate.rules).int32 = {gt: 10000, lt: 60535}];
+	int32 port = 2 [(validate.rules).int32 = {gt: 10000, lt: 60535}];
 	// range:[10ms, 10s]
-	google.protobuf.Duration timeout = 4 [(validate.rules).duration = {
+	google.protobuf.Duration timeout = 3 [(validate.rules).duration = {
 		gte: {nanos: 10000000, seconds: 0},
 		lte: {seconds: 10}
 	}];
