@@ -3,3 +3,10 @@ consul:
     - 127.0.0.1:8500
   scheme: http
   dialTimeoutSec: 5s
+# for remote config center
+configCenter:
+  pathPrefix: config.goim
+  format: yaml # yaml, json
+  paths:
+    - common
+    - push
