@@ -1,0 +1,41 @@
+filebeat.inputs:
+  - type: log
+    enabled: true
+    paths:
+      # 容器中目录下的所有.log文件
+      - /usr/share/filebeat/logs/*/*.log
+    json.message_key: msg
+    json.keys_under_root: true
+    json.overwrite_keys: true
+    # inactive
+    scan_frequency: 1s
+    close_inactive: 2h
+    backoff: 0.1s
+    max_backoff: 1s
+    backoff_factor: 1
+    tail_files: true
+
+filebeat.config.modules:
+  path: ${path.config}/modules.d/*.yml
+  reload.enabled: true
+
+setup.template.settings:
+  index.number_of_shards: 1
+
+setup.dashboards.enabled: false
+
+setup.kibana:
+  host: "http://kibana:5601"
+
+# 直接传输至ES
+#output.elasticsearch:
+# hosts: ["http://es-master:9200"]
+# index: "filebeat-%{[beat.version]}-%{+yyyy.MM.dd}"
+
+# 传输至LogStash
+output.logstash:
+  hosts: ["logstash:5044"]
+
+#processors:
+#  - add_host_metadata: ~
+#  - add_cloud_metadata: ~

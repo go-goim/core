@@ -25,7 +25,7 @@ func GetDBFromCtx(ctx context.Context) *gorm.DB {
 	gdb, ok := v.(*gorm.DB)
 	if !ok {
 		// maybe set by others
-		return mysql.GetDB().WithContext(context.Background())
+		return mysql.GetDB().WithContext(ctx)
 	}
 
 	return gdb

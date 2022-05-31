@@ -38,9 +38,9 @@ func (r *FriendRouter) Load(g *gin.RouterGroup) {
 // @Accept json
 // @Produce json
 // @Param Authorization header string true "token"
-// @Success 200 {object} friendpb.QueryFriendListResponse
-// @Failure 400 {object} responsepb.BaseResponse "err"
-// @Router /friend/list [get]
+// @Success 200 {object} response.Response{data=[]friendpb.Friend} "Success"
+// @Failure 400 {object} response.Response{} "err"
+// @Router /gateway/v1/user/friend/list [get]
 func (r *FriendRouter) listRelation(c *gin.Context) {
 	// no need to check uid
 	uid := c.GetString("uid")
@@ -67,7 +67,7 @@ func (r *FriendRouter) listRelation(c *gin.Context) {
 // @Param body body friendpb.AddFriendRequest true "body"
 // @Success 200 {object} friendpb.AddFriendResult
 // @Failure 400 {object} responsepb.BaseResponse "err"
-// @Router /friend/add-friend [post]
+// @Router /gateway/v1/user/friend/add-friend [post]
 func (r *FriendRouter) addFriend(c *gin.Context) {
 	req := &friendpb.AddFriendRequest{}
 	if err := c.ShouldBindWith(req, request.NonValidatePbJSONBinding); err != nil {
@@ -99,7 +99,7 @@ func (r *FriendRouter) addFriend(c *gin.Context) {
 // @Param body body friendpb.BaseFriendRequest true "body"
 // @Success 200 {object} responsepb.BaseResponse "Success"
 // @Failure 400 {object} responsepb.BaseResponse "err"
-// @Router /friend/delete-friend [post]
+// @Router /gateway/v1/user/friend/delete-friend [post]
 func (r *FriendRouter) deleteFriend(c *gin.Context) {
 	req := &friendpb.BaseFriendRequest{}
 	if err := c.ShouldBindWith(req, request.PbJSONBinding{}); err != nil {
@@ -125,7 +125,7 @@ func (r *FriendRouter) deleteFriend(c *gin.Context) {
 // @Param body body friendpb.ConfirmFriendRequestReq true "body"
 // @Success 200 {object} responsepb.BaseResponse "Success"
 // @Failure 400 {object} responsepb.BaseResponse "err"
-// @Router /friend/accept-friend [post]
+// @Router /gateway/v1/user/friend/accept-friend [post]
 func (r *FriendRouter) acceptFriend(c *gin.Context) {
 	req := &friendpb.ConfirmFriendRequestReq{}
 	if err := c.ShouldBindWith(req, request.NonValidatePbJSONBinding); err != nil {
@@ -133,6 +133,8 @@ func (r *FriendRouter) acceptFriend(c *gin.Context) {
 		return
 	}
 
+	req.Uid = mid.GetUID(c)
+	req.Action = friendpb.ConfirmFriendRequestAction_ACCEPT
 	err := service.GetUserRelationService().AcceptFriend(mid.GetContext(c), req)
 	if err != nil {
 		response.ErrorResp(c, err)
@@ -151,7 +153,7 @@ func (r *FriendRouter) acceptFriend(c *gin.Context) {
 // @Param body body friendpb.ConfirmFriendRequestReq true "body"
 // @Success 200 {object} responsepb.BaseResponse "Success"
 // @Failure 400 {object} responsepb.BaseResponse "err"
-// @Router /friend/reject-friend [post]
+// @Router /gateway/v1/user/friend/reject-friend [post]
 func (r *FriendRouter) rejectFriend(c *gin.Context) {
 	req := &friendpb.ConfirmFriendRequestReq{}
 	if err := c.ShouldBindWith(req, request.NonValidatePbJSONBinding); err != nil {
@@ -159,6 +161,8 @@ func (r *FriendRouter) rejectFriend(c *gin.Context) {
 		return
 	}
 
+	req.Action = friendpb.ConfirmFriendRequestAction_REJECT
+	req.Uid = mid.GetUID(c)
 	err := service.GetUserRelationService().RejectFriend(mid.GetContext(c), req)
 	if err != nil {
 		response.ErrorResp(c, err)
@@ -177,7 +181,7 @@ func (r *FriendRouter) rejectFriend(c *gin.Context) {
 // @Param body body friendpb.BaseFriendRequest true "body"
 // @Success 200 {object} responsepb.BaseResponse "Success"
 // @Failure 400 {object} responsepb.BaseResponse "err"
-// @Router /friend/block-friend [post]
+// @Router /gateway/v1/user/friend/block-friend [post]
 func (r *FriendRouter) blockFriend(c *gin.Context) {
 	req := &friendpb.BaseFriendRequest{}
 	if err := c.ShouldBindWith(req, request.PbJSONBinding{}); err != nil {
@@ -203,7 +207,7 @@ func (r *FriendRouter) blockFriend(c *gin.Context) {
 // @Param body body friendpb.BaseFriendRequest true "body"
 // @Success 200 {object} responsepb.BaseResponse "Success"
 // @Failure 400 {object} responsepb.BaseResponse "err"
-// @Router /friend/unblock-friend [post]
+// @Router /gateway/v1/user/friend/unblock-friend [post]
 func (r *FriendRouter) unblockFriend(c *gin.Context) {
 	req := &friendpb.BaseFriendRequest{}
 	if err := c.ShouldBindWith(req, request.PbJSONBinding{}); err != nil {

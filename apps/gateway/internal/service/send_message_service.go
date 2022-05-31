@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"sync"
+	"time"
 
 	"github.com/go-kratos/kratos/v2/transport/grpc"
 	ggrpc "google.golang.org/grpc"
@@ -102,7 +103,8 @@ func (s *SendMessageService) checkFriendServiceConn(ctx context.Context) error {
 
 	cc, err := grpc.DialInsecure(ctx,
 		grpc.WithDiscovery(app.GetApplication().Register),
-		grpc.WithEndpoint(fmt.Sprintf("discovery://dc1/%s", app.GetApplication().Config.SrvConfig.UserService)))
+		grpc.WithEndpoint(fmt.Sprintf("discovery://dc1/%s", app.GetApplication().Config.SrvConfig.UserService)),
+		grpc.WithTimeout(5*time.Second))
 	if err != nil {
 		return err
 	}

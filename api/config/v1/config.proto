@@ -9,11 +9,12 @@ import "validate/validate.proto";
 
 message Server {
 	string scheme = 1 [(validate.rules).string = {in: ["http", "grpc", "tcp"]}];
-	string addr = 2 [(validate.rules).string = {
-		address: true,
-		ignore_empty: true,
+	int32 port = 2 [(validate.rules).int32 = {gt: 10000, lt: 60535}];
+	// range:[10ms, 10s]
+	google.protobuf.Duration timeout = 3 [(validate.rules).duration = {
+		gte: {nanos: 10000000, seconds: 0},
+		lte: {seconds: 10}
 	}];
-	int32 port = 3 [(validate.rules).int32 = {gt: 10000, lt: 60535}];
 }
 
 message Service {
@@ -55,12 +56,12 @@ message Redis {
 	int32 min_idle_conns = 4;
 	// range: [10ms,10s]
 	google.protobuf.Duration dial_timeout = 5 [(validate.rules).duration = {
-		gte: {nanos: 1000000, seconds: 0},
+		gte: {nanos: 10000000, seconds: 0},
 		lte:  {seconds: 10}
 	}];
 	// range: [10ms,10s]
 	google.protobuf.Duration idle_timeout = 6 [(validate.rules).duration = {
-		gte: {nanos: 1000000, seconds: 0},
+		gte: {nanos: 10000000, seconds: 0},
 		lte:  {seconds: 10}
 	}];
 }
@@ -80,11 +81,11 @@ message MySQL {
 	// range: [10ms,10s]
 	google.protobuf.Duration idle_timeout = 7 [(validate.rules).duration = {
 		gte: {nanos: 1000000, seconds: 0},
-		lte:  {seconds: 10}
+		lte: {seconds: 10}
 	}];
 	// range: [10ms,10s]
 	google.protobuf.Duration open_timeout = 8 [(validate.rules).duration = {
 		gte: {nanos: 1000000, seconds: 0},
-		lte:  {seconds: 10}
+		lte: {seconds: 10}
 	}];
 }

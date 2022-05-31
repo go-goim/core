@@ -18,6 +18,6 @@ func Logger(c *gin.Context) {
 	clientIP := c.ClientIP()
 	method := c.Request.Method
 	statusCode := c.Writer.Status()
-	log.Info("GinLog", "status", statusCode, "method", method, "path", path, "raw", raw,
-		"latency", latency, "clientIP", clientIP)
+	log.Info(path, "tp", "HttpRequest", "status", statusCode, "method", method, "raw", raw,
+		"latency", latency.Microseconds(), "clientIP", clientIP)
 }

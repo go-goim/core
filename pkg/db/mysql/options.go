@@ -106,8 +106,14 @@ func WithConfig(cfg *configv1.MySQL) Option {
 		o.user = cfg.GetUser()
 		o.password = cfg.GetPassword()
 		o.db = cfg.GetDb()
-		o.maxConns = int(cfg.GetMaxOpenConns())
-		o.maxIdleConns = int(cfg.GetMaxIdleConns())
+
+		if cfg.GetMaxOpenConns() > 0 {
+			o.maxConns = int(cfg.GetMaxOpenConns())
+		}
+
+		if cfg.GetMaxIdleConns() > 0 {
+			o.maxIdleConns = int(cfg.GetMaxIdleConns())
+		}
 
 		idleTimeout := cfg.GetIdleTimeout()
 		if idleTimeout != nil {

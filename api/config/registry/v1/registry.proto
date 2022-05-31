@@ -7,7 +7,6 @@ import "google/protobuf/duration.proto";
 
 import "validate/validate.proto";
 
-// todo: add validation
 message RegistryInfo {
 	repeated string addr = 1 [(validate.rules).repeated = {
 		min_items: 1,
@@ -23,8 +22,17 @@ message RegistryInfo {
 	google.protobuf.Duration dial_keep_alive_timeout_sec = 5;
 }
 
+message ConfigCenterInfo {
+	// PathPrefix is prefix key of config center.
+	string path_prefix = 1;
+	// Paths is config paths of config center.
+	repeated string paths = 2 [(validate.rules).repeated = {unique: true}];
+	// Format is config format of config center.
+	string format = 3 [(validate.rules).string = {in: ["json", "yaml"]}];
+}
+
 message Registry {
-	string name = 1;
+	ConfigCenterInfo config_center = 1;
 	oneof reg {
 		RegistryInfo consul = 2;
 		RegistryInfo etcd = 3;
