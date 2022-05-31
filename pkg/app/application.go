@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net"
+	"strconv"
 	"time"
 
 	"go.uber.org/atomic"
@@ -162,8 +163,9 @@ func (a *Application) initHTTPServer() error {
 		timeout = a.Config.SrvConfig.Http.GetTimeout().AsDuration()
 	}
 
+	portStr := strconv.Itoa(int(a.Config.SrvConfig.Http.GetPort()))
 	httpSrv := http.NewServer(
-		http.Address(fmt.Sprintf("%s:%d", a.host, a.Config.SrvConfig.Http.GetPort())),
+		http.Address(net.JoinHostPort(a.host, portStr)),
 		http.Middleware(
 			recovery.Recovery(),
 		),
@@ -184,8 +186,9 @@ func (a *Application) initGrpcServer() error {
 		timeout = a.Config.SrvConfig.Grpc.GetTimeout().AsDuration()
 	}
 
+	portStr := strconv.Itoa(int(a.Config.SrvConfig.Grpc.GetPort()))
 	grpcSrv := grpc.NewServer(
-		grpc.Address(fmt.Sprintf("%s:%d", a.host, a.Config.SrvConfig.Grpc.GetPort())),
+		grpc.Address(net.JoinHostPort(a.host, portStr)),
 		grpc.Middleware(
 			recovery.Recovery(),
 		),
