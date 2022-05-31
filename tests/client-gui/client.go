@@ -15,7 +15,7 @@ import (
 	"github.com/gorilla/websocket"
 	"github.com/jroimartin/gocui"
 
-	messagev1 "github.com/yusank/goim/api/message/v1"
+	messagev1 "github.com/go-goim/goim/api/message/v1"
 )
 
 var (

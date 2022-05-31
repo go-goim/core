@@ -5,8 +5,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/yusank/goim/pkg/errors"
-	"github.com/yusank/goim/pkg/log"
+	"github.com/go-goim/goim/pkg/errors"
+	"github.com/go-goim/goim/pkg/log"
 )
 
 var (
