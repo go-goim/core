@@ -3,7 +3,7 @@ package pool
 import (
 	"time"
 
-	"github.com/yusank/goim/pkg/log"
+	"github.com/go-goim/goim/pkg/log"
 )
 
 type Conn interface {

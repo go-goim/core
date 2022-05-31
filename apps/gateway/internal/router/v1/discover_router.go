@@ -6,10 +6,10 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"github.com/yusank/goim/apps/gateway/internal/service"
-	"github.com/yusank/goim/pkg/mid"
-	"github.com/yusank/goim/pkg/response"
-	"github.com/yusank/goim/pkg/router"
+	"github.com/go-goim/goim/apps/gateway/internal/service"
+	"github.com/go-goim/goim/pkg/mid"
+	"github.com/go-goim/goim/pkg/response"
+	"github.com/go-goim/goim/pkg/router"
 )
 
 type DiscoverRouter struct {

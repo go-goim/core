@@ -7,7 +7,7 @@ import (
 	"github.com/hashicorp/consul/api"
 	"github.com/hashicorp/consul/api/watch"
 
-	"github.com/yusank/goim/pkg/log"
+	"github.com/go-goim/goim/pkg/log"
 )
 
 type consulWatcher struct {

@@ -9,8 +9,8 @@ import (
 	ggrpc "google.golang.org/grpc"
 	"google.golang.org/grpc/connectivity"
 
-	messagev1 "github.com/yusank/goim/api/message/v1"
-	"github.com/yusank/goim/apps/gateway/internal/app"
+	messagev1 "github.com/go-goim/goim/api/message/v1"
+	"github.com/go-goim/goim/apps/gateway/internal/app"
 )
 
 type OfflineMessageService struct {

@@ -5,8 +5,8 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	responsepb "github.com/yusank/goim/api/transport/response"
-	"github.com/yusank/goim/pkg/log"
+	responsepb "github.com/go-goim/goim/api/transport/response"
+	"github.com/go-goim/goim/pkg/log"
 )
 
 func ErrorResp(c *gin.Context, err error) {
