@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/yusank/goim/pkg/log"
-	"github.com/yusank/goim/pkg/mq"
+	"github.com/go-goim/goim/pkg/log"
+	"github.com/go-goim/goim/pkg/mq"
 )
 
 func Retry(f func() error, opts ...Option) error {

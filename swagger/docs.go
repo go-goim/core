@@ -18,7 +18,7 @@ const docTemplate = `{
         },
         "license": {
             "name": "MIT",
-            "url": "https://github.com/yusank/goim/blob/main/LICENSE"
+            "url": "https://github.com/go-goim/goim/blob/main/LICENSE"
         },
         "version": "{{.Version}}"
     },

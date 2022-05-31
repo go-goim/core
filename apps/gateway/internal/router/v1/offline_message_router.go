@@ -3,12 +3,12 @@ package v1
 import (
 	"github.com/gin-gonic/gin"
 
-	messagev1 "github.com/yusank/goim/api/message/v1"
-	"github.com/yusank/goim/apps/gateway/internal/service"
-	"github.com/yusank/goim/pkg/mid"
-	"github.com/yusank/goim/pkg/request"
-	"github.com/yusank/goim/pkg/response"
-	"github.com/yusank/goim/pkg/router"
+	messagev1 "github.com/go-goim/goim/api/message/v1"
+	"github.com/go-goim/goim/apps/gateway/internal/service"
+	"github.com/go-goim/goim/pkg/mid"
+	"github.com/go-goim/goim/pkg/request"
+	"github.com/go-goim/goim/pkg/response"
+	"github.com/go-goim/goim/pkg/router"
 )
 
 type OfflineMessageRouter struct {
