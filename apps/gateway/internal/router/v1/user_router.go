@@ -25,9 +25,49 @@ func (r *UserRouter) Load(router *gin.RouterGroup) {
 	friend := NewFriendRouter()
 	friend.Load(router.Group("/friend", mid.AuthJwtCookie))
 
+	router.POST("/query", mid.AuthJwtCookie, r.queryUser)
 	router.POST("/login", r.login)
 	router.POST("/register", r.register)
 	router.POST("/update", mid.AuthJwtCookie, r.updateUserInfo)
+}
+
+type QueryRequestForSwagger struct {
+	// Email and Phone only one can be set
+	Email *string `json:"email" example:"user1@example.com"`
+	Phone *string `json:"phone" example:"13800138000"`
+}
+
+// @Summary 查询用户信息
+// @Description 查询用户信息
+// @Tags [gateway]用户
+// @Accept json
+// @Produce json
+// @Param   req body QueryRequestForSwagger true "req"
+// @Success 200 {object} response.Response{data=userv1.User}
+// @Failure 200 {object} response.Response
+// @Router /gateway/v1/user/query [post]
+func (r *UserRouter) queryUser(c *gin.Context) {
+	var req = &userv1.QueryUserRequest{}
+	if err := c.ShouldBindWith(req, &request.PbJSONBinding{}); err != nil {
+		response.ErrorResp(c, err)
+		return
+	}
+
+	user, err := service.GetUserService().QueryUserInfo(mid.GetContext(c), req)
+	if err != nil {
+		response.ErrorResp(c, err)
+		return
+	}
+
+	response.SuccessResp(c, user)
+}
+
+type LoginRequestForSwagger struct {
+	// Email and Phone only one can be set
+	Email     *string `json:"email" example:"user1@example.com"`
+	Phone     *string `json:"phone" example:"13800138000"`
+	Password  string  `json:"password" example:"123456"`
+	LoginType int     `json:"loginType" example:"0"`
 }
 
 // @Summary 登录
@@ -35,9 +75,9 @@ func (r *UserRouter) Load(router *gin.RouterGroup) {
 // @Tags [gateway]用户
 // @Accept json
 // @Produce json
-// @Param   req body userv1.UserLoginRequest true "req"
-// @Success 200 {object} userv1.User
-// @Failure 200 {object} response.Response
+// @Param   req body LoginRequestForSwagger true "req"
+// @Success 200 {object} response.Response{data=userv1.User}
+// @Header  200 {string} Authorization "Bearer "
 // @Router /gateway/v1/user/login [post]
 func (r *UserRouter) login(c *gin.Context) {
 	var req = &userv1.UserLoginRequest{}

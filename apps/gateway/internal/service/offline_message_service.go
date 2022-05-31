@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/go-kratos/kratos/v2/transport/grpc"
 	ggrpc "google.golang.org/grpc"
@@ -58,7 +59,9 @@ func (s *OfflineMessageService) checkGrpcConn(ctx context.Context) error {
 	var ck = fmt.Sprintf("discovery://dc1/%s", app.GetApplication().Config.SrvConfig.MsgService)
 	cc, err := grpc.DialInsecure(ctx,
 		grpc.WithDiscovery(app.GetApplication().Register),
-		grpc.WithEndpoint(ck))
+		grpc.WithEndpoint(ck),
+		grpc.WithTimeout(5*time.Second),
+	)
 	if err != nil {
 		return err
 	}

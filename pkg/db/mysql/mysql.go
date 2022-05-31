@@ -66,7 +66,9 @@ func NewMySQL(opts ...Option) (*gorm.DB, error) {
 	)
 
 	gConf := &gorm.Config{
-		Logger: slowLogger,
+		Logger:                 slowLogger,
+		SkipDefaultTransaction: true,
+		PrepareStmt:            true,
 	}
 
 	gdb, err := gorm.Open(mysql.Open(o.dsn), gConf)

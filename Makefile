@@ -15,6 +15,9 @@ export ROCKETMQ_GO_LOG_LEVEL=warn
 ## jwt
 export JWT_SECRET="goim"
 
+## enable config center
+export ENABLE_CONFIG_CENTER=true
+
 ##################################################
 # Development                                    #
 ##################################################
@@ -87,10 +90,10 @@ run: build ## run provided server
 	./$(BinPath) --conf $(CfgPath)
 
 .PHONY: run-all
-run-all: build-all ## run all apps
-	nohup make run Srv=push > push.stderr.log 2>&1 & \
-	nohup make run Srv=gateway > gateway.stderr.log 2>&1 & \
-	nohup make run Srv=msg > msg.stderr.log 2>&1 & \
+run-all: ## run all apps
+	nohup make run Srv=push > push.stderr.log 2>&1 &
+	nohup make run Srv=gateway > gateway.stderr.log 2>&1 &
+	nohup make run Srv=msg > msg.stderr.log 2>&1 &
 	nohup make run Srv=user > user.stderr.log 2>&1 &
 
 .PHONY: stop
@@ -100,9 +103,9 @@ stop: ## stop all apps
 .PHONY: restart
 restart: stop run-all
 
-.PHONY: swagger
-swagger: ## generate swagger file
-	go generate ./... && go run swagger.go
+.PHONY: generate
+generate: ## generate code by run go generate
+	go generate ./...
 
 ##################################################
 # General                                        #

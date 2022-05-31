@@ -3,19 +3,18 @@ package util
 import (
 	"github.com/btcsuite/btcd/btcutil/base58"
 	"github.com/google/uuid"
-	"github.com/lithammer/shortuuid/v4"
 )
 
-var uuidEncoder shortuuid.Encoder
-
-func init() {
-	// use base58 as default.
-	uuidEncoder = base58Encoder{}
-}
+// use base58 as default.
+var uuidEncoder = base58Encoder{}
 
 // UUID returns a short version of UUID v4.
 func UUID() string {
-	return shortuuid.NewWithEncoder(uuidEncoder) // 6R7VqaQHbzC1xwA5UueGe6
+	return uuidEncoder.Encode(uuid.New())
+}
+
+func GUID() string {
+	return uuid.New().String()
 }
 
 type base58Encoder struct{}

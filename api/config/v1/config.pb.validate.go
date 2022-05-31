@@ -67,23 +67,6 @@ func (m *Server) validate(all bool) error {
 		errors = append(errors, err)
 	}
 
-	if m.GetAddr() != "" {
-
-		if err := m._validateHostname(m.GetAddr()); err != nil {
-			if ip := net.ParseIP(m.GetAddr()); ip == nil {
-				err := ServerValidationError{
-					field:  "Addr",
-					reason: "value must be a valid hostname, or ip address",
-				}
-				if !all {
-					return err
-				}
-				errors = append(errors, err)
-			}
-		}
-
-	}
-
 	if val := m.GetPort(); val <= 10000 || val >= 60535 {
 		err := ServerValidationError{
 			field:  "Port",
@@ -95,38 +78,39 @@ func (m *Server) validate(all bool) error {
 		errors = append(errors, err)
 	}
 
+	if d := m.GetTimeout(); d != nil {
+		dur, err := d.AsDuration(), d.CheckValid()
+		if err != nil {
+			err = ServerValidationError{
+				field:  "Timeout",
+				reason: "value is not a valid duration",
+				cause:  err,
+			}
+			if !all {
+				return err
+			}
+			errors = append(errors, err)
+		} else {
+
+			lte := time.Duration(10*time.Second + 0*time.Nanosecond)
+			gte := time.Duration(0*time.Second + 10000000*time.Nanosecond)
+
+			if dur < gte || dur > lte {
+				err := ServerValidationError{
+					field:  "Timeout",
+					reason: "value must be inside range [10ms, 10s]",
+				}
+				if !all {
+					return err
+				}
+				errors = append(errors, err)
+			}
+
+		}
+	}
+
 	if len(errors) > 0 {
 		return ServerMultiError(errors)
-	}
-
-	return nil
-}
-
-func (m *Server) _validateHostname(host string) error {
-	s := strings.ToLower(strings.TrimSuffix(host, "."))
-
-	if len(host) > 253 {
-		return errors.New("hostname cannot exceed 253 characters")
-	}
-
-	for _, part := range strings.Split(s, ".") {
-		if l := len(part); l == 0 || l > 63 {
-			return errors.New("hostname part must be non-empty and cannot exceed 63 characters")
-		}
-
-		if part[0] == '-' {
-			return errors.New("hostname parts cannot begin with hyphens")
-		}
-
-		if part[len(part)-1] == '-' {
-			return errors.New("hostname parts cannot end with hyphens")
-		}
-
-		for _, r := range part {
-			if (r < 'a' || r > 'z') && (r < '0' || r > '9') && r != '-' {
-				return fmt.Errorf("hostname parts can only contain alphanumeric characters or hyphens, got %q", string(r))
-			}
-		}
 	}
 
 	return nil
@@ -726,12 +710,12 @@ func (m *Redis) validate(all bool) error {
 		} else {
 
 			lte := time.Duration(10*time.Second + 0*time.Nanosecond)
-			gte := time.Duration(0*time.Second + 1000000*time.Nanosecond)
+			gte := time.Duration(0*time.Second + 10000000*time.Nanosecond)
 
 			if dur < gte || dur > lte {
 				err := RedisValidationError{
 					field:  "DialTimeout",
-					reason: "value must be inside range [1ms, 10s]",
+					reason: "value must be inside range [10ms, 10s]",
 				}
 				if !all {
 					return err
@@ -757,12 +741,12 @@ func (m *Redis) validate(all bool) error {
 		} else {
 
 			lte := time.Duration(10*time.Second + 0*time.Nanosecond)
-			gte := time.Duration(0*time.Second + 1000000*time.Nanosecond)
+			gte := time.Duration(0*time.Second + 10000000*time.Nanosecond)
 
 			if dur < gte || dur > lte {
 				err := RedisValidationError{
 					field:  "IdleTimeout",
-					reason: "value must be inside range [1ms, 10s]",
+					reason: "value must be inside range [10ms, 10s]",
 				}
 				if !all {
 					return err
