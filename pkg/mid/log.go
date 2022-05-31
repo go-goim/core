@@ -5,7 +5,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"github.com/yusank/goim/pkg/log"
+	"github.com/go-goim/goim/pkg/log"
 )
 
 func Logger(c *gin.Context) {

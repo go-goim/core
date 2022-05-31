@@ -10,13 +10,13 @@ import (
 	ggrpc "google.golang.org/grpc"
 	"google.golang.org/grpc/connectivity"
 
-	responsepb "github.com/yusank/goim/api/transport/response"
-	friendpb "github.com/yusank/goim/api/user/friend/v1"
-	"github.com/yusank/goim/pkg/log"
+	responsepb "github.com/go-goim/goim/api/transport/response"
+	friendpb "github.com/go-goim/goim/api/user/friend/v1"
+	"github.com/go-goim/goim/pkg/log"
 
-	messagev1 "github.com/yusank/goim/api/message/v1"
-	"github.com/yusank/goim/apps/gateway/internal/app"
-	"github.com/yusank/goim/pkg/mq"
+	messagev1 "github.com/go-goim/goim/api/message/v1"
+	"github.com/go-goim/goim/apps/gateway/internal/app"
+	"github.com/go-goim/goim/pkg/mq"
 )
 
 type SendMessageService struct {

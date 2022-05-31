@@ -4,14 +4,14 @@ import (
 	"context"
 	"sync"
 
-	responsepb "github.com/yusank/goim/api/transport/response"
-	friendpb "github.com/yusank/goim/api/user/friend/v1"
-	"github.com/yusank/goim/apps/user/internal/app"
-	"github.com/yusank/goim/apps/user/internal/dao"
-	"github.com/yusank/goim/apps/user/internal/data"
-	"github.com/yusank/goim/pkg/db"
-	"github.com/yusank/goim/pkg/log"
-	"github.com/yusank/goim/pkg/util/retry"
+	responsepb "github.com/go-goim/goim/api/transport/response"
+	friendpb "github.com/go-goim/goim/api/user/friend/v1"
+	"github.com/go-goim/goim/apps/user/internal/app"
+	"github.com/go-goim/goim/apps/user/internal/dao"
+	"github.com/go-goim/goim/apps/user/internal/data"
+	"github.com/go-goim/goim/pkg/db"
+	"github.com/go-goim/goim/pkg/log"
+	"github.com/go-goim/goim/pkg/util/retry"
 )
 
 // FriendService implements friendpb.FriendServiceServer

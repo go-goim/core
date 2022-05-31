@@ -8,7 +8,7 @@ import (
 
 	_ "github.com/swaggo/swag"
 
-	_ "github.com/yusank/goim/swagger"
+	_ "github.com/go-goim/goim/swagger"
 )
 
 // @title GoIM Swagger
@@ -21,7 +21,7 @@ import (
 // @contact.email yusankurban@gmail.com
 
 // @license.name MIT
-// @license.url https://github.com/yusank/goim/blob/main/LICENSE
+// @license.url https://github.com/go-goim/goim/blob/main/LICENSE
 
 // @BasePath /
 func main() {

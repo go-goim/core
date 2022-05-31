@@ -5,10 +5,11 @@ import (
 	"time"
 
 	"github.com/mattn/go-colorable"
-	configv1 "github.com/yusank/goim/api/config/v1"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	"gopkg.in/natefinch/lumberjack.v2"
+
+	configv1 "github.com/go-goim/goim/api/config/v1"
 )
 
 type zapLogger struct {

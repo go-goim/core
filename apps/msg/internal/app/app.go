@@ -1,7 +1,7 @@
 package app
 
 import (
-	"github.com/yusank/goim/pkg/app"
+	"github.com/go-goim/goim/pkg/app"
 )
 
 type Application struct {

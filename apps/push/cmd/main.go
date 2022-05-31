@@ -7,13 +7,13 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/go-kratos/kratos/v2/log"
 
-	messagev1 "github.com/yusank/goim/api/message/v1"
-	"github.com/yusank/goim/apps/push/internal/app"
-	"github.com/yusank/goim/apps/push/internal/router"
-	"github.com/yusank/goim/apps/push/internal/service"
-	"github.com/yusank/goim/pkg/cmd"
-	"github.com/yusank/goim/pkg/graceful"
-	"github.com/yusank/goim/pkg/mid"
+	messagev1 "github.com/go-goim/goim/api/message/v1"
+	"github.com/go-goim/goim/apps/push/internal/app"
+	"github.com/go-goim/goim/apps/push/internal/router"
+	"github.com/go-goim/goim/apps/push/internal/service"
+	"github.com/go-goim/goim/pkg/cmd"
+	"github.com/go-goim/goim/pkg/graceful"
+	"github.com/go-goim/goim/pkg/mid"
 )
 
 var (

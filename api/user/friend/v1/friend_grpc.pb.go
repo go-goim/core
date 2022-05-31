@@ -4,7 +4,7 @@ package v1
 
 import (
 	context "context"
-	response "github.com/yusank/goim/api/transport/response"
+	response "github.com/go-goim/goim/api/transport/response"
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"

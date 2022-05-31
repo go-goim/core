@@ -13,11 +13,11 @@ import (
 	"github.com/go-kratos/kratos/v2/transport/http"
 	redisv8 "github.com/go-redis/redis/v8"
 
-	"github.com/yusank/goim/pkg/db/mysql"
-	"github.com/yusank/goim/pkg/db/redis"
-	"github.com/yusank/goim/pkg/errors"
-	"github.com/yusank/goim/pkg/mq"
-	"github.com/yusank/goim/pkg/registry"
+	"github.com/go-goim/goim/pkg/db/mysql"
+	"github.com/go-goim/goim/pkg/db/redis"
+	"github.com/go-goim/goim/pkg/errors"
+	"github.com/go-goim/goim/pkg/mq"
+	"github.com/go-goim/goim/pkg/registry"
 )
 
 // Application is a common app entry.

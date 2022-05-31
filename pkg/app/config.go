@@ -6,10 +6,10 @@ import (
 	"github.com/go-kratos/kratos/v2/config"
 	"github.com/go-kratos/kratos/v2/config/file"
 
-	registryv1 "github.com/yusank/goim/api/config/registry/v1"
-	configv1 "github.com/yusank/goim/api/config/v1"
-	"github.com/yusank/goim/pkg/cmd"
-	"github.com/yusank/goim/pkg/log"
+	registryv1 "github.com/go-goim/goim/api/config/registry/v1"
+	configv1 "github.com/go-goim/goim/api/config/v1"
+	"github.com/go-goim/goim/pkg/cmd"
+	"github.com/go-goim/goim/pkg/log"
 )
 
 // Config contains service config.

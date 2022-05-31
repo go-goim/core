@@ -5,7 +5,7 @@ import (
 
 	"gorm.io/gorm"
 
-	"github.com/yusank/goim/pkg/db/mysql"
+	"github.com/go-goim/goim/pkg/db/mysql"
 )
 
 type transactionCtxKey struct{}

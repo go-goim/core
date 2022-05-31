@@ -10,7 +10,8 @@ import (
 	"time"
 
 	"github.com/go-kratos/kratos/v2/registry"
-	"github.com/yusank/goim/pkg/log"
+
+	"github.com/go-goim/goim/pkg/log"
 
 	"github.com/hashicorp/consul/api"
 )

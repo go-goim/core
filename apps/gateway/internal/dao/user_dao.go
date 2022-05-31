@@ -6,8 +6,8 @@ import (
 
 	redisv8 "github.com/go-redis/redis/v8"
 
-	"github.com/yusank/goim/apps/gateway/internal/app"
-	"github.com/yusank/goim/pkg/consts"
+	"github.com/go-goim/goim/apps/gateway/internal/app"
+	"github.com/go-goim/goim/pkg/consts"
 )
 
 var (

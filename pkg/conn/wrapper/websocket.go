@@ -5,7 +5,8 @@ import (
 	"time"
 
 	"github.com/gorilla/websocket"
-	"github.com/yusank/goim/pkg/log"
+
+	"github.com/go-goim/goim/pkg/log"
 )
 
 type WebsocketWrapper struct {
