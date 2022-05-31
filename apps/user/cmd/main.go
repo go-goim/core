@@ -5,15 +5,15 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	friendpb "github.com/yusank/goim/api/user/friend/v1"
-	userv1 "github.com/yusank/goim/api/user/v1"
-	"github.com/yusank/goim/apps/user/internal/app"
-	"github.com/yusank/goim/apps/user/internal/router"
-	"github.com/yusank/goim/apps/user/internal/service"
-	"github.com/yusank/goim/pkg/cmd"
-	"github.com/yusank/goim/pkg/graceful"
-	"github.com/yusank/goim/pkg/log"
-	"github.com/yusank/goim/pkg/mid"
+	friendpb "github.com/go-goim/goim/api/user/friend/v1"
+	userv1 "github.com/go-goim/goim/api/user/v1"
+	"github.com/go-goim/goim/apps/user/internal/app"
+	"github.com/go-goim/goim/apps/user/internal/router"
+	"github.com/go-goim/goim/apps/user/internal/service"
+	"github.com/go-goim/goim/pkg/cmd"
+	"github.com/go-goim/goim/pkg/graceful"
+	"github.com/go-goim/goim/pkg/log"
+	"github.com/go-goim/goim/pkg/mid"
 )
 
 func main() {

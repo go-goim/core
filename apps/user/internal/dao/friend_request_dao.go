@@ -7,8 +7,8 @@ import (
 
 	"gorm.io/gorm"
 
-	"github.com/yusank/goim/apps/user/internal/data"
-	"github.com/yusank/goim/pkg/db"
+	"github.com/go-goim/goim/apps/user/internal/data"
+	"github.com/go-goim/goim/pkg/db"
 )
 
 type FriendRequestDao struct {

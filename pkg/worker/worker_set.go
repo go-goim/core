@@ -8,7 +8,7 @@ import (
 
 	"go.uber.org/atomic"
 
-	"github.com/yusank/goim/pkg/errors"
+	"github.com/go-goim/goim/pkg/errors"
 )
 
 // workerSet represent a group of task handle workers

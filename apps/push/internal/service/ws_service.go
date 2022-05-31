@@ -6,12 +6,12 @@ import (
 
 	"github.com/gorilla/websocket"
 
-	"github.com/yusank/goim/pkg/consts"
-	"github.com/yusank/goim/pkg/log"
+	"github.com/go-goim/goim/pkg/consts"
+	"github.com/go-goim/goim/pkg/log"
 
-	"github.com/yusank/goim/apps/push/internal/app"
-	"github.com/yusank/goim/pkg/conn/pool"
-	"github.com/yusank/goim/pkg/conn/wrapper"
+	"github.com/go-goim/goim/apps/push/internal/app"
+	"github.com/go-goim/goim/pkg/conn/pool"
+	"github.com/go-goim/goim/pkg/conn/wrapper"
 )
 
 func HandleWsConn(ctx context.Context, c *websocket.Conn, uid string) {

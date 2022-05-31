@@ -7,14 +7,14 @@ import (
 
 	"github.com/gorilla/websocket"
 
-	responsepb "github.com/yusank/goim/api/transport/response"
-	"github.com/yusank/goim/pkg/log"
+	responsepb "github.com/go-goim/goim/api/transport/response"
+	"github.com/go-goim/goim/pkg/log"
 
-	messagev1 "github.com/yusank/goim/api/message/v1"
-	"github.com/yusank/goim/pkg/conn/pool"
-	"github.com/yusank/goim/pkg/conn/wrapper"
-	"github.com/yusank/goim/pkg/graceful"
-	"github.com/yusank/goim/pkg/worker"
+	messagev1 "github.com/go-goim/goim/api/message/v1"
+	"github.com/go-goim/goim/pkg/conn/pool"
+	"github.com/go-goim/goim/pkg/conn/wrapper"
+	"github.com/go-goim/goim/pkg/graceful"
+	"github.com/go-goim/goim/pkg/worker"
 )
 
 type PushMessager struct {

@@ -4,7 +4,7 @@ import (
 	"flag"
 	"fmt"
 
-	"github.com/yusank/goim/pkg/waitgroup"
+	"github.com/go-goim/goim/pkg/waitgroup"
 )
 
 func main() {
