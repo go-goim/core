@@ -3,8 +3,9 @@ package v1
 import (
 	"github.com/gin-gonic/gin"
 
-	messagev1 "github.com/go-goim/core/api/message/v1"
-	responsepb "github.com/go-goim/core/api/transport/response"
+	messagev1 "github.com/go-goim/api/message/v1"
+	responsepb "github.com/go-goim/api/transport/response"
+
 	"github.com/go-goim/core/apps/gateway/internal/service"
 	"github.com/go-goim/core/pkg/mid"
 	"github.com/go-goim/core/pkg/request"

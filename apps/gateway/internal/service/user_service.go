@@ -10,8 +10,9 @@ import (
 	ggrpc "google.golang.org/grpc"
 	"google.golang.org/grpc/connectivity"
 
-	responsepb "github.com/go-goim/core/api/transport/response"
-	userv1 "github.com/go-goim/core/api/user/v1"
+	responsepb "github.com/go-goim/api/transport/response"
+	userv1 "github.com/go-goim/api/user/v1"
+
 	"github.com/go-goim/core/apps/gateway/internal/app"
 	"github.com/go-goim/core/apps/gateway/internal/dao"
 	"github.com/go-goim/core/pkg/log"
