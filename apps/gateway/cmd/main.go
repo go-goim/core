@@ -7,7 +7,8 @@ import (
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 
-	messagev1 "github.com/go-goim/core/api/message/v1"
+	messagev1 "github.com/go-goim/api/message/v1"
+
 	"github.com/go-goim/core/apps/gateway/internal/app"
 	"github.com/go-goim/core/apps/gateway/internal/router"
 	"github.com/go-goim/core/apps/gateway/internal/service"

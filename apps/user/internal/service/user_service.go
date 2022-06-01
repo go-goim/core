@@ -5,8 +5,9 @@ import (
 	"fmt"
 	"sync"
 
-	responsepb "github.com/go-goim/core/api/transport/response"
-	userv1 "github.com/go-goim/core/api/user/v1"
+	responsepb "github.com/go-goim/api/transport/response"
+	userv1 "github.com/go-goim/api/user/v1"
+
 	"github.com/go-goim/core/apps/user/internal/dao"
 	"github.com/go-goim/core/apps/user/internal/data"
 	"github.com/go-goim/core/pkg/util"

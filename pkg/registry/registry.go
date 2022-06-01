@@ -11,7 +11,7 @@ import (
 
 	"github.com/go-goim/core/pkg/registry/consul"
 
-	registryv1 "github.com/go-goim/core/api/config/registry/v1"
+	registryv1 "github.com/go-goim/api/config/registry/v1"
 )
 
 var (

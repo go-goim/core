@@ -9,7 +9,8 @@ import (
 	"net/http"
 	"strings"
 
-	userv1 "github.com/go-goim/core/api/user/v1"
+	userv1 "github.com/go-goim/api/user/v1"
+
 	"github.com/go-goim/core/pkg/response"
 )
 

@@ -6,7 +6,8 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	messagev1 "github.com/go-goim/core/api/message/v1"
+	messagev1 "github.com/go-goim/api/message/v1"
+
 	"github.com/go-goim/core/apps/push/internal/app"
 	"github.com/go-goim/core/apps/push/internal/router"
 	"github.com/go-goim/core/apps/push/internal/service"

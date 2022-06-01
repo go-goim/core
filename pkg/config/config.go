@@ -4,8 +4,9 @@ import (
 	"github.com/go-kratos/kratos/v2/config"
 	"github.com/go-kratos/kratos/v2/config/file"
 
-	registryv1 "github.com/go-goim/core/api/config/registry/v1"
-	configv1 "github.com/go-goim/core/api/config/v1"
+	registryv1 "github.com/go-goim/api/config/registry/v1"
+	configv1 "github.com/go-goim/api/config/v1"
+
 	"github.com/go-goim/core/pkg/cmd"
 	"github.com/go-goim/core/pkg/log"
 )
