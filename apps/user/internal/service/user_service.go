@@ -5,11 +5,11 @@ import (
 	"fmt"
 	"sync"
 
-	responsepb "github.com/go-goim/goim/api/transport/response"
-	userv1 "github.com/go-goim/goim/api/user/v1"
-	"github.com/go-goim/goim/apps/user/internal/dao"
-	"github.com/go-goim/goim/apps/user/internal/data"
-	"github.com/go-goim/goim/pkg/util"
+	responsepb "github.com/go-goim/core/api/transport/response"
+	userv1 "github.com/go-goim/core/api/user/v1"
+	"github.com/go-goim/core/apps/user/internal/dao"
+	"github.com/go-goim/core/apps/user/internal/data"
+	"github.com/go-goim/core/pkg/util"
 )
 
 // UserService implements userv1.UserServiceServer

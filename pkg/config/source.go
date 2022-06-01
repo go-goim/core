@@ -8,8 +8,8 @@ import (
 	"github.com/hashicorp/consul/api"
 	clientv3 "go.etcd.io/etcd/client/v3"
 
-	registryv1 "github.com/go-goim/goim/api/config/registry/v1"
-	"github.com/go-goim/goim/pkg/config/consul"
+	registryv1 "github.com/go-goim/core/api/config/registry/v1"
+	"github.com/go-goim/core/pkg/config/consul"
 )
 
 // NewSource create a config source according to the registry info.

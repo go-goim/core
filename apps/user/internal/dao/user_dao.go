@@ -10,13 +10,13 @@ import (
 	redisv8 "github.com/go-redis/redis/v8"
 	"gorm.io/gorm"
 
-	"github.com/go-goim/goim/apps/user/internal/app"
-	"github.com/go-goim/goim/apps/user/internal/data"
-	"github.com/go-goim/goim/pkg/cache"
-	"github.com/go-goim/goim/pkg/consts"
-	"github.com/go-goim/goim/pkg/db"
-	"github.com/go-goim/goim/pkg/log"
-	"github.com/go-goim/goim/pkg/util"
+	"github.com/go-goim/core/apps/user/internal/app"
+	"github.com/go-goim/core/apps/user/internal/data"
+	"github.com/go-goim/core/pkg/cache"
+	"github.com/go-goim/core/pkg/consts"
+	"github.com/go-goim/core/pkg/db"
+	"github.com/go-goim/core/pkg/log"
+	"github.com/go-goim/core/pkg/util"
 )
 
 var (

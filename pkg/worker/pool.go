@@ -8,7 +8,7 @@ import (
 
 	"go.uber.org/atomic"
 
-	"github.com/go-goim/goim/pkg/util"
+	"github.com/go-goim/core/pkg/util"
 )
 
 // Pool is a buffered worker pool

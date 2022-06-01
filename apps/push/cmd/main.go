@@ -6,14 +6,14 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	messagev1 "github.com/go-goim/goim/api/message/v1"
-	"github.com/go-goim/goim/apps/push/internal/app"
-	"github.com/go-goim/goim/apps/push/internal/router"
-	"github.com/go-goim/goim/apps/push/internal/service"
-	"github.com/go-goim/goim/pkg/cmd"
-	"github.com/go-goim/goim/pkg/graceful"
-	"github.com/go-goim/goim/pkg/log"
-	"github.com/go-goim/goim/pkg/mid"
+	messagev1 "github.com/go-goim/core/api/message/v1"
+	"github.com/go-goim/core/apps/push/internal/app"
+	"github.com/go-goim/core/apps/push/internal/router"
+	"github.com/go-goim/core/apps/push/internal/service"
+	"github.com/go-goim/core/pkg/cmd"
+	"github.com/go-goim/core/pkg/graceful"
+	"github.com/go-goim/core/pkg/log"
+	"github.com/go-goim/core/pkg/mid"
 )
 
 var (

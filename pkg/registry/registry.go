@@ -9,9 +9,9 @@ import (
 	"github.com/hashicorp/consul/api"
 	clientv3 "go.etcd.io/etcd/client/v3"
 
-	"github.com/go-goim/goim/pkg/registry/consul"
+	"github.com/go-goim/core/pkg/registry/consul"
 
-	registryv1 "github.com/go-goim/goim/api/config/registry/v1"
+	registryv1 "github.com/go-goim/core/api/config/registry/v1"
 )
 
 var (

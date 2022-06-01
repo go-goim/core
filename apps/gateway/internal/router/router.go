@@ -3,8 +3,8 @@ package router
 import (
 	"github.com/gin-gonic/gin"
 
-	v1 "github.com/go-goim/goim/apps/gateway/internal/router/v1"
-	"github.com/go-goim/goim/pkg/router"
+	v1 "github.com/go-goim/core/apps/gateway/internal/router/v1"
+	"github.com/go-goim/core/pkg/router"
 )
 
 type rootRouter struct {

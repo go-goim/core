@@ -10,8 +10,8 @@ import (
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
 
-	"github.com/go-goim/goim/pkg/graceful"
-	"github.com/go-goim/goim/pkg/log"
+	"github.com/go-goim/core/pkg/graceful"
+	"github.com/go-goim/core/pkg/log"
 )
 
 var (

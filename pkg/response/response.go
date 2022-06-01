@@ -1,7 +1,7 @@
 package response
 
 import (
-	responsepb "github.com/go-goim/goim/api/transport/response"
+	responsepb "github.com/go-goim/core/api/transport/response"
 )
 
 type BaseResponse struct {

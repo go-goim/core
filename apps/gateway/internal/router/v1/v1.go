@@ -1,7 +1,7 @@
 package v1
 
 import (
-	"github.com/go-goim/goim/pkg/router"
+	"github.com/go-goim/core/pkg/router"
 )
 
 type Router struct {

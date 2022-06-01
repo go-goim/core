@@ -9,8 +9,8 @@ import (
 	"net/http"
 	"strings"
 
-	userv1 "github.com/go-goim/goim/api/user/v1"
-	"github.com/go-goim/goim/pkg/response"
+	userv1 "github.com/go-goim/core/api/user/v1"
+	"github.com/go-goim/core/pkg/response"
 )
 
 var (

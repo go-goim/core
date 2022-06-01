@@ -9,8 +9,8 @@ import (
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/proto"
 
-	responsepb "github.com/go-goim/goim/api/transport/response"
-	"github.com/go-goim/goim/pkg/mid"
+	responsepb "github.com/go-goim/core/api/transport/response"
+	"github.com/go-goim/core/pkg/mid"
 )
 
 type PbJSONBinding struct {

@@ -3,13 +3,13 @@ package v1
 import (
 	"github.com/gin-gonic/gin"
 
-	messagev1 "github.com/go-goim/goim/api/message/v1"
-	responsepb "github.com/go-goim/goim/api/transport/response"
-	"github.com/go-goim/goim/apps/gateway/internal/service"
-	"github.com/go-goim/goim/pkg/mid"
-	"github.com/go-goim/goim/pkg/request"
-	"github.com/go-goim/goim/pkg/response"
-	"github.com/go-goim/goim/pkg/router"
+	messagev1 "github.com/go-goim/core/api/message/v1"
+	responsepb "github.com/go-goim/core/api/transport/response"
+	"github.com/go-goim/core/apps/gateway/internal/service"
+	"github.com/go-goim/core/pkg/mid"
+	"github.com/go-goim/core/pkg/request"
+	"github.com/go-goim/core/pkg/response"
+	"github.com/go-goim/core/pkg/router"
 )
 
 type MsgRouter struct {

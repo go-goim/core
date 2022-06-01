@@ -10,12 +10,12 @@ import (
 	ggrpc "google.golang.org/grpc"
 	"google.golang.org/grpc/connectivity"
 
-	responsepb "github.com/go-goim/goim/api/transport/response"
-	userv1 "github.com/go-goim/goim/api/user/v1"
-	"github.com/go-goim/goim/apps/gateway/internal/app"
-	"github.com/go-goim/goim/apps/gateway/internal/dao"
-	"github.com/go-goim/goim/pkg/log"
-	"github.com/go-goim/goim/pkg/util"
+	responsepb "github.com/go-goim/core/api/transport/response"
+	userv1 "github.com/go-goim/core/api/user/v1"
+	"github.com/go-goim/core/apps/gateway/internal/app"
+	"github.com/go-goim/core/apps/gateway/internal/dao"
+	"github.com/go-goim/core/pkg/log"
+	"github.com/go-goim/core/pkg/util"
 )
 
 type UserService struct {

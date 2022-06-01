@@ -4,7 +4,7 @@ import (
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 
-	configv1 "github.com/go-goim/goim/api/config/v1"
+	configv1 "github.com/go-goim/core/api/config/v1"
 )
 
 type option struct {
