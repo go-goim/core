@@ -7,10 +7,10 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
 
-	"github.com/go-goim/goim/apps/push/internal/service"
-	"github.com/go-goim/goim/pkg/mid"
-	"github.com/go-goim/goim/pkg/response"
-	"github.com/go-goim/goim/pkg/router"
+	"github.com/go-goim/core/apps/push/internal/service"
+	"github.com/go-goim/core/pkg/mid"
+	"github.com/go-goim/core/pkg/response"
+	"github.com/go-goim/core/pkg/router"
 )
 
 type ConnRouter struct {

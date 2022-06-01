@@ -6,8 +6,8 @@ import (
 	"math/rand"
 	"strings"
 
-	"github.com/go-goim/goim/apps/gateway/internal/app"
-	"github.com/go-goim/goim/pkg/registry"
+	"github.com/go-goim/core/apps/gateway/internal/app"
+	"github.com/go-goim/core/pkg/registry"
 )
 
 func LoadMatchedPushServer(ctx context.Context) (string, error) {

@@ -3,7 +3,7 @@ package redis
 import (
 	"time"
 
-	configv1 "github.com/go-goim/goim/api/config/v1"
+	configv1 "github.com/go-goim/core/api/config/v1"
 )
 
 type Option func(*options)

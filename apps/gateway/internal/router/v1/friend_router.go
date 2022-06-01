@@ -3,13 +3,13 @@ package v1
 import (
 	"github.com/gin-gonic/gin"
 
-	responsepb "github.com/go-goim/goim/api/transport/response"
-	friendpb "github.com/go-goim/goim/api/user/friend/v1"
-	"github.com/go-goim/goim/apps/gateway/internal/service"
-	"github.com/go-goim/goim/pkg/mid"
-	"github.com/go-goim/goim/pkg/request"
-	"github.com/go-goim/goim/pkg/response"
-	"github.com/go-goim/goim/pkg/router"
+	responsepb "github.com/go-goim/core/api/transport/response"
+	friendpb "github.com/go-goim/core/api/user/friend/v1"
+	"github.com/go-goim/core/apps/gateway/internal/service"
+	"github.com/go-goim/core/pkg/mid"
+	"github.com/go-goim/core/pkg/request"
+	"github.com/go-goim/core/pkg/response"
+	"github.com/go-goim/core/pkg/router"
 )
 
 type FriendRouter struct {

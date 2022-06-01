@@ -1,8 +1,8 @@
 package app
 
 import (
-	"github.com/go-goim/goim/pkg/app"
-	"github.com/go-goim/goim/pkg/registry"
+	"github.com/go-goim/core/pkg/app"
+	"github.com/go-goim/core/pkg/registry"
 )
 
 type Application struct {

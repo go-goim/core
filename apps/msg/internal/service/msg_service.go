@@ -15,13 +15,13 @@ import (
 	redisv8 "github.com/go-redis/redis/v8"
 	ggrpc "google.golang.org/grpc"
 
-	"github.com/go-goim/goim/pkg/consts"
-	"github.com/go-goim/goim/pkg/log"
+	"github.com/go-goim/core/pkg/consts"
+	"github.com/go-goim/core/pkg/log"
 
-	messagev1 "github.com/go-goim/goim/api/message/v1"
-	"github.com/go-goim/goim/apps/msg/internal/app"
-	"github.com/go-goim/goim/pkg/conn/pool"
-	"github.com/go-goim/goim/pkg/conn/wrapper"
+	messagev1 "github.com/go-goim/core/api/message/v1"
+	"github.com/go-goim/core/apps/msg/internal/app"
+	"github.com/go-goim/core/pkg/conn/pool"
+	"github.com/go-goim/core/pkg/conn/wrapper"
 )
 
 type MqMessageService struct {

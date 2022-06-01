@@ -10,7 +10,7 @@ import (
 	"go.uber.org/zap/zapcore"
 	"gopkg.in/natefinch/lumberjack.v2"
 
-	configv1 "github.com/go-goim/goim/api/config/v1"
+	configv1 "github.com/go-goim/core/api/config/v1"
 )
 
 type zapLogger struct {

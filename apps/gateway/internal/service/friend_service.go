@@ -10,9 +10,9 @@ import (
 	ggrpc "google.golang.org/grpc"
 	"google.golang.org/grpc/connectivity"
 
-	responsepb "github.com/go-goim/goim/api/transport/response"
-	friendpb "github.com/go-goim/goim/api/user/friend/v1"
-	"github.com/go-goim/goim/apps/gateway/internal/app"
+	responsepb "github.com/go-goim/core/api/transport/response"
+	friendpb "github.com/go-goim/core/api/user/friend/v1"
+	"github.com/go-goim/core/apps/gateway/internal/app"
 )
 
 type FriendService struct {

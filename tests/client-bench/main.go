@@ -14,7 +14,7 @@ import (
 	"syscall"
 	"time"
 
-	messagev1 "github.com/go-goim/goim/api/message/v1"
+	messagev1 "github.com/go-goim/core/api/message/v1"
 )
 
 var (

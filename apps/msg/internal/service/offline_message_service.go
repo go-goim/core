@@ -8,12 +8,12 @@ import (
 	"github.com/apache/rocketmq-client-go/v2/primitive"
 	redisv8 "github.com/go-redis/redis/v8"
 
-	responsepb "github.com/go-goim/goim/api/transport/response"
-	"github.com/go-goim/goim/pkg/consts"
-	"github.com/go-goim/goim/pkg/log"
+	responsepb "github.com/go-goim/core/api/transport/response"
+	"github.com/go-goim/core/pkg/consts"
+	"github.com/go-goim/core/pkg/log"
 
-	messagev1 "github.com/go-goim/goim/api/message/v1"
-	"github.com/go-goim/goim/apps/msg/internal/app"
+	messagev1 "github.com/go-goim/core/api/message/v1"
+	"github.com/go-goim/core/apps/msg/internal/app"
 )
 
 type OfflineMessageService struct {

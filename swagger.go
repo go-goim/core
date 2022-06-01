@@ -11,7 +11,7 @@ package main
 // @contact.email yusankurban@gmail.com
 
 // @license.name MIT
-// @license.url https://github.com/go-goim/goim/blob/main/LICENSE
+// @license.url https://github.com/go-goim/core/blob/main/LICENSE
 
 // @BasePath /
 func main() {}

@@ -8,9 +8,9 @@ import (
 
 	"gorm.io/gorm"
 
-	"github.com/go-goim/goim/apps/user/internal/data"
-	"github.com/go-goim/goim/pkg/cache"
-	"github.com/go-goim/goim/pkg/db"
+	"github.com/go-goim/core/apps/user/internal/data"
+	"github.com/go-goim/core/pkg/cache"
+	"github.com/go-goim/core/pkg/db"
 )
 
 type FriendDao struct{}

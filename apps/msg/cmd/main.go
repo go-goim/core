@@ -3,14 +3,14 @@ package main
 import (
 	"context"
 
-	"github.com/go-goim/goim/pkg/cmd"
-	"github.com/go-goim/goim/pkg/log"
+	"github.com/go-goim/core/pkg/cmd"
+	"github.com/go-goim/core/pkg/log"
 
-	messagev1 "github.com/go-goim/goim/api/message/v1"
-	"github.com/go-goim/goim/apps/msg/internal/app"
-	"github.com/go-goim/goim/apps/msg/internal/service"
-	"github.com/go-goim/goim/pkg/graceful"
-	"github.com/go-goim/goim/pkg/mq"
+	messagev1 "github.com/go-goim/core/api/message/v1"
+	"github.com/go-goim/core/apps/msg/internal/app"
+	"github.com/go-goim/core/apps/msg/internal/service"
+	"github.com/go-goim/core/pkg/graceful"
+	"github.com/go-goim/core/pkg/mq"
 )
 
 func main() {

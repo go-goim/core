@@ -1,4 +1,4 @@
-module github.com/go-goim/goim
+module github.com/go-goim/core
 
 go 1.17
 

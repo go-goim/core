@@ -1,7 +1,7 @@
 package data
 
 import (
-	userv1 "github.com/go-goim/goim/api/user/v1"
+	userv1 "github.com/go-goim/core/api/user/v1"
 )
 
 // User is the model of user table based on gorm, which contains user basic info.
