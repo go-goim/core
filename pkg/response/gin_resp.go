@@ -5,7 +5,8 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	responsepb "github.com/go-goim/core/api/transport/response"
+	responsepb "github.com/go-goim/api/transport/response"
+
 	"github.com/go-goim/core/pkg/log"
 )
 

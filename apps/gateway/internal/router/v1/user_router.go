@@ -3,7 +3,8 @@ package v1
 import (
 	"github.com/gin-gonic/gin"
 
-	userv1 "github.com/go-goim/core/api/user/v1"
+	userv1 "github.com/go-goim/api/user/v1"
+
 	"github.com/go-goim/core/apps/gateway/internal/service"
 	"github.com/go-goim/core/pkg/mid"
 	"github.com/go-goim/core/pkg/request"

@@ -9,7 +9,8 @@ import (
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/proto"
 
-	responsepb "github.com/go-goim/core/api/transport/response"
+	responsepb "github.com/go-goim/api/transport/response"
+
 	"github.com/go-goim/core/pkg/mid"
 )
 

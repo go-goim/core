@@ -4,8 +4,9 @@ import (
 	"context"
 	"sync"
 
-	responsepb "github.com/go-goim/core/api/transport/response"
-	friendpb "github.com/go-goim/core/api/user/friend/v1"
+	responsepb "github.com/go-goim/api/transport/response"
+	friendpb "github.com/go-goim/api/user/friend/v1"
+
 	"github.com/go-goim/core/apps/user/internal/app"
 	"github.com/go-goim/core/apps/user/internal/dao"
 	"github.com/go-goim/core/apps/user/internal/data"
