@@ -15,3 +15,5 @@ package main
 
 // @BasePath /
 func main() {}
+
+// TODO: move to other repo.
