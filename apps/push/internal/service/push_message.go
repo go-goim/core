@@ -7,10 +7,12 @@ import (
 
 	"github.com/gorilla/websocket"
 
-	responsepb "github.com/go-goim/core/api/transport/response"
+	responsepb "github.com/go-goim/api/transport/response"
+
 	"github.com/go-goim/core/pkg/log"
 
-	messagev1 "github.com/go-goim/core/api/message/v1"
+	messagev1 "github.com/go-goim/api/message/v1"
+
 	"github.com/go-goim/core/pkg/conn/pool"
 	"github.com/go-goim/core/pkg/conn/wrapper"
 	"github.com/go-goim/core/pkg/graceful"

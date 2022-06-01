@@ -5,8 +5,9 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	friendpb "github.com/go-goim/core/api/user/friend/v1"
-	userv1 "github.com/go-goim/core/api/user/v1"
+	friendpb "github.com/go-goim/api/user/friend/v1"
+	userv1 "github.com/go-goim/api/user/v1"
+
 	"github.com/go-goim/core/apps/user/internal/app"
 	"github.com/go-goim/core/apps/user/internal/router"
 	"github.com/go-goim/core/apps/user/internal/service"

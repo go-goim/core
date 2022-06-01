@@ -18,7 +18,8 @@ import (
 	"github.com/go-goim/core/pkg/consts"
 	"github.com/go-goim/core/pkg/log"
 
-	messagev1 "github.com/go-goim/core/api/message/v1"
+	messagev1 "github.com/go-goim/api/message/v1"
+
 	"github.com/go-goim/core/apps/msg/internal/app"
 	"github.com/go-goim/core/pkg/conn/pool"
 	"github.com/go-goim/core/pkg/conn/wrapper"

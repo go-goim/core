@@ -11,11 +11,13 @@ import (
 	ggrpc "google.golang.org/grpc"
 	"google.golang.org/grpc/connectivity"
 
-	responsepb "github.com/go-goim/core/api/transport/response"
-	friendpb "github.com/go-goim/core/api/user/friend/v1"
+	responsepb "github.com/go-goim/api/transport/response"
+	friendpb "github.com/go-goim/api/user/friend/v1"
+
 	"github.com/go-goim/core/pkg/log"
 
-	messagev1 "github.com/go-goim/core/api/message/v1"
+	messagev1 "github.com/go-goim/api/message/v1"
+
 	"github.com/go-goim/core/apps/gateway/internal/app"
 	"github.com/go-goim/core/pkg/mq"
 )

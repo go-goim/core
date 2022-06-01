@@ -1,7 +1,7 @@
 package data
 
 import (
-	friendpb "github.com/go-goim/core/api/user/friend/v1"
+	friendpb "github.com/go-goim/api/user/friend/v1"
 )
 
 // Friend is the model of user relation table based on gorm, which is used for user relation management.

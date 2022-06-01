@@ -42,11 +42,6 @@ test: ## Run test against code.
 
 ##@ Generate
 
-.PHONY: gen-protoc
-gen-protoc: ## Run protoc command to generate pb code.
-	# call gen_proto.sh
-	./gen_proto.sh api
-
 .PHONY: tools-install
 tools-install: ## Install tools.
 	go get -u github.com/golang/protobuf/protoc-gen-go

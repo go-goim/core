@@ -3,7 +3,7 @@ package log
 import (
 	kraoslogger "github.com/go-kratos/kratos/v2/log"
 
-	configv1 "github.com/go-goim/core/api/config/v1"
+	configv1 "github.com/go-goim/api/config/v1"
 )
 
 // define log api and implement
