@@ -35,7 +35,7 @@ func NewClient(cli *api.Client) *Client {
 	c := &Client{
 		cli:                 cli,
 		resolver:            defaultResolver,
-		healthcheckInterval: 10,
+		healthcheckInterval: 5,
 		heartbeat:           true,
 	}
 	c.ctx, c.cancel = context.WithCancel(context.Background())
@@ -136,12 +136,18 @@ func (c *Client) Register(_ context.Context, svc *registry.ServiceInstance, enab
 		asr.Address = host
 		asr.Port = int(port)
 	}
+
+	var healthCheckInterval = c.healthcheckInterval
+	if healthCheckInterval == 0 {
+		healthCheckInterval = 5
+	}
+
 	if enableHealthCheck {
 		for _, address := range checkAddresses {
 			asr.Checks = append(asr.Checks, &api.AgentServiceCheck{
 				TCP:                            address,
-				Interval:                       fmt.Sprintf("%ds", c.healthcheckInterval),
-				DeregisterCriticalServiceAfter: fmt.Sprintf("%ds", c.healthcheckInterval*60),
+				Interval:                       fmt.Sprintf("%ds", healthCheckInterval),
+				DeregisterCriticalServiceAfter: fmt.Sprintf("%ds", healthCheckInterval*10),
 				Timeout:                        "5s",
 			})
 		}
@@ -149,8 +155,8 @@ func (c *Client) Register(_ context.Context, svc *registry.ServiceInstance, enab
 	if c.heartbeat {
 		asr.Checks = append(asr.Checks, &api.AgentServiceCheck{
 			CheckID:                        "service:" + svc.ID,
-			TTL:                            fmt.Sprintf("%ds", c.healthcheckInterval*2),
-			DeregisterCriticalServiceAfter: fmt.Sprintf("%ds", c.healthcheckInterval*60),
+			TTL:                            fmt.Sprintf("%ds", healthCheckInterval*2),
+			DeregisterCriticalServiceAfter: fmt.Sprintf("%ds", healthCheckInterval*10),
 		})
 	}
 
@@ -165,14 +171,14 @@ func (c *Client) Register(_ context.Context, svc *registry.ServiceInstance, enab
 			if err != nil {
 				log.Error("consul update ttl heartbeat to consul failed", "err", err)
 			}
-			ticker := time.NewTicker(time.Second * time.Duration(c.healthcheckInterval))
+			ticker := time.NewTicker(time.Second * time.Duration(healthCheckInterval))
 			defer ticker.Stop()
 			for {
 				select {
 				case <-ticker.C:
 					if c.ctx.Err() != nil {
 						log.Info("consul heartbeat canceled")
-						continue
+						return
 					}
 
 					err = c.cli.Agent().UpdateTTL("service:"+svc.ID, "pass", "pass")
