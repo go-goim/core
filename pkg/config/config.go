@@ -30,7 +30,7 @@ type ServiceConfig struct {
 	*configv1.Service `json:",inline"`
 }
 
-func NewConfig() *ServiceConfig {
+func NewServiceConfig() *ServiceConfig {
 	return &ServiceConfig{
 		Service: new(configv1.Service),
 	}
@@ -81,6 +81,10 @@ func InitConfig() *Config {
 	reg.FilePath = confPath
 	log.Debug("registry content", "registry", reg)
 
+	cfg := &Config{
+		RegConfig: reg,
+	}
+
 	// init config center
 	if enableConfigCenter {
 		if reg.GetConfigCenter() == nil {
@@ -96,37 +100,32 @@ func InitConfig() *Config {
 			panic(err)
 		}
 
-		cfg := &Config{
-			RegConfig:          reg,
-			ConfigSource:       source,
-			EnableConfigCenter: enableConfigCenter,
-		}
+		cfg.ConfigSource = source
+		cfg.EnableConfigCenter = true
 
 		if err := cfg.readFromConfigCenter(); err != nil {
 			panic(err)
 		}
-
 		log.Debug("config content", "config", cfg)
-		return cfg
+	} else {
+		// read all config from local files
+		sc := NewServiceConfig()
+		if err := c.Scan(sc); err != nil {
+			panic(err)
+		}
+
+		// validate config
+		if err := sc.Validate(); err != nil {
+			panic(err)
+		}
+
+		log.Debug("service content", "service", cfg)
+
+		cfg.SrvConfig = sc
 	}
 
-	// read all config from local files
-	cfg := NewConfig()
-	if err := c.Scan(cfg); err != nil {
-		panic(err)
-	}
-
-	// validate config
-	if err := cfg.Validate(); err != nil {
-		panic(err)
-	}
-
-	log.Debug("service content", "service", cfg)
-
-	return &Config{
-		SrvConfig: cfg,
-		RegConfig: reg,
-	}
+	setLogger(cfg.SrvConfig.Name, cfg.SrvConfig.Log)
+	return cfg
 }
 
 func (c *Config) readFromConfigCenter() error {
@@ -135,7 +134,7 @@ func (c *Config) readFromConfigCenter() error {
 		return err
 	}
 
-	c.SrvConfig = NewConfig()
+	c.SrvConfig = NewServiceConfig()
 	if err := cfg.Scan(c.SrvConfig); err != nil {
 		return err
 	}
@@ -145,7 +144,6 @@ func (c *Config) readFromConfigCenter() error {
 		return err
 	}
 
-	setLogger(c.SrvConfig.Name, c.SrvConfig.Log)
 	return nil
 }
 
@@ -178,7 +176,7 @@ func setLogger(serviceName string, logConf *configv1.Log) {
 		log.OutputPath(logPath),
 		log.FilenamePrefix("kratos."),
 		log.EnableConsole(logConf != nil && logConf.EnableConsole),
-		log.CallerDepth(6),
+		log.CallerDepth(3),
 		log.Meta("service", serviceName),
 		log.Meta("source", "kratos"),
 	))
