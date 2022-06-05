@@ -119,9 +119,8 @@ func InitConfig() *Config {
 			panic(err)
 		}
 
-		log.Debug("service content", "service", cfg)
-
 		cfg.SrvConfig = sc
+		log.Debug("service content", "service", cfg)
 	}
 
 	setLogger(cfg.SrvConfig.Name, cfg.SrvConfig.Log)

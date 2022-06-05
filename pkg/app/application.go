@@ -16,6 +16,7 @@ import (
 	"github.com/go-kratos/kratos/v2/transport/http"
 	redisv8 "github.com/go-redis/redis/v8"
 
+	"github.com/go-goim/core/pkg/cmd"
 	"github.com/go-goim/core/pkg/config"
 	"github.com/go-goim/core/pkg/db/mysql"
 	"github.com/go-goim/core/pkg/db/redis"
@@ -63,6 +64,14 @@ func WithMetadata(k, v string) Option {
 		}
 		o.metadata[k] = v
 	}
+}
+
+var (
+	useHostIP bool
+)
+
+func init() {
+	cmd.GlobalFlagSet.BoolVar(&useHostIP, "use-host-ip", true, "use host ip")
 }
 
 var (
@@ -128,6 +137,11 @@ func InitApplication(opts ...Option) (*Application, error) {
 }
 
 func (a *Application) initHost() error {
+	if !useHostIP {
+		a.host = ""
+		return nil
+	}
+
 	addrs, err := net.InterfaceAddrs()
 	if err != nil {
 		return err
