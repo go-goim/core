@@ -76,7 +76,7 @@ func (cw *consulWatcher) serviceHandler(_ uint64, data interface{}) {
 		finaleEntries = append(finaleEntries, e)
 	}
 
-	cw.next <- defaultResolver(context.TODO(), finaleEntries)
+	cw.next <- defaultResolver(context.Background(), finaleEntries)
 }
 
 func (cw *consulWatcher) Next() ([]*registry.ServiceInstance, error) {
