@@ -175,6 +175,15 @@ func (c *Client) Register(_ context.Context, svc *registry.ServiceInstance, enab
 			defer ticker.Stop()
 			for {
 				select {
+				case <-c.ctx.Done():
+					return
+				default:
+				}
+
+				// when select has multiple cases, it executes randomly.
+				select {
+				case <-c.ctx.Done():
+					return
 				case <-ticker.C:
 					if c.ctx.Err() != nil {
 						log.Info("consul heartbeat canceled")
@@ -185,8 +194,6 @@ func (c *Client) Register(_ context.Context, svc *registry.ServiceInstance, enab
 					if err != nil {
 						log.Error("consul update ttl heartbeat to consul failed", "err", err)
 					}
-				case <-c.ctx.Done():
-					return
 				}
 			}
 		}()

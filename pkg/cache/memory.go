@@ -45,7 +45,7 @@ func (m *memoryCache) Get(_ context.Context, key string) ([]byte, error) {
 	}
 
 	if item.expireAt.Before(time.Now()) {
-		go m.Delete(context.TODO(), key) //nolint:errcheck
+		go m.Delete(context.Background(), key) //nolint:errcheck
 		return nil, ErrCacheMiss
 	}
 
