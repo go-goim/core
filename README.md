@@ -4,7 +4,7 @@
 [![CodeQL](https://github.com/go-goim/goim/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/go-goim/goim/actions/workflows/codeql-analysis.yml)
 [![Semgrep](https://github.com/go-goim/goim/actions/workflows/semgrep.yml/badge.svg)](https://github.com/go-goim/goim/actions/workflows/semgrep.yml)
 
-![GoIM](https://go-goim.github.io/images/logo.png)
+![GoIM](https://user-images.githubusercontent.com/21994267/171377813-c3a14372-243e-4f5b-bd2b-62ab62f58dd1.png)
 
 Instant Messaging Server written by golang.
 
