@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"go.uber.org/atomic"
+	ggrpc "google.golang.org/grpc"
 
 	"github.com/go-kratos/kratos/v2"
 	"github.com/go-kratos/kratos/v2/middleware/recovery"
@@ -207,6 +208,11 @@ func (a *Application) initGrpcServer() error {
 			recovery.Recovery(),
 		),
 		grpc.Timeout(timeout),
+		grpc.Options(
+			ggrpc.InitialWindowSize(1024*1024*1024),     // 1GB
+			ggrpc.InitialConnWindowSize(1024*1024*1024), // 1GB
+			ggrpc.MaxConcurrentStreams(1024),
+		),
 	)
 	a.GrpcSrv = grpcSrv
 
