@@ -16,17 +16,19 @@ import (
 // NewSource create a config source according to the registry info.
 func NewSource(reg *registryv1.Registry) (s config.Source, err error) {
 	if reg.GetEtcd() != nil {
-		return newEtcdSource(reg.GetEtcd(), reg.GetConfigCenter())
+		return newEtcdSource(reg)
 	}
 
 	if reg.GetConsul() != nil {
-		return newConsulSource(reg.GetConsul(), reg.GetConfigCenter())
+		return newConsulSource(reg)
 	}
 
 	return nil, fmt.Errorf("unknown registry info")
 }
 
-func newEtcdSource(cfg *registryv1.RegistryInfo, rc *registryv1.ConfigCenterInfo) (s config.Source, err error) {
+func newEtcdSource(reg *registryv1.Registry) (s config.Source, err error) {
+	cfg := reg.GetEtcd()
+	cc := reg.GetConfigCenter()
 	cli, err := clientv3.New(clientv3.Config{
 		Endpoints:            cfg.GetAddr(),
 		DialTimeout:          cfg.GetDialTimeoutSec().AsDuration(),
@@ -38,10 +40,12 @@ func newEtcdSource(cfg *registryv1.RegistryInfo, rc *registryv1.ConfigCenterInfo
 	}
 
 	// TODO: support set keys.
-	return etcd.New(cli, etcd.WithPath(rc.GetPathPrefix()), etcd.WithPrefix(true))
+	return etcd.New(cli, etcd.WithPath(cc.GetPathPrefix()), etcd.WithPrefix(true))
 }
 
-func newConsulSource(cfg *registryv1.RegistryInfo, rc *registryv1.ConfigCenterInfo) (s config.Source, err error) {
+func newConsulSource(reg *registryv1.Registry) (s config.Source, err error) {
+	cfg := reg.GetConsul()
+	cc := reg.GetConfigCenter()
 	cli, err := api.NewClient(&api.Config{
 		Address:    cfg.GetAddr()[0],
 		Scheme:     cfg.GetScheme(),
@@ -52,7 +56,7 @@ func newConsulSource(cfg *registryv1.RegistryInfo, rc *registryv1.ConfigCenterIn
 		return nil, err
 	}
 
-	return consul.New(cli, consul.WithPathPrefix(rc.GetPathPrefix()),
-		consul.WithPaths(rc.GetPaths()...),
-		consul.WithFormat(rc.GetFormat()))
+	return consul.New(cli, consul.WithPathPrefix(cc.GetPathPrefix()),
+		consul.WithPaths(cc.GetPaths()...),
+		consul.WithFormat(cc.GetFormat()))
 }

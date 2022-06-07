@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"net"
 	"net/http"
 	"net/url"
 	"os"
@@ -15,17 +16,28 @@ import (
 	"github.com/gorilla/websocket"
 	"github.com/jroimartin/gocui"
 
+	userv1 "github.com/go-goim/api/user/v1"
+
 	messagev1 "github.com/go-goim/api/message/v1"
+
+	"github.com/go-goim/core/pkg/response"
 )
 
 var (
+	hostIPMode bool
 	serverAddr string
 	uid        string
 	toUid      string
+	token      string
 	logger     *log.Logger
 )
 
+const (
+	loginURI = "/gateway/v1/user/login"
+)
+
 func init() {
+	flag.BoolVar(&hostIPMode, "host_ip_mode", true, "use host ip instead of localhost")
 	flag.StringVar(&serverAddr, "s", "127.0.0.1:18071", "gateway server addr")
 	flag.StringVar(&uid, "u", "", "from user id")
 	flag.StringVar(&toUid, "t", "", "to user id")
@@ -35,25 +47,61 @@ func init() {
 	}
 	logger = log.New(f, "[log]", log.Lshortfile)
 	flag.Parse()
+	if hostIPMode {
+		serverAddr, err = getHostIP()
+		assert(err == nil, "get host ip failed")
+		serverAddr += ":18071"
+	}
+	uid += "@example.com"
+	toUid += "@example.com"
 }
+
+func getHostIP() (string, error) {
+	addrs, err := net.InterfaceAddrs()
+	if err != nil {
+		return "", err
+	}
+
+	for _, addr := range addrs {
+		// check the address type and do not use ipv6
+		ipnet, ok := addr.(*net.IPNet)
+		if !ok {
+			continue
+		}
+		// check the network type
+		if ipnet.IP.IsLoopback() {
+			continue
+		}
+
+		if ipnet.IP.To4() != nil {
+			return ipnet.IP.String(), nil
+		}
+	}
+
+	return "", fmt.Errorf("ip not found")
+}
+
 func assert(b bool, msg string) {
 	if !b {
 		panic(msg)
 	}
 }
 
+// TODO: support load friend list & support accept/reject friend request
+//  remove logic of set toUid from flags,support select target user or parse target user form input message.
+
 func main() {
 	assert(uid != "", "from user id must be provided")
 	assert(toUid != "", "to user id must be provided")
 	assert(uid != toUid, "uid and toUid must be different")
 
-	addr, err := getPushServerAddr()
+	addr, err := login()
 	if err != nil {
 		panic(err)
 	}
 
 	fmt.Println(addr)
-	conn, err := connectWs(addr, http.Header{"uid": []string{uid}})
+	conn, err := connectWs(addr)
 	if err != nil {
 		panic(err)
 	}
@@ -91,8 +139,11 @@ func quit(g *gocui.Gui, v *gocui.View) error {
 	return gocui.ErrQuit
 }
 
-func connectWs(addr string, h http.Header) (*websocket.Conn, error) {
-	u := url.URL{Scheme: "ws", Host: strings.TrimPrefix(addr, "http://"), Path: "/push/service/v1/ws"}
+func connectWs(addr string) (*websocket.Conn, error) {
+	u := url.URL{Scheme: "ws", Host: strings.TrimPrefix(addr, "http://"), Path: "/push/v1/conn/ws"}
+	h := http.Header{}
+	h.Set("Authorization", token)
+	logger.Println("token:", token)
 	c, _, err := websocket.DefaultDialer.Dial(u.String(), h)
 	if err != nil {
 		return nil, err
@@ -102,34 +153,35 @@ func connectWs(addr string, h http.Header) (*websocket.Conn, error) {
 	return c, nil
 }
 
-func getPushServerAddr() (addr string, err error) {
-	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("http://%s/gateway/service/v1/discover", serverAddr), nil)
-	if err != nil {
-		return "", err
-	}
-	req.Header.Set("uid", uid)
-	resp, err := http.DefaultClient.Do(req)
+func login() (serverIP string, err error) {
+	req := fmt.Sprintf(`{"email":"%s","password":"123456"}`, uid)
+
+	resp, err := http.Post(fmt.Sprintf("http://%s%s", serverAddr, loginURI), "application/json", strings.NewReader(req))
 	if err != nil {
 		return "", err
 	}
 
-	if resp.StatusCode != http.StatusOK {
-		return "", fmt.Errorf("status code:%d,msg:%s", resp.StatusCode, resp.Status)
-	}
-
-	b, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return "", err
-	}
-	fmt.Println(string(b))
 	defer resp.Body.Close()
-
-	var result = make(map[string]string)
-	if err = json.Unmarshal(b, &result); err != nil {
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
 		return "", err
 	}
 
-	return result["agentID"], nil
+	var data struct {
+		*response.BaseResponse
+		Data userv1.User
+	}
+
+	if err := json.Unmarshal(body, &data); err != nil {
+		return "", err
+	}
+
+	if data.Code != 0 {
+		return "", fmt.Errorf("login user=%s, err= %v", uid, data.Reason)
+	}
+
+	token = resp.Header.Get("Authorization")
+	return *data.Data.ConnectUrl, nil
 }
 
 func readMsgFromConn(conn *websocket.Conn) (chan []byte, chan error) {
