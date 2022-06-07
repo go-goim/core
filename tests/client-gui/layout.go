@@ -8,9 +8,10 @@ import (
 	"log"
 	"net/http"
 	"strconv"
-	"strings"
 
 	"github.com/jroimartin/gocui"
+
+	messagev1 "github.com/go-goim/api/message/v1"
 )
 
 func layout(g *gocui.Gui) error {
@@ -48,11 +49,12 @@ func layout(g *gocui.Gui) error {
 func resetInput(g *gocui.Gui, v *gocui.View) error {
 	buf := &bytes.Buffer{}
 	io.Copy(buf, v)
-	m := map[string]interface{}{
-		"from_user":    uid,
-		"to_user":      toUid,
-		"content_type": 1,
-		"content":      strings.TrimSuffix(buf.String(), "\n"),
+	// todo need load friend list then send msg
+	m := &messagev1.SendMessageReq{
+		FromUser:    "",
+		ToUser:      "",
+		ContentType: 0,
+		Content:     "",
 	}
 	b, err := json.Marshal(&m)
 	if err != nil {
@@ -63,7 +65,7 @@ func resetInput(g *gocui.Gui, v *gocui.View) error {
 	r := bytes.NewReader(b)
 	size := r.Size()
 
-	req, err := http.NewRequest(http.MethodPost, fmt.Sprintf("http://%s/gateway/service/v1/msg", serverAddr), r)
+	req, err := http.NewRequest(http.MethodPost, fmt.Sprintf("http://%s/gateway/v1/message/send_msg", serverAddr), r)
 	if err != nil {
 		logger.Println(err)
 		return err
@@ -71,6 +73,7 @@ func resetInput(g *gocui.Gui, v *gocui.View) error {
 
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Content-Length", strconv.FormatInt(size, 10))
+	req.Header.Set("Authorization", token)
 	rsp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		logger.Println(err)
@@ -87,7 +90,7 @@ func resetInput(g *gocui.Gui, v *gocui.View) error {
 			return err1
 		}
 		fmt.Fprintln(v, "------")
-		fmt.Fprintf(v, "Send|From:%v|Tp:%v|Content:%v\n", m["from_user"], m["content_type"], m["content"])
+		fmt.Fprintf(v, "Send|From:%v|Tp:%v|Content:%v\n", m.FromUser, m.ContentType, m.Content)
 		return nil
 	})
 	return nil

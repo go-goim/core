@@ -396,3 +396,11 @@ func (a *Application) AddConsumer(c mq.Consumer) {
 
 	a.Consumer = append(a.Consumer, c)
 }
+
+func (a *Application) GetHost() string {
+	if a.host == "" {
+		return "localhost"
+	}
+
+	return a.host
+}
