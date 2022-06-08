@@ -11,7 +11,7 @@ import (
 )
 
 type WebsocketConn struct {
-	*websocket.Conn
+	conn *websocket.Conn
 
 	ctx    context.Context
 	cancel context.CancelFunc
@@ -26,27 +26,27 @@ var (
 	ErrWriteChanFull = errors.New("write chan full")
 )
 
-func WrapWs(ctx context.Context, c *websocket.Conn, uid string) {
+func WrapWs(ctx context.Context, c *websocket.Conn, uid string) *WebsocketConn {
 	if ctx == nil {
 		ctx = context.Background()
 	}
 	ctx2, cancel := context.WithCancel(ctx)
 	wc := &WebsocketConn{
 		ctx:       ctx2,
-		Conn:      c,
+		conn:      c,
 		uid:       uid,
 		writeChan: make(chan []byte, 1),
 		cancel:    cancel,
 	}
 
-	wc.SetCloseHandler(func(code int, text string) error {
+	wc.conn.SetCloseHandler(func(code int, text string) error {
 		wc.cancelWithError(nil)
 		message := websocket.FormatCloseMessage(code, "")
-		_ = wc.WriteControl(websocket.CloseMessage, message, time.Now().Add(time.Second))
+		_ = wc.conn.WriteControl(websocket.CloseMessage, message, time.Now().Add(time.Second))
 		return nil
 	})
 
-	wc.SetPingHandler(func(message string) error {
+	wc.conn.SetPingHandler(func(message string) error {
 		err := c.WriteControl(websocket.PongMessage, []byte(message), time.Now().Add(time.Second))
 		if err == nil || err == websocket.ErrCloseSent {
 			return nil
@@ -58,11 +58,13 @@ func WrapWs(ctx context.Context, c *websocket.Conn, uid string) {
 	go wc.readDaemon()
 	// add to pool
 	addToPool(wc)
+
+	return wc
 }
 
 func (w *WebsocketConn) AddCloseAction(f func() error) {
-	cf := w.CloseHandler()
-	w.SetCloseHandler(func(code int, text string) error {
+	cf := w.conn.CloseHandler()
+	w.conn.SetCloseHandler(func(code int, text string) error {
 		err := cf(code, text)
 		if err == nil {
 			return f()
@@ -73,8 +75,8 @@ func (w *WebsocketConn) AddCloseAction(f func() error) {
 }
 
 func (w *WebsocketConn) AddPingAction(f func() error) {
-	pf := w.PingHandler()
-	w.SetPingHandler(func(appData string) error {
+	pf := w.conn.PingHandler()
+	w.conn.SetPingHandler(func(appData string) error {
 		err := pf(appData)
 		if err == nil {
 			return f()
@@ -109,13 +111,13 @@ func (w *WebsocketConn) Close() error {
 	// cancel context
 	w.cancel()
 	// close connection
-	return w.Conn.Close()
+	return w.conn.Close()
 }
 
 // readDaemon is keep read msg from connection, and handle registered ping, pong, close events
 func (w *WebsocketConn) readDaemon() {
 	for {
-		mt, message, err := w.ReadMessage()
+		mt, message, err := w.conn.ReadMessage()
 		if err != nil {
 			log.Error("websocket read message error", "error", err, "uid", w.uid)
 			w.cancelWithError(err)
@@ -142,8 +144,8 @@ func (w *WebsocketConn) Write(data []byte) error {
 }
 
 func (w *WebsocketConn) write(data []byte) {
-	_ = w.SetWriteDeadline(time.Now().Add(time.Second))
-	err := w.WriteMessage(websocket.TextMessage, data)
+	_ = w.conn.SetWriteDeadline(time.Now().Add(time.Second))
+	err := w.conn.WriteMessage(websocket.TextMessage, data)
 	if err != nil {
 		w.onWriteError()
 		return
