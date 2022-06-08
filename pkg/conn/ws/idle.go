@@ -1,21 +1,12 @@
-package pool
+package ws
 
 import (
-	"time"
-
 	"github.com/go-goim/core/pkg/log"
 )
 
-type Conn interface {
-	Key() string           // connection unique key in pool
-	Close() error          // close the connection
-	Done() <-chan struct{} // check if ctx is canceled
-	Err() error            // return error if conn has any internal error
-}
-
 type idleConn struct {
 	p        *namedPool
-	c        Conn
+	c        *WebsocketConn
 	stopChan chan struct{}
 }
 
@@ -32,23 +23,17 @@ func (i *idleConn) stop() {
 }
 
 func (i *idleConn) daemon() {
-	var (
-		timer = time.NewTimer(time.Second * 5)
-	)
 loop:
 	for {
-
 		select {
-		case <-timer.C:
-			timer.Reset(time.Second * 5)
-			if i.c.Err() != nil {
-				break loop
-			}
-		case <-i.stopChan:
-			break loop
-		case <-i.c.Done():
+		case <-i.c.ctx.Done():
 			log.Error("conn done", "key", i.c.Key())
 			break loop
+		case <-i.stopChan:
+			log.Info("conn stop", "key", i.c.Key())
+			break loop
+		case data := <-i.c.writeChan:
+			i.c.write(data)
 		}
 	}
 
