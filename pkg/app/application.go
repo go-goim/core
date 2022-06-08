@@ -22,6 +22,7 @@ import (
 	"github.com/go-goim/core/pkg/db/mysql"
 	"github.com/go-goim/core/pkg/db/redis"
 	"github.com/go-goim/core/pkg/errors"
+	"github.com/go-goim/core/pkg/log"
 	"github.com/go-goim/core/pkg/mq"
 	"github.com/go-goim/core/pkg/registry"
 )
@@ -134,6 +135,7 @@ func InitApplication(opts ...Option) (*Application, error) {
 		return nil, err
 	}
 
+	log.Info("init application success")
 	return a, nil
 }
 

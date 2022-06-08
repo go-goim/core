@@ -163,7 +163,7 @@ func setLogger(serviceName string, logConf *configv1.Log) {
 	log.SetLogger(log.NewZapLogger(
 		log.Level(level),
 		log.OutputPath(logPath),
-		log.FilenamePrefix("app."),
+		log.FilenamePrefix(serviceName+"."),
 		log.EnableConsole(logConf != nil && logConf.EnableConsole),
 		log.CallerDepth(2),
 		log.Meta("service", serviceName),
@@ -173,7 +173,7 @@ func setLogger(serviceName string, logConf *configv1.Log) {
 	log.SetKratosLogger(log.NewZapLogger(
 		log.Level(level),
 		log.OutputPath(logPath),
-		log.FilenamePrefix("kratos."),
+		log.FilenamePrefix(serviceName+".kratos."),
 		log.EnableConsole(logConf != nil && logConf.EnableConsole),
 		log.CallerDepth(3),
 		log.Meta("service", serviceName),
