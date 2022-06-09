@@ -11,6 +11,7 @@ func (p position) getCoordinate(max int) int {
 }
 
 type viewPosition struct {
+	name           string
 	x0, y0, x1, y1 position
 }
 
@@ -23,21 +24,33 @@ func (vp viewPosition) getCoordinates(maxX, maxY int) (int, int, int, int) {
 }
 
 const (
-	outputView = "output"
-	inputView  = "input"
+	friendsView = "friends"
+	outputView  = "output"
+	inputView   = "input"
 )
 
-var viewPositions = map[string]viewPosition{
-	outputView: {
+var (
+	friend = viewPosition{
+		friendsView,
 		position{0.0, 0},
 		position{0.0, 0},
-		position{1.0, 2},
-		position{0.75, 2},
-	},
-	inputView: {
+		position{0.25, 1},
+		position{1.0, 1},
+	}
+
+	outpu = viewPosition{
+		outputView,
+		position{0.25, 0},
 		position{0.0, 0},
+		position{1.0, 1},
+		position{0.72, 1},
+	}
+
+	input = viewPosition{
+		inputView,
+		position{0.25, 0},
 		position{0.73, 0},
-		position{1.0, 2},
-		position{1.0, 2},
-	},
-}
+		position{1.0, 1},
+		position{1.0, 1},
+	}
+)

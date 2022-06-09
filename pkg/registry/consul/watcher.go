@@ -21,7 +21,6 @@ type consulWatcher struct {
 }
 
 func newConsulWatcher(ctx context.Context, c *Client, name string) (registry.Watcher, error) {
-	log.Info("watch called", "name", name)
 	ctx2, cancel := context.WithCancel(ctx)
 	cw := &consulWatcher{
 		c:           c,

@@ -1,6 +1,7 @@
 package log
 
 import (
+	"fmt"
 	"path/filepath"
 	"strings"
 	"time"
@@ -109,7 +110,17 @@ func kv2ZapFields(kvs ...interface{}) []zap.Field {
 			continue
 		}
 
-		fields = append(fields, zap.Any(key, kvs[i+1]))
+		var valueStr string
+		switch v := kvs[i+1].(type) {
+		case string:
+			valueStr = v
+		case error:
+			valueStr = v.Error()
+		default:
+			valueStr = fmt.Sprintf("%v", v)
+		}
+
+		fields = append(fields, zap.String(key, valueStr))
 	}
 	return fields
 }

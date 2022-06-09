@@ -5,44 +5,163 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/jroimartin/gocui"
 
 	messagev1 "github.com/go-goim/api/message/v1"
 )
 
+var layoutDone bool
+
 func layout(g *gocui.Gui) error {
-	var views = []string{outputView, inputView}
-	maxX, maxY := g.Size()
-	for _, view := range views {
-		x0, y0, x1, y1 := viewPositions[view].getCoordinates(maxX, maxY)
-		//logger.Println(x0, y0, x1, y1)
-		if v, err := g.SetView(view, x0, y0, x1, y1); err != nil {
-			logger.Println(err)
-			v.SelFgColor = gocui.ColorBlack
-			v.SelBgColor = gocui.ColorGreen
+	g.Highlight = true
+	g.Cursor = true
+	g.SelFgColor = gocui.ColorGreen
 
-			v.Title = " " + toUid + " "
+	x0, y0, x1, y1 := friend.getCoordinates(g.Size())
+	if v, err := g.SetView(friendsView, x0, y0, x1, y1); err != nil {
+		if err != gocui.ErrUnknownView {
+			return err
+		}
+		v.Highlight = true
+		v.Title = "Friends"
+		if err = initFriends(g, v); err != nil {
+			logger.Println("1", err)
+			return err
+		}
 
-			if view == inputView {
-				v.Editable = true
-				v.Wrap = true
-				v.Title = " " + uid + " "
-			}
+		if _, err := setCurrentViewOnTop(g, friendsView); err != nil {
+			logger.Println("2", err)
+			return err
+		}
+	}
 
-			if err != gocui.ErrUnknownView {
+	x0, y0, x1, y1 = outpu.getCoordinates(g.Size())
+	if v, err := g.SetView(outputView, x0, y0, x1, y1); err != nil {
+		if err != gocui.ErrUnknownView {
+			return err
+		}
+		v.Title = fmt.Sprintf("Current: %s | %s ", toUid, toName)
+	}
+
+	x0, y0, x1, y1 = input.getCoordinates(g.Size())
+	if v, err := g.SetView(inputView, x0, y0, x1, y1); err != nil {
+		if err != gocui.ErrUnknownView {
+			return err
+		}
+		v.Title = " " + uid + " "
+		v.Editable = true
+		v.Wrap = true
+	}
+
+	layoutDone = true
+	return nil
+}
+
+func setCurrentViewOnTop(g *gocui.Gui, name string) (*gocui.View, error) {
+	if _, err := g.SetCurrentView(name); err != nil {
+		return nil, err
+	}
+	return g.SetViewOnTop(name)
+}
+
+func nextView(g *gocui.Gui, v *gocui.View) error {
+	logger.Println("next view", v.Name())
+	defer func() {
+		logger.Println("after next view", g.CurrentView().Name())
+	}()
+	if v == nil || v.Name() == friendsView {
+		_, err := setCurrentViewOnTop(g, inputView)
+		if err != nil {
+			logger.Println("set current view err:", err)
+			return err
+		}
+		g.Cursor = true
+		return nil
+	}
+
+	_, err := setCurrentViewOnTop(g, friendsView)
+	if err != nil {
+		logger.Println("set current view err:", err)
+		return err
+	}
+	g.Cursor = true
+	return nil
+}
+
+func arrowDown(g *gocui.Gui, v *gocui.View) error {
+	if v != nil {
+		cx, cy := v.Cursor()
+		// check if cursor is at the bottom
+		if err := v.SetCursor(cx, cy+1); err != nil {
+			ox, oy := v.Origin()
+			if err := v.SetOrigin(ox, oy+1); err != nil {
 				return err
 			}
 		}
 	}
+	return nil
+}
 
-	_, err := g.SetCurrentView(inputView)
-	if err != nil {
-		log.Fatal("failed to set current view: ", err)
+func arrowUp(g *gocui.Gui, v *gocui.View) error {
+	if v != nil {
+		cx, cy := v.Cursor()
+		ox, oy := v.Origin()
+		if err := v.SetCursor(cx, cy-1); err != nil && oy > 0 {
+			if err := v.SetOrigin(ox, oy-1); err != nil {
+				return err
+			}
+		}
 	}
+	return nil
+}
+
+func selectFriend(g *gocui.Gui, v *gocui.View) error {
+	logger.Println("select friend")
+	_, cy := v.Cursor()
+	//_, oy := v.Origin()
+	line, err := v.Line(cy)
+	if err != nil {
+		logger.Println(err)
+		return err
+	}
+
+	toUid = line[:strings.Index(line, "|")]
+	toName = line[strings.Index(line, "|")+1:]
+	logger.Println("toUid:", toUid)
+	_, err = g.SetCurrentView(inputView)
+	if err != nil {
+		logger.Println("set current view err:", err)
+		return err
+	}
+
+	g.Update(func(gg *gocui.Gui) error {
+		v, err1 := gg.View(outputView)
+		if err1 != nil {
+			logger.Println("update err:", err1)
+			return err1
+		}
+
+		v.Title = fmt.Sprintf("Current: %s | %s ", toUid, toName)
+		return nil
+	})
+
+	return nil
+}
+
+func initFriends(g *gocui.Gui, v *gocui.View) error {
+	for i, friend := range friends {
+		if i == 0 {
+			toName = friend.FriendName
+			toUid = friend.FriendUid
+		}
+
+		fmt.Fprintln(v, fmt.Sprintf("%v|%v", friend.FriendUid, friend.FriendName))
+	}
+
 	return nil
 }
 
@@ -51,10 +170,10 @@ func resetInput(g *gocui.Gui, v *gocui.View) error {
 	io.Copy(buf, v)
 	// todo need load friend list then send msg
 	m := &messagev1.SendMessageReq{
-		FromUser:    "",
-		ToUser:      "",
-		ContentType: 0,
-		Content:     "",
+		FromUser:    curUser.Uid,
+		ToUser:      toUid,
+		ContentType: 1,
+		Content:     strings.TrimSuffix(buf.String(), "\n"),
 	}
 	b, err := json.Marshal(&m)
 	if err != nil {

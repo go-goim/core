@@ -13,6 +13,7 @@ import (
 	"strings"
 	"time"
 
+	friendpb "github.com/go-goim/api/user/friend/v1"
 	"github.com/gorilla/websocket"
 	"github.com/jroimartin/gocui"
 
@@ -26,10 +27,14 @@ import (
 var (
 	hostIPMode bool
 	serverAddr string
+	curUser    *userv1.User
 	uid        string
-	toUid      string
 	token      string
 	logger     *log.Logger
+	friends    []*friendpb.Friend
+	//
+	toName string
+	toUid  string
 )
 
 const (
@@ -41,7 +46,7 @@ func init() {
 	flag.StringVar(&serverAddr, "s", "127.0.0.1:18071", "gateway server addr")
 	flag.StringVar(&uid, "u", "", "from user id")
 	flag.StringVar(&toUid, "t", "", "to user id")
-	f, err := os.Create("log.log")
+	f, err := os.Create("./log.log")
 	if err != nil {
 		panic(err)
 	}
@@ -99,13 +104,17 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-
 	fmt.Println(addr)
+
 	conn, err := connectWs(addr)
 	if err != nil {
 		panic(err)
 	}
 	defer conn.Close()
+
+	if err = loadFriends(); err != nil {
+		panic(err)
+	}
 
 	g, err := gocui.NewGui(gocui.Output256)
 	if err != nil {
@@ -118,7 +127,24 @@ func main() {
 	if err = g.SetKeybinding("", gocui.KeyCtrlC, gocui.ModNone, quit); err != nil {
 		panic(err)
 	}
-	if err = g.SetKeybinding("", gocui.KeyCtrlK, gocui.ModNone, resetInput); err != nil {
+	if err = g.SetKeybinding("input", gocui.KeyCtrlK, gocui.ModNone, resetInput); err != nil {
+		panic(err)
+	}
+	if err = g.SetKeybinding("input", gocui.KeyTab, gocui.ModNone, nextView); err != nil {
+		panic(err)
+	}
+
+	// bind friends list view
+	if err = g.SetKeybinding("friends", gocui.KeyTab, gocui.ModNone, nextView); err != nil {
+		panic(err)
+	}
+	if err = g.SetKeybinding("friends", gocui.KeyArrowUp, gocui.ModNone, arrowUp); err != nil {
+		panic(err)
+	}
+	if err = g.SetKeybinding("friends", gocui.KeyArrowDown, gocui.ModNone, arrowDown); err != nil {
+		panic(err)
+	}
+	if err = g.SetKeybinding("friends", gocui.KeyEnter, gocui.ModNone, selectFriend); err != nil {
 		panic(err)
 	}
 
@@ -169,7 +195,7 @@ func login() (serverIP string, err error) {
 
 	var data struct {
 		*response.BaseResponse
-		Data userv1.User
+		Data *userv1.User
 	}
 
 	if err := json.Unmarshal(body, &data); err != nil {
@@ -181,7 +207,51 @@ func login() (serverIP string, err error) {
 	}
 
 	token = resp.Header.Get("Authorization")
+	curUser = data.Data
 	return *data.Data.ConnectUrl, nil
+}
+
+func loadFriends() error {
+	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("http://%s/gateway/v1/user/friend/list", serverAddr), nil)
+	if err != nil {
+		logger.Println(err)
+		return err
+	}
+
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", token)
+	rsp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		logger.Println(err)
+		return err
+	}
+	logger.Println(rsp.StatusCode)
+	defer rsp.Body.Close()
+
+	b, err := ioutil.ReadAll(rsp.Body)
+	if err != nil {
+		logger.Println(err)
+		return err
+	}
+
+	var resp struct {
+		response.BaseResponse
+		Data []*friendpb.Friend `json:"data"`
+	}
+
+	err = json.Unmarshal(b, &resp)
+	if err != nil {
+		logger.Println(err)
+		return err
+	}
+
+	if resp.Code != 0 {
+		logger.Println(resp.Message)
+		return fmt.Errorf(resp.Message)
+	}
+
+	friends = resp.Data
+	return nil
 }
 
 func readMsgFromConn(conn *websocket.Conn) (chan []byte, chan error) {
@@ -210,6 +280,9 @@ func readMsgFromConn(conn *websocket.Conn) (chan []byte, chan error) {
 }
 
 func handleConn(conn *websocket.Conn, g *gocui.Gui, dataChan chan []byte) {
+	for !layoutDone {
+		time.Sleep(time.Millisecond * 100)
+	}
 	var (
 		ticker = time.NewTicker(time.Second * 5)
 	)

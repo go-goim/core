@@ -27,7 +27,16 @@ func (r *redisCache) Get(ctx context.Context, key string) ([]byte, error) {
 		ctx = context.Background()
 	}
 
-	return r.client.Get(ctx, key).Bytes()
+	b, err := r.client.Get(ctx, key).Bytes()
+	if err != nil {
+		if err == redisv8.Nil {
+			return nil, ErrCacheMiss
+		}
+
+		return nil, err
+	}
+
+	return b, nil
 }
 
 func (r *redisCache) Set(ctx context.Context, key string, value []byte, expire time.Duration) error {
@@ -43,7 +52,15 @@ func (r *redisCache) Delete(ctx context.Context, key string) error {
 		ctx = context.Background()
 	}
 
-	return r.client.Del(ctx, key).Err()
+	err := r.client.Del(ctx, key).Err()
+	if err != nil {
+		if err == redisv8.Nil {
+			return nil
+		}
+		return err
+	}
+
+	return nil
 }
 
 func (r *redisCache) Close(_ context.Context) error {

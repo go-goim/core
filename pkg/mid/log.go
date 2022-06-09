@@ -18,6 +18,22 @@ func Logger(c *gin.Context) {
 	clientIP := c.ClientIP()
 	method := c.Request.Method
 	statusCode := c.Writer.Status()
-	log.Info(path, "tp", "HttpRequest", "status", statusCode, "method", method, "raw", raw,
-		"latency", latency.Microseconds(), "clientIP", clientIP)
+	kvs := []interface{}{
+		"tp", "HttpRequest",
+		"status", statusCode,
+		"method", method,
+		"raw", raw,
+		"latency", latency.Microseconds(),
+		"clientIP", clientIP,
+	}
+
+	if len(c.Errors) > 0 {
+		kvs = append(kvs, "error", c.Errors.ByType(gin.ErrorTypePrivate).String())
+	}
+
+	if c.GetString("uid") != "" {
+		kvs = append(kvs, "uid", c.GetString("uid"))
+	}
+
+	log.Info(path, kvs...)
 }
