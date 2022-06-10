@@ -52,9 +52,9 @@ func (p *namedPool) add(c *WebsocketConn) {
 	}
 
 	i = &idleConn{
-		c:        c,
-		stopChan: make(chan struct{}),
-		p:        p,
+		WebsocketConn: c,
+		stopChan:      make(chan struct{}),
+		p:             p,
 	}
 
 	go i.daemon()
@@ -68,14 +68,14 @@ func (p *namedPool) get(key string) *WebsocketConn {
 
 	if ok {
 		select {
-		case <-i.c.ctx.Done():
+		case <-i.ctx.Done():
 			i.stop()
 		default:
-			if i.c.Err() != nil {
+			if i.Err() != nil {
 				i.stop()
 				return nil
 			}
-			return i.c
+			return i.WebsocketConn
 		}
 	}
 
@@ -88,7 +88,7 @@ func (p *namedPool) loadAllConns() chan *WebsocketConn {
 
 	ch := make(chan *WebsocketConn, len(p.m))
 	for _, i := range p.m {
-		ch <- i.c
+		ch <- i.WebsocketConn
 	}
 
 	close(ch)

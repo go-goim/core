@@ -23,7 +23,7 @@ type WebsocketConn struct {
 }
 
 var (
-	ErrWriteChanFull = errors.New("write chan full")
+	ErrWriteChanFull = errors.New("writeToClient chan full")
 )
 
 func WrapWs(ctx context.Context, c *websocket.Conn, uid string) *WebsocketConn {
@@ -143,7 +143,7 @@ func (w *WebsocketConn) Write(data []byte) error {
 	}
 }
 
-func (w *WebsocketConn) write(data []byte) {
+func (w *WebsocketConn) writeToClient(data []byte) {
 	_ = w.conn.SetWriteDeadline(time.Now().Add(time.Second))
 	err := w.conn.WriteMessage(websocket.TextMessage, data)
 	if err != nil {
