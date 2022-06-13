@@ -220,7 +220,9 @@ func (u *user) queryFriendRequests() (ids []int64, err error) {
 	}
 
 	for _, v := range result.List {
-		ids = append(ids, v.Id)
+		if v.Status == friendpb.FriendRequestStatus_REQUESTED {
+			ids = append(ids, v.Id)
+		}
 	}
 
 	log.Printf("query friend request user=%s, len(ids)=%v", u.email, len(ids))

@@ -41,7 +41,7 @@ func main() {
 	}
 
 	log.Println("user length:", len(users))
-	wg := waitgroup.NewWaitGroup(20)
+	wg := waitgroup.NewWaitGroup(25)
 	for _, u := range users {
 		u := u
 		f := func() {
