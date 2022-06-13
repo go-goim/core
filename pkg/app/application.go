@@ -22,6 +22,7 @@ import (
 	"github.com/go-goim/core/pkg/db/mysql"
 	"github.com/go-goim/core/pkg/db/redis"
 	"github.com/go-goim/core/pkg/errors"
+	"github.com/go-goim/core/pkg/initialize"
 	"github.com/go-goim/core/pkg/log"
 	"github.com/go-goim/core/pkg/mq"
 	"github.com/go-goim/core/pkg/registry"
@@ -87,6 +88,10 @@ func AssertApplication() {
 }
 
 func InitApplication(opts ...Option) (*Application, error) {
+	if err := initialize.BeforeInit(); err != nil {
+		return nil, err
+	}
+
 	// only can call this func once, if call twice will be panic
 	if !initFlag.CAS(false, true) {
 		panic("Application already initialized, don't call init function twice")
@@ -327,6 +332,10 @@ func (a *Application) initMetadata() {
 }
 
 func (a *Application) Run() error {
+	if err := initialize.BeforeRun(); err != nil {
+		return err
+	}
+
 	if a.Producer != nil {
 		if err := a.Producer.Start(); err != nil {
 			return err
