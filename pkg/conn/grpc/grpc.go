@@ -81,10 +81,6 @@ func (c *clientConnFactory) Factory() (*ClientConn, error) {
 	return cc, nil
 }
 
-func (c *clientConnFactory) Close(cc *ClientConn) error {
-	return cc.Close()
-}
-
 func (c *clientConnFactory) Ping(cc *ClientConn) error {
 	if cc.GetState() != connectivity.Ready {
 		return ErrConnNotReady

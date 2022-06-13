@@ -80,14 +80,10 @@ func (c *ConnPool) Get() (*ClientConn, error) {
 	return cc, nil
 }
 
-func (c *ConnPool) Close(conn *ClientConn) error {
-	return c.factory.Close(conn)
-}
-
 func (c *ConnPool) Release() error {
 	var es errors.ErrorSet
 	for _, conn := range c.conns {
-		if err := c.factory.Close(conn); err != nil {
+		if err := conn.Close(); err != nil {
 			es = append(es, err)
 		}
 	}
