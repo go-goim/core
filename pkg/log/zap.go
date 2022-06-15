@@ -88,17 +88,18 @@ func (z *zapLogger) Log(level configv1.Level, msg string, kvs ...interface{}) {
 
 	msg = strings.ReplaceAll(msg, "\n", " ")
 	msg = strings.ReplaceAll(msg, "\r", " ")
+	fields := kv2ZapFields(kvs...)
 	switch level {
 	case configv1.Level_DEBUG:
-		z.logger.Debug(msg, kv2ZapFields(kvs...)...)
+		z.logger.Debug(msg, fields...)
 	case configv1.Level_INFO:
-		z.logger.Info(msg, kv2ZapFields(kvs...)...)
+		z.logger.Info(msg, fields...)
 	case configv1.Level_WARNING:
-		z.logger.Warn(msg, kv2ZapFields(kvs...)...)
+		z.logger.Warn(msg, fields...)
 	case configv1.Level_ERROR:
-		z.logger.Error(msg, kv2ZapFields(kvs...)...)
+		z.logger.Error(msg, fields...)
 	case configv1.Level_FATAL:
-		z.logger.Fatal(msg, kv2ZapFields(kvs...)...)
+		z.logger.Fatal(msg, fields...)
 	}
 }
 
@@ -120,7 +121,14 @@ func kv2ZapFields(kvs ...interface{}) []zap.Field {
 			valueStr = fmt.Sprintf("%v", v)
 		}
 
-		fields = append(fields, zap.String(key, valueStr))
+		fields = append(fields, zap.String(unescape(key), unescape(valueStr)))
 	}
 	return fields
+}
+
+func unescape(s string) string {
+	s = strings.ReplaceAll(s, "\n", "")
+	s = strings.ReplaceAll(s, "\r", "")
+
+	return s
 }
