@@ -13,4 +13,4 @@ updates:
       - "yusank"
     labels:
       - "bot"
-      - "gomod"
+      - "dependencies"
