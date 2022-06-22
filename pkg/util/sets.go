@@ -14,12 +14,16 @@ func (s *Set[T]) Add(elem ...T) *Set[T] {
 	for _, e := range elem {
 		s.m[e] = true
 	}
+
+	return s
 }
 
 func (s *Set[T]) Remove(elem ...T) *Set[T] {
 	for _, e := range elem {
 		delete(s.m, e)
 	}
+
+	return s
 }
 
 func (s *Set[T]) Contains(elem T) bool {
