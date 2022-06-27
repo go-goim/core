@@ -29,7 +29,7 @@ require (
 )
 
 require (
-	github.com/go-goim/api v0.0.3
+	github.com/go-goim/api v0.0.4
 	github.com/go-kratos/kratos/contrib/config/etcd/v2 v2.0.0-20220528114537-97c103a39562
 )
 
