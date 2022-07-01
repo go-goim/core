@@ -11,6 +11,8 @@ updates:
       interval: "daily"
     reviewers:
       - "yusank"
+    assignees:
+      - "yusank"
     labels:
       - "bot"
       - "dependencies"
