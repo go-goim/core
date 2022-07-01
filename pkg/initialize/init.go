@@ -30,45 +30,15 @@ func Register(initializer Initializer) {
 }
 
 func BeforeInit(ctx context.Context) error {
-	log.Info("start run BeforeInit")
-	var cancel context.CancelFunc
-	if ctx == nil {
-		ctx = context.Background()
-		ctx, cancel = context.WithTimeout(ctx, defaultTimeout)
-		defer cancel()
-	}
-
-	var (
-		done = make(chan struct{})
-		errs = make(errors.ErrorSet, 0)
-		wg   sync.WaitGroup
-	)
-
-	for _, i := range initializers {
-		wg.Add(1)
-		go func(f InitializerFunc) {
-			defer wg.Done()
-			if err := f(ctx); err != nil {
-				errs = append(errs, err)
-			}
-		}(i.BeforeInit)
-	}
-
-	go func() {
-		wg.Wait()
-		done <- struct{}{}
-	}()
-
-	select {
-	case <-ctx.Done(): // timeout
-		return ctx.Err()
-	case <-done: // shutdown complete
-		return errs.Err()
-	}
+	return run(ctx, "BeforeInit")
 }
 
 func BeforeRun(ctx context.Context) error {
-	log.Info("start run BeforeRun")
+	return run(ctx, "BeforeRun")
+}
+
+func run(ctx context.Context, tp string) error {
+	log.Info(fmt.Sprintf("start run %s", tp))
 	var cancel context.CancelFunc
 	if ctx == nil {
 		ctx = context.Background()
@@ -82,14 +52,22 @@ func BeforeRun(ctx context.Context) error {
 		wg   sync.WaitGroup
 	)
 
-	for _, i := range initializers {
+	for _, in := range initializers {
 		wg.Add(1)
-		go func(f InitializerFunc) {
+
+		go func(i Initializer) {
 			defer wg.Done()
-			if err := f(ctx); err != nil {
+			if tp == "BeforeInit" {
+				if err := i.BeforeInit(ctx); err != nil {
+					errs = append(errs, err)
+				}
+				return
+			}
+
+			if err := i.BeforeRun(ctx); err != nil {
 				errs = append(errs, err)
 			}
-		}(i.BeforeRun)
+		}(in)
 	}
 
 	go func() {
