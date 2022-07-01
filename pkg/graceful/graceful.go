@@ -62,7 +62,6 @@ func Shutdown(ctx context.Context) error {
 	case <-done: // shutdown complete
 		return errs.Err()
 	}
-
 }
 
 // Register registers a function to be called when the server is shutdown.

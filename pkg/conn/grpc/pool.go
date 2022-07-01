@@ -1,6 +1,7 @@
 package grpc
 
 import (
+	"fmt"
 	"sync/atomic"
 
 	kratosGrpc "github.com/go-kratos/kratos/v2/transport/grpc"
@@ -54,6 +55,7 @@ func newPoolOptions(opts ...PoolOption) *poolOptions {
 
 type PoolOption func(opts *poolOptions)
 
+// TODO: conn pool should not be blocked and should try to reconnect
 func NewConnPool(opts ...PoolOption) (*ConnPool, error) {
 	p := &ConnPool{
 		opts: newPoolOptions(opts...),
@@ -74,6 +76,10 @@ func NewConnPool(opts ...PoolOption) (*ConnPool, error) {
 }
 
 func (c *ConnPool) Get() (*ClientConn, error) {
+	if len(c.conns) == 0 {
+		return nil, fmt.Errorf("conn pool is empty")
+	}
+
 	cc := c.conns[atomic.AddInt32(&c.lastIndex, 1)%int32(c.opts.size)]
 	atomic.AddInt32(&c.lastIndex, 1)
 

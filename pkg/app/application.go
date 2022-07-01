@@ -88,7 +88,7 @@ func AssertApplication() {
 }
 
 func InitApplication(opts ...Option) (*Application, error) {
-	if err := initialize.BeforeInit(); err != nil {
+	if err := initialize.BeforeInit(context.Background()); err != nil {
 		return nil, err
 	}
 
@@ -186,6 +186,7 @@ func (a *Application) initHTTPServer() error {
 	}
 
 	portStr := strconv.Itoa(int(a.Config.SrvConfig.Http.GetPort()))
+	log.Debug("http server", "host", a.host, "port", portStr, "timeout", timeout)
 	httpSrv := http.NewServer(
 		http.Address(net.JoinHostPort(a.host, portStr)),
 		http.Middleware(
@@ -209,6 +210,7 @@ func (a *Application) initGrpcServer() error {
 	}
 
 	portStr := strconv.Itoa(int(a.Config.SrvConfig.Grpc.GetPort()))
+	log.Debug("grpc server", "host", a.host, "port", portStr, "timeout", timeout)
 	grpcSrv := grpc.NewServer(
 		grpc.Address(net.JoinHostPort(a.host, portStr)),
 		grpc.Middleware(
@@ -332,7 +334,7 @@ func (a *Application) initMetadata() {
 }
 
 func (a *Application) Run() error {
-	if err := initialize.BeforeRun(); err != nil {
+	if err := initialize.BeforeRun(context.Background()); err != nil {
 		return err
 	}
 
