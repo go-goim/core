@@ -77,7 +77,7 @@ func SetJwtToHeader(c *gin.Context, userID string) error {
 	return nil
 }
 
-func AuthJwtCookie(c *gin.Context) {
+func AuthJwt(c *gin.Context) {
 	token := c.Request.Header.Get("Authorization")
 	if token == "" {
 		c.AbortWithStatus(401)
