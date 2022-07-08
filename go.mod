@@ -31,6 +31,7 @@ require (
 require (
 	github.com/go-goim/api v0.0.5
 	github.com/go-kratos/kratos/contrib/config/etcd/v2 v2.0.0-20220528114537-97c103a39562
+	github.com/panjf2000/ants/v2 v2.5.0
 )
 
 require (

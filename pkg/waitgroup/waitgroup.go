@@ -2,6 +2,8 @@ package waitgroup
 
 import (
 	"sync"
+
+	"github.com/go-goim/core/pkg/goroutine"
 )
 
 type WaitGroup struct {
@@ -18,12 +20,12 @@ func NewWaitGroup(size int) *WaitGroup {
 
 func (wg *WaitGroup) Add(f func()) {
 	wg.wg.Add(1)
-	go func() {
+	_ = goroutine.Submit(func() {
 		defer wg.Done()
 
 		wg.ch <- struct{}{}
 		f()
-	}()
+	})
 }
 
 func (wg *WaitGroup) Wait() {

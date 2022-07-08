@@ -1,5 +1,9 @@
 package worker
 
+import (
+	"github.com/go-goim/core/pkg/goroutine"
+)
+
 // worker run tasks
 type worker struct {
 	ws    *workerSet
@@ -28,10 +32,10 @@ func (w *worker) setDone() {
 
 func (w *worker) run() {
 	var ec = make(chan error, 1)
-	go func() {
+	_ = goroutine.Submit(func() {
 		ec <- w.ws.task.tf()
 		close(ec)
-	}()
+	})
 
 	select {
 	case e := <-ec:
