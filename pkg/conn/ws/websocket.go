@@ -134,7 +134,7 @@ func (w *WebsocketConn) Write(data []byte) error {
 	default:
 	}
 
-	timer := time.NewTimer(time.Millisecond * 500)
+	timer := time.NewTimer(time.Millisecond * 10)
 	select {
 	case w.writeChan <- data:
 		return nil
