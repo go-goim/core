@@ -59,15 +59,17 @@ func TestIdDuplicate(t *testing.T) {
 		t.Fatal(err)
 	}
 	var (
-		m  sync.Map
-		wg sync.WaitGroup
+		m    sync.Map
+		wg   sync.WaitGroup
+		fail bool
 	)
 	f := func(node *Node) {
 		defer wg.Done()
 		for i := 0; i < 500_000; i++ {
 			id := node.Generate()
 			if _, ok := m.Load(id); ok {
-				t.Fatal("id should be unique")
+				fail = true
+				break
 			}
 			m.Store(id, id)
 		}
@@ -77,6 +79,9 @@ func TestIdDuplicate(t *testing.T) {
 	go f(n)
 	go f(n2)
 	wg.Wait()
+	if fail {
+		t.Fatal("duplicate id found")
+	}
 
 	t.Log("ok")
 }

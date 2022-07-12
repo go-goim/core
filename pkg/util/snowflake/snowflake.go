@@ -332,19 +332,16 @@ func ParseIntBytes(id [8]byte) ID {
 }
 
 // Time returns an int64 unix timestamp in milliseconds of the snowflake ID time
-// DEPRECATED: the below function will be removed in a future release.
 func (f ID) Time() int64 {
 	return (int64(f) >> timeShift) + Epoch
 }
 
 // Node returns an int64 of the snowflake ID node number
-// DEPRECATED: the below function will be removed in a future release.
 func (f ID) Node() int64 {
 	return int64(f) & nodeMask >> nodeShift
 }
 
 // Step returns an int64 of the snowflake step (or sequence) number
-// DEPRECATED: the below function will be removed in a future release.
 func (f ID) Step() int64 {
 	return int64(f) & stepMask
 }
