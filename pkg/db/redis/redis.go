@@ -5,7 +5,39 @@ import (
 	"time"
 
 	"github.com/go-redis/redis/v8"
+
+	"github.com/go-goim/core/pkg/graceful"
 )
+
+var (
+	defaultRedisClient *redis.Client
+)
+
+func GetRedis() *redis.Client {
+	return defaultRedisClient
+}
+
+func InitRedis(opts ...Option) error {
+	var err error
+	defaultRedisClient, err = NewRedis(opts...)
+	if err != nil {
+		return err
+	}
+
+	graceful.Register(func(ctx context.Context) error {
+		return Close()
+	})
+
+	return nil
+}
+
+func Close() error {
+	if defaultRedisClient != nil {
+		return defaultRedisClient.Close()
+	}
+
+	return nil
+}
 
 func NewRedis(opts ...Option) (*redis.Client, error) {
 	o := &options{}

@@ -24,12 +24,12 @@ func GetDB() *gorm.DB {
 }
 
 func InitDB(opts ...Option) error {
-	gdb, err := NewMySQL(opts...)
+	var err error
+	defaultDB, err = NewMySQL(opts...)
 	if err != nil {
 		return err
 	}
 
-	SetDefaultDB(gdb)
 	graceful.Register(func(ctx context.Context) error {
 		err := Close()
 		if err != nil {
@@ -87,12 +87,6 @@ func NewMySQL(opts ...Option) (*gorm.DB, error) {
 	sqlDB.SetConnMaxLifetime(o.connMaxLifetime)
 
 	return gdb, nil
-}
-
-// SetDefaultDB set default db, If you want to use default db, you can just use GetDB()
-// If called InitDB, you don't need to call this function.
-func SetDefaultDB(db *gorm.DB) {
-	defaultDB = db
 }
 
 // Close db.

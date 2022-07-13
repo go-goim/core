@@ -19,6 +19,7 @@ import (
 
 	"github.com/go-goim/core/pkg/cmd"
 	"github.com/go-goim/core/pkg/config"
+	"github.com/go-goim/core/pkg/db/hbase"
 	"github.com/go-goim/core/pkg/db/mysql"
 	"github.com/go-goim/core/pkg/db/redis"
 	"github.com/go-goim/core/pkg/errors"
@@ -248,10 +249,17 @@ func (a *Application) initMq() error {
 
 func (a *Application) initDB() error {
 	if err := a.initRedis(); err != nil {
+		log.Debug("init redis error", "err", err)
 		return err
 	}
 
 	if err := a.initMysql(); err != nil {
+		log.Debug("init mysql error", "err", err)
+		return err
+	}
+
+	if err := a.initHBase(); err != nil {
+		log.Debug("init hbase failed", "err", err)
 		return err
 	}
 
@@ -279,6 +287,19 @@ func (a *Application) initMysql() error {
 	}
 
 	err := mysql.InitDB(mysql.WithConfig(a.Config.SrvConfig.GetMysql()), mysql.Debug(a.Config.Debug()))
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (a *Application) initHBase() error {
+	if a.Config.SrvConfig.GetHBase() == nil {
+		return nil
+	}
+
+	err := hbase.InitClient(hbase.WithConfig(a.Config.SrvConfig.GetHBase()))
 	if err != nil {
 		return err
 	}

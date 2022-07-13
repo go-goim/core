@@ -8,7 +8,7 @@ import (
 	"github.com/go-goim/core/pkg/db/mysql"
 )
 
-type transactionCtxKey struct{}
+type mysqlTransactionCtxKey struct{}
 
 // GetDBFromCtx try to get gorm.DB from context, if not found then return DB with context.Background
 func GetDBFromCtx(ctx context.Context) *gorm.DB {
@@ -16,7 +16,7 @@ func GetDBFromCtx(ctx context.Context) *gorm.DB {
 		return mysql.GetDB().WithContext(context.Background())
 	}
 
-	v := ctx.Value(transactionCtxKey{})
+	v := ctx.Value(mysqlTransactionCtxKey{})
 	if v == nil {
 		return mysql.GetDB().WithContext(ctx)
 	}
@@ -37,7 +37,7 @@ func ctxWithGormDB(ctx context.Context, tx *gorm.DB) context.Context {
 		ctx = context.Background()
 	}
 
-	return context.WithValue(ctx, transactionCtxKey{}, tx.WithContext(ctx))
+	return context.WithValue(ctx, mysqlTransactionCtxKey{}, tx.WithContext(ctx))
 }
 
 // Transaction get gorm.DB from ctx and run Transaction Operation with ctx
@@ -78,7 +78,7 @@ func IsInTransaction(ctx context.Context) bool {
 		return false
 	}
 
-	if ctx.Value(transactionCtxKey{}) == nil {
+	if ctx.Value(mysqlTransactionCtxKey{}) == nil {
 		return false
 	}
 
