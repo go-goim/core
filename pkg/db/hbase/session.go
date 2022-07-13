@@ -84,11 +84,11 @@ func (s *session) isSetRange() bool {
 	return s.startRow != nil && s.stopRow != nil
 }
 
-func (s *session) isSetFamily() bool {
+func (s *session) isSetFamily() bool { // nolint: unused
 	return s.family != nil
 }
 
-func (s *session) isSetQualifier() bool {
+func (s *session) isSetQualifier() bool { // nolint: unused
 	return s.qualifier != nil
 }
 
