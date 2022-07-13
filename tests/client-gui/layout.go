@@ -170,8 +170,8 @@ func resetInput(g *gocui.Gui, v *gocui.View) error {
 	io.Copy(buf, v)
 	// todo need load friend list then send msg
 	m := &messagev1.SendMessageReq{
-		FromUser:    curUser.Uid,
-		ToUser:      toUid,
+		From:        curUser.Uid,
+		To:          toUid,
 		ContentType: 1,
 		Content:     strings.TrimSuffix(buf.String(), "\n"),
 	}
@@ -209,7 +209,7 @@ func resetInput(g *gocui.Gui, v *gocui.View) error {
 			return err1
 		}
 		fmt.Fprintln(v, "------")
-		fmt.Fprintf(v, "Send|From:%v|Tp:%v|Content:%v\n", m.FromUser, m.ContentType, m.Content)
+		fmt.Fprintf(v, "Send|From:%v|Tp:%v|Content:%v\n", m.From, m.ContentType, m.Content)
 		return nil
 	})
 	return nil

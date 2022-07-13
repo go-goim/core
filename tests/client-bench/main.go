@@ -55,8 +55,8 @@ func runClient(uid string) {
 
 func messageToRandomClient(uid string) error {
 	msg := messagev1.SendMessageReq{
-		FromUser:    uid,
-		ToUser:      randomUID(),
+		From:        uid,
+		To:          randomUID(),
 		ContentType: messagev1.MessageContentType_Text,
 		Content:     randomMsg(20),
 	}
