@@ -10,7 +10,7 @@ const (
 	ctxKey = "ctx"
 )
 
-func SetContext(c *gin.Context, ctx context.Context) {
+func SetContext(c *gin.Context, ctx context.Context) { //nolint:golint
 	c.Set(ctxKey, ctx)
 }
 

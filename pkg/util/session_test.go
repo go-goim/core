@@ -7,6 +7,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+//nolint:scopelint
 func TestSession(t *testing.T) {
 	type args struct {
 		tp   int32
@@ -82,6 +83,7 @@ func TestSession(t *testing.T) {
 	}
 }
 
+//nolint:scopelint
 func TestParseSession(t *testing.T) {
 	type args struct {
 		s string
@@ -108,7 +110,7 @@ func TestParseSession(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			gotTp, gotFrom, gotTo, err := ParseSession(tt.args.s)
+			gotTp, gotFrom, gotTo, err := ParseSession(tt.args.s) //nolint:scopelint
 			if !tt.wantErr(t, err, fmt.Sprintf("ParseSession(%v)", tt.args.s)) {
 				return
 			}

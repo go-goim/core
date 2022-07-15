@@ -7,7 +7,7 @@ import (
 )
 
 func TestNewJwtToken(t *testing.T) {
-	var uid = "1"
+	var uid int64 = 1
 	jwt, err := NewJwtToken(uid)
 	assert.Nil(t, err)
 	assert.NotEmpty(t, jwt)

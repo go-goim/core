@@ -3,13 +3,12 @@ package types
 import (
 	"reflect"
 	"testing"
-
-	"github.com/go-goim/core/pkg/util/snowflake"
 )
 
+//nolint:scopelint
 func TestID_Marshal(t *testing.T) {
 	type fields struct {
-		ID snowflake.ID
+		ID int64
 	}
 	tests := []struct {
 		name    string
@@ -20,15 +19,15 @@ func TestID_Marshal(t *testing.T) {
 		{
 			name: "test1",
 			fields: fields{
-				ID: snowflake.ID(70579728276262912),
+				ID: 70579728276262912,
 			},
 			want:    []byte(`"av8FMdRdcb"`),
 			wantErr: false,
 		},
 	}
 	for _, tt := range tests {
+		id := NewID(tt.fields.ID)
 		t.Run(tt.name, func(t *testing.T) {
-			id := NewID(tt.fields.ID.Int64())
 			got, err := id.MarshalJSON()
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Marshal() error = %v, wantErr %v", err, tt.wantErr)
@@ -41,6 +40,7 @@ func TestID_Marshal(t *testing.T) {
 	}
 }
 
+//nolint:scopelint
 func TestID_Unmarshal(t *testing.T) {
 	type fields struct {
 		id *ID

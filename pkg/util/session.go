@@ -22,7 +22,7 @@ func Session(tp int32, from, to int64) string {
 	}
 
 	// int32 convert to uin8
-	tp = tp & 0xFF
+	tp &= 0xFF
 	u8 := uint8(tp)
 
 	switch messagev1.SessionType(tp) {
