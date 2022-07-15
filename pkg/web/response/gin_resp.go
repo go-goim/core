@@ -6,6 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 
 	responsepb "github.com/go-goim/api/transport/response"
+	"github.com/go-goim/core/pkg/web"
 
 	"github.com/go-goim/core/pkg/log"
 )
@@ -45,13 +46,13 @@ func errorResp(err error) *Response {
 
 type SetFunc func(resp *BaseResponse)
 
-func SetPaging(page, size int) SetFunc {
+func SetPaging(paging *web.Paging) SetFunc {
 	return func(resp *BaseResponse) {
-		_ = resp.SetPaging(page, size)
+		_ = resp.SetPaging(paging.Page, paging.PageSize)
 	}
 }
 
-func SetTotal(total int) SetFunc {
+func SetTotal(total int32) SetFunc {
 	return func(resp *BaseResponse) {
 		_ = resp.SetTotal(total)
 	}

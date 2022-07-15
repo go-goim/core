@@ -11,7 +11,7 @@ type BaseResponse struct {
 	Meta    *Meta  `json:"meta,omitempty"`
 }
 
-func (r *BaseResponse) SetTotal(t int) *BaseResponse {
+func (r *BaseResponse) SetTotal(t int32) *BaseResponse {
 	if r.Meta == nil {
 		r.Meta = &Meta{}
 	}
@@ -20,7 +20,7 @@ func (r *BaseResponse) SetTotal(t int) *BaseResponse {
 	return r
 }
 
-func (r *BaseResponse) SetPaging(page, size int) *BaseResponse {
+func (r *BaseResponse) SetPaging(page, size int32) *BaseResponse {
 	if r.Meta == nil {
 		r.Meta = &Meta{}
 	}
@@ -36,8 +36,8 @@ func (r *BaseResponse) SetMsg(msg string) *BaseResponse {
 }
 
 type Response struct {
-	*BaseResponse
-	Data interface{} `json:"data,omitempty"`
+	*BaseResponse `json:",inline"`
+	Data          interface{} `json:"data,omitempty"`
 }
 
 func NewResponseFromPb(base *responsepb.BaseResponse) *Response {

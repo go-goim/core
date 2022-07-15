@@ -2,6 +2,7 @@
 package snowflake
 
 import (
+	"database/sql/driver"
 	"encoding/base64"
 	"encoding/binary"
 	"errors"
@@ -120,7 +121,6 @@ func NewNode(node int64) (*Node, error) {
 // - Make sure your system is keeping accurate system time
 // - Make sure you never have multiple nodes running with the same node ID
 func (n *Node) Generate() ID {
-
 	n.mu.Lock()
 
 	now := time.Since(n.epoch).Milliseconds()
@@ -208,7 +208,6 @@ func ParseBase16(id string) (ID, error) {
 // NOTE: There are many different base32 implementations so becareful when
 // doing any interoperation.
 func (f ID) Base32() string {
-
 	if f < 32 {
 		return string(encodeBase32Map[f])
 	}
@@ -257,7 +256,6 @@ func ParseBase36(id string) (ID, error) {
 
 // Base58 returns a base58 string of the snowflake ID
 func (f ID) Base58() string {
-
 	if f < 58 {
 		return string(encodeBase58Map[f])
 	}
@@ -278,7 +276,6 @@ func (f ID) Base58() string {
 
 // ParseBase58 parses a base58 []byte into a snowflake ID
 func ParseBase58(b []byte) (ID, error) {
-
 	var id int64
 
 	for i := range b {
@@ -368,4 +365,33 @@ func (f *ID) UnmarshalJSON(b []byte) error {
 
 	*f = ID(i)
 	return nil
+}
+
+func (f ID) Value() (driver.Value, error) {
+	return f.Int64(), nil
+}
+
+func (f *ID) Scan(value interface{}) error {
+	switch v := value.(type) {
+	case int64:
+		*f = ID(v)
+	case string:
+		i, err := ParseString(v)
+		if err != nil {
+			return err
+		}
+		*f = i
+	case []byte:
+		i, err := ParseBytes(v)
+		if err != nil {
+			return err
+		}
+		*f = i
+	}
+
+	return fmt.Errorf("unsupported type: %T", value)
+}
+
+func (f ID) GormDataType() string {
+	return "int"
 }
