@@ -23,7 +23,7 @@ func SetJwtHmacSecret(secret string) {
 }
 
 type JwtClaims struct {
-	UserID int64 `json:"uid"`
+	UserID types.ID `json:"uid"`
 	jwt.RegisteredClaims
 }
 
@@ -39,7 +39,7 @@ func (c *JwtClaims) Valid() error {
 	return nil
 }
 
-func newJwtClaims(userID int64) *JwtClaims {
+func newJwtClaims(userID types.ID) *JwtClaims {
 	return &JwtClaims{
 		UserID: userID,
 		RegisteredClaims: jwt.RegisteredClaims{
@@ -49,7 +49,7 @@ func newJwtClaims(userID int64) *JwtClaims {
 	}
 }
 
-func NewJwtToken(userID int64) (string, error) {
+func NewJwtToken(userID types.ID) (string, error) {
 	claims := newJwtClaims(userID)
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	return token.SignedString(jwtHmacSecret)
@@ -68,7 +68,7 @@ func ParseJwtToken(tokenString string) (*JwtClaims, error) {
 	return nil, err
 }
 
-func SetJwtToHeader(c *gin.Context, userID int64) error {
+func SetJwtToHeader(c *gin.Context, userID types.ID) error {
 	token, err := NewJwtToken(userID)
 	if err != nil {
 		return err
@@ -98,14 +98,13 @@ func AuthJwt(c *gin.Context) {
 		return
 	}
 
-	id := types.NewID(claims.UserID)
 	if err != nil {
 		log.Error("convert user id to int64 failed", "err", err, "user id", claims.UserID)
 		_ = c.AbortWithError(401, fmt.Errorf("unknown uid format")) // nolint: errcheck
 		return
 	}
 
-	c.Set(uidKey, id)
+	c.Set(uidKey, claims.UserID)
 	c.Next()
 }
 
@@ -113,9 +112,9 @@ const (
 	uidKey = "uid"
 )
 
-func GetUID(c *gin.Context) *types.ID {
+func GetUID(c *gin.Context) types.ID {
 	if uid, ok := c.Get(uidKey); ok {
-		return uid.(*types.ID)
+		return uid.(types.ID)
 	}
-	return nil
+	return 0
 }

@@ -5,14 +5,17 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+
+	messagev1 "github.com/go-goim/api/message/v1"
+	"github.com/go-goim/core/pkg/types"
 )
 
 //nolint:scopelint
 func TestSession(t *testing.T) {
 	type args struct {
-		tp   int32
-		from int64
-		to   int64
+		tp   messagev1.SessionType
+		from types.ID
+		to   types.ID
 	}
 	tests := []struct {
 		name string
@@ -23,37 +26,46 @@ func TestSession(t *testing.T) {
 			name: "single chat",
 			args: args{
 				tp:   0,
-				from: 1,
-				to:   2,
+				from: 71990933687635970,
+				to:   71990933687635971,
 			},
-			want: "0000000000000000000000100000000000000000002",
+			want: "000aG9PKEB8ch0aG9PKEB8ci",
 		},
 		{
 			name: "group chat",
 			args: args{
 				tp:   1,
-				from: 1,
-				to:   2,
+				from: 71990933687635972,
+				to:   71990933687635973,
 			},
-			want: "0010000000000000000000200000000000000000000",
+			want: "010aG9PKEB8cj00000000000",
 		},
 		{
 			name: "broadcast",
 			args: args{
 				tp:   2,
-				from: 1,
-				to:   2,
+				from: 71990933687635970,
+				to:   71990933687635970,
 			},
-			want: "0020000000000000000000000000000000000000000",
+			want: "020000000000000000000000",
 		},
 		{
 			name: "channel",
 			args: args{
 				tp:   3,
-				from: 1,
-				to:   2,
+				from: 71990933687635974,
+				to:   71990933687635975,
 			},
-			want: "0030000000000000000000100000000000000000002",
+			want: "030aG9PKEB8cm0aG9PKEB8cn",
+		},
+		{
+			name: "feature types",
+			args: args{
+				tp:   127,
+				from: 71990933687635976,
+				to:   71990933687635977,
+			},
+			want: "7f0aG9PKEB8co0aG9PKEB8cp",
 		},
 		{
 			name: "invalid type -1",
@@ -92,19 +104,19 @@ func TestParseSession(t *testing.T) {
 		name     string
 		args     args
 		wantTp   int32
-		wantFrom int64
-		wantTo   int64
+		wantFrom types.ID
+		wantTo   types.ID
 		wantErr  assert.ErrorAssertionFunc
 	}{
 		// TODO: Add test cases.
 		{
 			name: "single chat",
 			args: args{
-				s: "0000000000000000000000100000000000000000002",
+				s: "000aG9PKEB8ch0aG9PKEB8ci",
 			},
 			wantTp:   0,
-			wantFrom: 1,
-			wantTo:   2,
+			wantFrom: types.ID(71990933687635970),
+			wantTo:   types.ID(71990933687635971),
 			wantErr:  assert.NoError,
 		},
 	}

@@ -3,8 +3,9 @@ package ws
 import (
 	"context"
 	"errors"
-	"github.com/go-goim/core/pkg/types"
 	"time"
+
+	"github.com/go-goim/core/pkg/types"
 
 	"github.com/gorilla/websocket"
 
@@ -17,7 +18,7 @@ type WebsocketConn struct {
 	ctx    context.Context
 	cancel context.CancelFunc
 
-	uid          *types.ID
+	uid          types.ID
 	writeChan    chan []byte
 	onWriteError func()
 	err          error
@@ -27,7 +28,7 @@ var (
 	ErrWriteChanFull = errors.New("writeToClient chan full")
 )
 
-func WrapWs(ctx context.Context, c *websocket.Conn, uid *types.ID) *WebsocketConn {
+func WrapWs(ctx context.Context, c *websocket.Conn, uid types.ID) *WebsocketConn {
 	if ctx == nil {
 		ctx = context.Background()
 	}
