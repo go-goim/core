@@ -85,7 +85,6 @@ func ParseSession(s string) (tp int32, from, to types.ID, err error) {
 	// in some case, the first char is 0, so we need to trim it
 	fromStr := strings.TrimLeft(s[2:2+11], "0")
 	toStr := strings.TrimLeft(s[2+11:2+2*11], "0")
-	fmt.Println(fromStr, toStr)
 	from, err = types.ParseBase58([]byte(fromStr))
 	if err != nil {
 		return 0, 0, 0, err

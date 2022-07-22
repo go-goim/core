@@ -1,7 +1,6 @@
 package types
 
 import (
-	"database/sql/driver"
 	"encoding/base64"
 	"encoding/binary"
 	"errors"
@@ -272,33 +271,4 @@ func (f *ID) UnmarshalJSON(b []byte) error {
 
 	*f = id
 	return nil
-}
-
-func (f ID) Value() (driver.Value, error) {
-	return int64(f), nil
-}
-
-func (f *ID) Scan(value interface{}) error {
-	switch v := value.(type) {
-	case int64:
-		*f = ID(v)
-	case string:
-		i, err := ParseString(v)
-		if err != nil {
-			return err
-		}
-		*f = i
-	case []byte:
-		i, err := ParseBytes(v)
-		if err != nil {
-			return err
-		}
-		*f = i
-	}
-
-	return fmt.Errorf("unsupported type: %T", value)
-}
-
-func (f ID) GormDataType() string {
-	return "int"
 }

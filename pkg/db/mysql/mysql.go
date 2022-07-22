@@ -50,8 +50,9 @@ func NewMySQL(opts ...Option) (*gorm.DB, error) {
 	}
 
 	loggerConfig := logger.Config{
-		SlowThreshold: 1 * time.Second,
-		LogLevel:      logger.Warn,
+		SlowThreshold:             1 * time.Second,
+		LogLevel:                  logger.Error,
+		IgnoreRecordNotFoundError: true,
 	}
 
 	if o.debug {

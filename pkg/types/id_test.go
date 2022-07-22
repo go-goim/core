@@ -6,7 +6,7 @@ import (
 	"github.com/go-goim/core/pkg/types/snowflake"
 )
 
-func TestID_Fromats(t *testing.T) {
+func TestID_Formats(t *testing.T) {
 	n, err := snowflake.NewNode(1)
 	if err != nil {
 		t.Fatal(err)
@@ -35,5 +35,38 @@ func TestID_Fromats(t *testing.T) {
 	}
 	for i := 0; i < 10; i++ {
 		t.Log(n.Generate())
+	}
+}
+
+func TestID_UnmarshalJSON(t *testing.T) {
+	type args struct {
+		b []byte
+	}
+	tests := []struct {
+		name    string
+		f       ID
+		args    args
+		wantID  ID
+		wantErr bool
+	}{
+		{
+			name: "base58",
+			f:    ID(0),
+			args: args{
+				b: []byte(`"aGgX1UU9Cq"`),
+			},
+			wantErr: false,
+			wantID:  ID(72006666064760832),
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if err := tt.f.UnmarshalJSON(tt.args.b); (err != nil) != tt.wantErr {
+				t.Errorf("UnmarshalJSON() error = %v, wantErr %v", err, tt.wantErr)
+			}
+			if tt.f != tt.wantID {
+				t.Errorf("UnmarshalJSON() = %v, want %v", tt.f, tt.wantID)
+			}
+		})
 	}
 }
