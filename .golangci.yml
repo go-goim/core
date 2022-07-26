@@ -6,6 +6,7 @@ run:
         - tests
     skip-dirs-use-default: true
     timeout: 5m
+    go: '1.18'
 linters:
   disable:
     - gochecknoglobals
@@ -51,12 +52,10 @@ linters:
     - gosec
     - govet
     - ineffassign
-    - interfacer
     - lll
     - misspell
     - prealloc
     - rowserrcheck
-    - scopelint
     - sqlclosecheck
     - staticcheck
     - structcheck
