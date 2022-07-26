@@ -16,26 +16,46 @@ import (
 	"github.com/gorilla/websocket"
 	"github.com/jroimartin/gocui"
 
-	friendpb "github.com/go-goim/api/user/friend/v1"
-
-	userv1 "github.com/go-goim/api/user/v1"
-
 	messagev1 "github.com/go-goim/api/message/v1"
 
-	"github.com/go-goim/core/pkg/response"
+	"github.com/go-goim/core/pkg/types"
+	"github.com/go-goim/core/pkg/web/response"
 )
+
+type Friend struct {
+	UID          types.ID `json:"uid" swaggertype:"string" example:"av8FMdRdcb"`
+	FriendUID    types.ID `json:"friendUid" swaggertype:"string" example:"av8FMdRdcb"`
+	FriendName   string   `json:"friendName" example:"friendName"`
+	FriendAvatar string   `json:"friendAvatar" example:"https://www.example.com/friendAvatar.png"`
+	// 0: friend, 1: stranger, 2: blacklist
+	Status    int32 `json:"status" example:"0"`
+	CreatedAt int64 `json:"createdAt" example:"1579098983"`
+	UpdatedAt int64 `json:"updatedAt" example:"1579098983"`
+}
+
+type User struct {
+	UID         types.ID `json:"uid" swaggertype:"string" example:"av8FMdRdcb"`
+	Name        string   `json:"name" example:"user1"`
+	Avatar      string   `json:"avatar" example:"https://www.example.com/avatar.png"`
+	Email       *string  `json:"email,omitempty" example:"abc@example.com"`
+	Phone       *string  `json:"phone,omitempty" example:"13800138000"`
+	ConnectURL  *string  `json:"connectUrl,omitempty" example:"ws://10.0.0.1:8080/ws"`
+	LoginStatus int32    `json:"loginStatus" example:"0"`
+}
 
 var (
 	hostIPMode bool
 	serverAddr string
-	curUser    *userv1.User
-	uid        string
 	token      string
 	logger     *log.Logger
-	friends    []*friendpb.Friend
-	//
-	toName string
-	toUid  string
+	friends    []*Friend
+	// user
+	curUser  *User
+	userName string
+)
+
+var (
+	toUser = &Friend{}
 )
 
 const (
@@ -45,8 +65,7 @@ const (
 func init() {
 	flag.BoolVar(&hostIPMode, "host_ip_mode", true, "use host ip instead of localhost")
 	flag.StringVar(&serverAddr, "s", "127.0.0.1:18071", "gateway server addr")
-	flag.StringVar(&uid, "u", "", "from user id")
-	flag.StringVar(&toUid, "t", "", "to user id")
+	flag.StringVar(&userName, "u", "", "from user name")
 	f, err := os.Create("./log.log")
 	if err != nil {
 		panic(err)
@@ -58,8 +77,7 @@ func init() {
 		assert(err == nil, "get host ip failed")
 		serverAddr += ":18071"
 	}
-	uid += "@example.com"
-	toUid += "@example.com"
+	userName += "@example.com"
 }
 
 func getHostIP() (string, error) {
@@ -97,9 +115,7 @@ func assert(b bool, msg string) {
 //  remove logic of set toUid from flags,support select target user or parse target user form input message.
 
 func main() {
-	assert(uid != "", "from user id must be provided")
-	assert(toUid != "", "to user id must be provided")
-	assert(uid != toUid, "uid and toUid must be different")
+	assert(userName != "", "from user id must be provided")
 
 	addr, err := login()
 	if err != nil {
@@ -181,7 +197,7 @@ func connectWs(addr string) (*websocket.Conn, error) {
 }
 
 func login() (serverIP string, err error) {
-	req := fmt.Sprintf(`{"email":"%s","password":"123456"}`, uid)
+	req := fmt.Sprintf(`{"email":"%s","password":"123456"}`, userName)
 
 	resp, err := http.Post(fmt.Sprintf("http://%s%s", serverAddr, loginURI), "application/json", strings.NewReader(req))
 	if err != nil {
@@ -196,7 +212,7 @@ func login() (serverIP string, err error) {
 
 	var data struct {
 		*response.BaseResponse
-		Data *userv1.User
+		Data *User
 	}
 
 	if err := json.Unmarshal(body, &data); err != nil {
@@ -204,12 +220,12 @@ func login() (serverIP string, err error) {
 	}
 
 	if data.Code != 0 {
-		return "", fmt.Errorf("login user=%s, err= %v", uid, data.Reason)
+		return "", fmt.Errorf("login user=%s, err= %v", userName, data.Reason)
 	}
 
 	token = resp.Header.Get("Authorization")
 	curUser = data.Data
-	return *data.Data.ConnectUrl, nil
+	return *data.Data.ConnectURL, nil
 }
 
 func loadFriends() error {
@@ -237,9 +253,10 @@ func loadFriends() error {
 
 	var resp struct {
 		response.BaseResponse
-		Data []*friendpb.Friend `json:"data"`
+		Data []*Friend `json:"data"`
 	}
 
+	log.Println(string(b))
 	err = json.Unmarshal(b, &resp)
 	if err != nil {
 		logger.Println(err)
@@ -306,7 +323,7 @@ func handleConn(conn *websocket.Conn, g *gocui.Gui, dataChan chan []byte) {
 					return err1
 				}
 				fmt.Fprintln(v, "------")
-				fmt.Fprintf(v, "Receive|From:%s|Tp:%v|Content:%s|Seq:%d\n", msg.GetFrom(), msg.GetContentType(), msg.GetContent(), msg.GetMsgId())
+				fmt.Fprintf(v, "Receive|From:%d|Tp:%v|Content:%s|Seq:%d\n", msg.GetFrom(), msg.GetContentType(), msg.GetContent(), msg.GetMsgId())
 				return nil
 			})
 

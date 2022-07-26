@@ -9,6 +9,7 @@ import (
 	"github.com/golang-jwt/jwt/v4"
 
 	"github.com/go-goim/core/pkg/log"
+	"github.com/go-goim/core/pkg/types"
 )
 
 var (
@@ -22,7 +23,7 @@ func SetJwtHmacSecret(secret string) {
 }
 
 type JwtClaims struct {
-	UserID string `json:"uid"`
+	UserID types.ID `json:"uid"`
 	jwt.RegisteredClaims
 }
 
@@ -31,14 +32,14 @@ func (c *JwtClaims) Valid() error {
 		return err
 	}
 
-	if c.UserID == "" {
+	if c.UserID == 0 {
 		return fmt.Errorf("missing user id")
 	}
 
 	return nil
 }
 
-func newJwtClaims(userID string) *JwtClaims {
+func newJwtClaims(userID types.ID) *JwtClaims {
 	return &JwtClaims{
 		UserID: userID,
 		RegisteredClaims: jwt.RegisteredClaims{
@@ -48,7 +49,7 @@ func newJwtClaims(userID string) *JwtClaims {
 	}
 }
 
-func NewJwtToken(userID string) (string, error) {
+func NewJwtToken(userID types.ID) (string, error) {
 	claims := newJwtClaims(userID)
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	return token.SignedString(jwtHmacSecret)
@@ -67,7 +68,7 @@ func ParseJwtToken(tokenString string) (*JwtClaims, error) {
 	return nil, err
 }
 
-func SetJwtToHeader(c *gin.Context, userID string) error {
+func SetJwtToHeader(c *gin.Context, userID types.ID) error {
 	token, err := NewJwtToken(userID)
 	if err != nil {
 		return err
@@ -97,14 +98,23 @@ func AuthJwt(c *gin.Context) {
 		return
 	}
 
-	c.Set("uid", claims.UserID)
+	if err != nil {
+		log.Error("convert user id to int64 failed", "err", err, "user id", claims.UserID)
+		_ = c.AbortWithError(401, fmt.Errorf("unknown uid format")) // nolint: errcheck
+		return
+	}
+
+	c.Set(uidKey, claims.UserID)
 	c.Next()
 }
 
-func GetUID(c *gin.Context) string {
-	if uid, ok := c.Get("uid"); ok {
-		return uid.(string)
-	}
+const (
+	uidKey = "uid"
+)
 
-	return ""
+func GetUID(c *gin.Context) types.ID {
+	if uid, ok := c.Get(uidKey); ok {
+		return uid.(types.ID)
+	}
+	return 0
 }

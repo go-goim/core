@@ -97,8 +97,8 @@ github.com/gin-contrib/sse v0.1.0 h1:Y/yl/+YNO8GZSjAhjMsSuLt29uWRFHdHYUb5lYOV9qE
 github.com/gin-contrib/sse v0.1.0/go.mod h1:RHrZQHXnP2xjPF+u1gW/2HnVO7nvIa9PG3Gm+fLHvGI=
 github.com/gin-gonic/gin v1.8.1 h1:4+fr/el88TOO3ewCmQr8cx/CtZ/umlIRIs5M4NTNjf8=
 github.com/gin-gonic/gin v1.8.1/go.mod h1:ji8BvRH1azfM+SYow9zQ6SZMvR8qOMZHmsCuWR9tTTk=
-github.com/go-goim/api v0.0.6 h1:rvQ0Ztygv1HWdu0NqC8Q9ouWtLIeXs+tmUlKQudoBpo=
-github.com/go-goim/api v0.0.6/go.mod h1:Sak5Z8VCYRPjKgl5EOEaHM/B4o5W4ekz5zgKIZ/xJTI=
+github.com/go-goim/api v0.0.7 h1:JnECTk4ait2Nkzv2YJx16+H8vmQMX4qFeo/sncuTOtE=
+github.com/go-goim/api v0.0.7/go.mod h1:93A7t8glrNTyYuWA2n4IhalnCtgw4uQ9lGV3E2t17gk=
 github.com/go-kit/kit v0.8.0/go.mod h1:xBxKIO96dXMWWy0MnWVtmwkA9/13aqxPnvrjFYMA2as=
 github.com/go-kit/kit v0.9.0/go.mod h1:xBxKIO96dXMWWy0MnWVtmwkA9/13aqxPnvrjFYMA2as=
 github.com/go-kit/log v0.1.0/go.mod h1:zbhenjAZHb184qTLMA9ZjW7ThYL0H2mk7Q6pNt4vbaY=

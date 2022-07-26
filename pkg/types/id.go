@@ -1,5 +1,4 @@
-// Package snowflake provides a very simple Twitter snowflake generator and parser.
-package snowflake
+package types
 
 import (
 	"encoding/base64"
@@ -7,28 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"strconv"
-	"sync"
-	"time"
-)
-
-var (
-	// Epoch is set to the twitter snowflake epoch of Jan 01 2012 00:00:00 UTC in milliseconds
-	// You may customize this to set a different epoch for your application.
-	Epoch int64 = 1640966400000
-
-	// NodeBits holds the number of bits to use for Node
-	// Remember, you have a total 22 bits to share between Node/Step
-	NodeBits uint8 = 10
-
-	// StepBits holds the number of bits to use for Step
-	// Remember, you have a total 22 bits to share between Node/Step
-	StepBits uint8 = 12
-
-	nodeMax   int64 = -1 ^ (-1 << NodeBits)
-	nodeMask        = nodeMax << StepBits
-	stepMask  int64 = -1 ^ (-1 << StepBits)
-	timeShift       = NodeBits + StepBits
-	nodeShift       = StepBits
 )
 
 const encodeBase32Map = "ybndrfg8ejkmcpqxot1uwisza345h769"
@@ -38,19 +15,6 @@ var decodeBase32Map [256]byte
 const encodeBase58Map = "123456789abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ"
 
 var decodeBase58Map [256]byte
-
-// A JSONSyntaxError is returned from UnmarshalJSON if an invalid ID is provided.
-type JSONSyntaxError struct{ original []byte }
-
-func (j JSONSyntaxError) Error() string {
-	return fmt.Sprintf("invalid snowflake ID %q", string(j.original))
-}
-
-// ErrInvalidBase58 is returned by ParseBase58 when given an invalid []byte
-var ErrInvalidBase58 = errors.New("invalid base58")
-
-// ErrInvalidBase32 is returned by ParseBase32 when given an invalid []byte
-var ErrInvalidBase32 = errors.New("invalid base32")
 
 // Create maps for decoding Base58/Base32.
 // This speeds up the process tremendously.
@@ -73,80 +37,30 @@ func init() {
 	}
 }
 
-// A Node struct holds the basic information needed for a snowflake generator
-// node
-type Node struct {
-	mu    sync.Mutex
-	epoch time.Time
-	time  int64
-	node  int64
-	step  int64
+// A JSONSyntaxError is returned from UnmarshalJSON if an invalid ID is provided.
+type JSONSyntaxError struct{ original []byte }
 
-	nodeMax   int64
-	nodeMask  int64
-	stepMask  int64
-	timeShift uint8
-	nodeShift uint8
+func (j JSONSyntaxError) Error() string {
+	return fmt.Sprintf("invalid snowflake ID %q", string(j.original))
 }
 
-// An ID is a custom type used for a snowflake ID.  This is used so we can
-// attach methods onto the ID.
+// ErrInvalidBase58 is returned by ParseBase58 when given an invalid []byte
+var ErrInvalidBase58 = errors.New("invalid base58")
+
+// ErrInvalidBase32 is returned by ParseBase32 when given an invalid []byte
+var ErrInvalidBase32 = errors.New("invalid base32")
+
+// ID represents a unique snowflake ID.
 type ID int64
 
-// NewNode returns a new snowflake node that can be used to generate snowflake
-// IDs
-func NewNode(node int64) (*Node, error) {
-	n := Node{}
-	n.node = node
-	n.nodeMax = -1 ^ (-1 << NodeBits)
-	n.nodeMask = n.nodeMax << StepBits
-	n.stepMask = -1 ^ (-1 << StepBits)
-	n.timeShift = NodeBits + StepBits
-	n.nodeShift = StepBits
-
-	if n.node < 0 || n.node > n.nodeMax {
-		return nil, errors.New("Node number must be between 0 and " + strconv.FormatInt(n.nodeMax, 10))
-	}
-
-	var curTime = time.Now()
-	// add time.Duration to curTime to make sure we use the monotonic clock if available
-	n.epoch = curTime.Add(time.Unix(Epoch/1e3, (Epoch%1e3)*1e6).Sub(curTime))
-
-	return &n, nil
+// NewID returns a new snowflake ID
+func NewID() ID {
+	assertDefaultNode()
+	return ID(defaultNode.Generate())
 }
 
-// Generate creates and returns a unique snowflake ID
-// To help guarantee uniqueness
-// - Make sure your system is keeping accurate system time
-// - Make sure you never have multiple nodes running with the same node ID
-func (n *Node) Generate() ID {
-
-	n.mu.Lock()
-
-	now := time.Since(n.epoch).Milliseconds()
-
-	if now == n.time {
-		n.step = (n.step + 1) & n.stepMask
-
-		if n.step == 0 {
-			for now <= n.time {
-				now = time.Since(n.epoch).Milliseconds()
-			}
-		}
-	} else {
-		n.step = 0
-	}
-
-	n.time = now
-
-	r := ID((now)<<n.timeShift |
-		(n.node << n.nodeShift) |
-		(n.step),
-	)
-
-	n.mu.Unlock()
-	return r
-}
+// Note: If you want to get string of base58, use Base58() instead.
+//  ID.String() returns string(int64) and Base58() returns base58 string.
 
 // Int64 returns an int64 of the snowflake ID
 func (f ID) Int64() int64 {
@@ -208,7 +122,6 @@ func ParseBase16(id string) (ID, error) {
 // NOTE: There are many different base32 implementations so becareful when
 // doing any interoperation.
 func (f ID) Base32() string {
-
 	if f < 32 {
 		return string(encodeBase32Map[f])
 	}
@@ -231,7 +144,6 @@ func (f ID) Base32() string {
 // NOTE: There are many different base32 implementations so becareful when
 // doing any interoperation.
 func ParseBase32(b []byte) (ID, error) {
-
 	var id int64
 
 	for i := range b {
@@ -257,7 +169,6 @@ func ParseBase36(id string) (ID, error) {
 
 // Base58 returns a base58 string of the snowflake ID
 func (f ID) Base58() string {
-
 	if f < 58 {
 		return string(encodeBase58Map[f])
 	}
@@ -278,7 +189,6 @@ func (f ID) Base58() string {
 
 // ParseBase58 parses a base58 []byte into a snowflake ID
 func ParseBase58(b []byte) (ID, error) {
-
 	var id int64
 
 	for i := range b {
@@ -331,41 +241,34 @@ func ParseIntBytes(id [8]byte) ID {
 	return ID(int64(binary.BigEndian.Uint64(id[:])))
 }
 
-// Time returns an int64 unix timestamp in milliseconds of the snowflake ID time
-func (f ID) Time() int64 {
-	return (int64(f) >> timeShift) + Epoch
-}
-
-// Node returns an int64 of the snowflake ID node number
-func (f ID) Node() int64 {
-	return int64(f) & nodeMask >> nodeShift
-}
-
-// Step returns an int64 of the snowflake step (or sequence) number
-func (f ID) Step() int64 {
-	return int64(f) & stepMask
-}
+// We use int64 in internal services and use base58 for external services(like clients).
+// So those marshal/unmarshal methods are converts to/from base58.
 
 // MarshalJSON returns a json byte array string of the snowflake ID.
+// Note: this is not regular MarshalJSON, it converts the ID to a base58 string,
+//  instead of a regular strconv.FormatInt(id,10).
 func (f ID) MarshalJSON() ([]byte, error) {
-	buff := make([]byte, 0, 22)
+	b58 := f.Base58()
+	buff := make([]byte, 0, len(b58)+2)
 	buff = append(buff, '"')
-	buff = strconv.AppendInt(buff, int64(f), 10)
+	buff = append(buff, b58...)
 	buff = append(buff, '"')
 	return buff, nil
 }
 
 // UnmarshalJSON converts a json byte array of a snowflake ID into an ID type.
+// Note: this is not regular UnmarshalJSON, it converts the ID from a base58,
+//  instead of a regular strconv.ParseInt(id,10).
 func (f *ID) UnmarshalJSON(b []byte) error {
 	if len(b) < 3 || b[0] != '"' || b[len(b)-1] != '"' {
 		return JSONSyntaxError{b}
 	}
 
-	i, err := strconv.ParseInt(string(b[1:len(b)-1]), 10, 64)
+	id, err := ParseBase58(b[1 : len(b)-1])
 	if err != nil {
 		return err
 	}
 
-	*f = ID(i)
+	*f = id
 	return nil
 }

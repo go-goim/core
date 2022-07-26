@@ -2,22 +2,23 @@ package response
 
 import (
 	"strconv"
+
+	"github.com/go-goim/core/pkg/web"
 )
 
 type Meta struct {
-	Total    int               `json:"total"`
-	Page     int               `json:"page"`
-	PageSize int               `json:"page_size"`
-	Extra    map[string]string `json:"extra,omitempty"`
+	*web.Paging `json:",inline"`
+	Total       int32             `json:"total"`
+	Extra       map[string]string `json:"extra,omitempty"`
 }
 
-func (x *Meta) SetTotal(total int) *Meta {
+func (x *Meta) SetTotal(total int32) *Meta {
 	x.Total = total
 
 	return x
 }
 
-func (x *Meta) SetPaging(page, size int) *Meta {
+func (x *Meta) SetPaging(page, size int32) *Meta {
 	x.Page = page
 	x.PageSize = size
 

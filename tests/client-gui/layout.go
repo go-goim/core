@@ -11,7 +11,7 @@ import (
 
 	"github.com/jroimartin/gocui"
 
-	messagev1 "github.com/go-goim/api/message/v1"
+	"github.com/go-goim/core/pkg/types"
 )
 
 var layoutDone bool
@@ -44,7 +44,7 @@ func layout(g *gocui.Gui) error {
 		if err != gocui.ErrUnknownView {
 			return err
 		}
-		v.Title = fmt.Sprintf("Current: %s | %s ", toUid, toName)
+		v.Title = fmt.Sprintf("Current: %s | %s ", toUser.FriendName, toUser.FriendUID)
 	}
 
 	x0, y0, x1, y1 = input.getCoordinates(g.Size())
@@ -52,7 +52,7 @@ func layout(g *gocui.Gui) error {
 		if err != gocui.ErrUnknownView {
 			return err
 		}
-		v.Title = " " + uid + " "
+		v.Title = " " + curUser.Name + " "
 		v.Editable = true
 		v.Wrap = true
 	}
@@ -129,9 +129,15 @@ func selectFriend(g *gocui.Gui, v *gocui.View) error {
 		return err
 	}
 
-	toUid = line[:strings.Index(line, "|")]
-	toName = line[strings.Index(line, "|")+1:]
-	logger.Println("toUid:", toUid)
+	idxStr := line[:strings.Index(line, "|")]
+	idx, err := strconv.Atoi(idxStr)
+	if err != nil {
+		logger.Println(err)
+		return err
+	}
+
+	toUser = friends[idx]
+	logger.Println("toUid:", toUser.FriendUID)
 	_, err = g.SetCurrentView(inputView)
 	if err != nil {
 		logger.Println("set current view err:", err)
@@ -145,7 +151,7 @@ func selectFriend(g *gocui.Gui, v *gocui.View) error {
 			return err1
 		}
 
-		v.Title = fmt.Sprintf("Current: %s | %s ", toUid, toName)
+		v.Title = fmt.Sprintf("Current: %s | %s ", toUser.FriendName, toUser.FriendUID)
 		return nil
 	})
 
@@ -155,24 +161,32 @@ func selectFriend(g *gocui.Gui, v *gocui.View) error {
 func initFriends(g *gocui.Gui, v *gocui.View) error {
 	for i, friend := range friends {
 		if i == 0 {
-			toName = friend.FriendName
-			toUid = friend.FriendUid
+			toUser = friends[i]
 		}
 
-		fmt.Fprintln(v, fmt.Sprintf("%v|%v", friend.FriendUid, friend.FriendName))
+		fmt.Fprintln(v, fmt.Sprintf("%d|%v|%v", i, friend.FriendName, friend.FriendUID))
 	}
 
 	return nil
+}
+
+type SendMessageReq struct {
+	From        types.ID `json:"from" validate:"required" swaggertype:"string" example:"av8FMdRdcb"`
+	To          types.ID `json:"to" validate:"required" swaggertype:"string" example:"av8FMdRdcb"`
+	SessionType int32    `json:"sessionType" validate:"required" example:"1"`
+	SessionID   *string  `json:"sessionId" validate:"required" example:"1"`
+	ContentType int32    `json:"contentType" validate:"required" example:"1"`
+	Content     string   `json:"content" validate:"required" example:"hello"`
 }
 
 func resetInput(g *gocui.Gui, v *gocui.View) error {
 	buf := &bytes.Buffer{}
 	io.Copy(buf, v)
 	// todo need load friend list then send msg
-	m := &messagev1.SendMessageReq{
-		From:        curUser.Uid,
-		To:          toUid,
-		ContentType: 1,
+	m := &SendMessageReq{
+		From:        curUser.UID,
+		To:          toUser.FriendUID,
+		ContentType: 0,
 		Content:     strings.TrimSuffix(buf.String(), "\n"),
 	}
 	b, err := json.Marshal(&m)
