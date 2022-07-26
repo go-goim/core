@@ -182,14 +182,12 @@ func (u *user) queryFriend(email string) (uid string, err error) {
 	if err != nil {
 		log.Println(string(b))
 		panic(err)
-		return "", err
 	}
 
 	user := new(User)
 	if err := json.Unmarshal(b, user); err != nil {
 		log.Println(string(b))
 		panic(err)
-		return "", err
 	}
 
 	return user.UID, nil
@@ -238,7 +236,6 @@ func (u *user) queryFriendRequests() (ids []uint64, err error) {
 	if err := json.Unmarshal(b, &result); err != nil {
 		log.Println(string(b))
 		panic(err)
-		return nil, err
 	}
 
 	for _, v := range result.List {

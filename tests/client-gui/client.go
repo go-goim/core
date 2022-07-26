@@ -220,7 +220,7 @@ func login() (serverIP string, err error) {
 	}
 
 	if data.Code != 0 {
-		return "", fmt.Errorf("login user=%d, err= %v", userName, data.Reason)
+		return "", fmt.Errorf("login user=%s, err= %v", userName, data.Reason)
 	}
 
 	token = resp.Header.Get("Authorization")
