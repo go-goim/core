@@ -41,26 +41,28 @@ func ctxWithGormDB(ctx context.Context, tx *gorm.DB) context.Context {
 }
 
 // Transaction get gorm.DB from ctx and run Transaction Operation with ctx
-// How to use:
-//	// 所有 db 操作的第一参数为 context.Context, 然后通过 ctx 读取 DB 对象
-//	if err := db.Transaction(context.Background(), func(ctx context.Context) error {
-//		if err := d.Create(ctx); err != nil {
-//			return err
-//		}
-//
-//		d.Name = "123"
-//		return d.Update(ctx)
-//	}); err != nil {
-//		return
-//	}
-//
-//  func (d *Domain) Create(ctx context.Context) error {
-//	  return GetDBFromCtx(ctx).Create(d).Error
-//  }
-//
-//  func (d *Domain) Update(ctx context.Context) error {
-//	  return GetDBFromCtx(ctx).Updates(d).Error
-//  }
+/*
+	How to use:
+	// 所有 db 操作的第一参数为 context.Context, 然后通过 ctx 读取 DB 对象
+	if err := db.Transaction(context.Background(), func(ctx context.Context) error {
+		if err := d.Create(ctx); err != nil {
+			return err
+		}
+
+		d.Name = "123"
+		return d.Update(ctx)
+	}); err != nil {
+		return
+	}
+
+  func (d *Domain) Create(ctx context.Context) error {
+	  return GetDBFromCtx(ctx).Create(d).Error
+  }
+
+  func (d *Domain) Update(ctx context.Context) error {
+	  return GetDBFromCtx(ctx).Updates(d).Error
+  }
+*/
 func Transaction(ctx context.Context, f func(context.Context) error) error {
 	if ctx == nil {
 		ctx = context.Background()

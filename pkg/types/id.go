@@ -19,7 +19,6 @@ var decodeBase58Map [256]byte
 // Create maps for decoding Base58/Base32.
 // This speeds up the process tremendously.
 func init() {
-
 	for i := 0; i < len(decodeBase58Map); i++ {
 		decodeBase58Map[i] = 0xFF
 	}
@@ -119,7 +118,7 @@ func ParseBase16(id string) (ID, error) {
 
 // Base32 uses the z-base-32 character set but encodes and decodes similar
 // to base58, allowing it to create an even smaller result string.
-// NOTE: There are many different base32 implementations so becareful when
+// NOTE: There are many base32 implementations so be careful when
 // doing any interoperation.
 func (f ID) Base32() string {
 	if f < 32 {
@@ -141,7 +140,7 @@ func (f ID) Base32() string {
 }
 
 // ParseBase32 parses a base32 []byte into a snowflake ID
-// NOTE: There are many different base32 implementations so becareful when
+// NOTE: There are many base32 implementations so be careful when
 // doing any interoperation.
 func ParseBase32(b []byte) (ID, error) {
 	var id int64
@@ -246,7 +245,7 @@ func ParseIntBytes(id [8]byte) ID {
 
 // MarshalJSON returns a json byte array string of the snowflake ID.
 // Note: this is not regular MarshalJSON, it converts the ID to a base58 string,
-//  instead of a regular strconv.FormatInt(id,10).
+// instead of a regular strconv.FormatInt(id,10).
 func (f ID) MarshalJSON() ([]byte, error) {
 	b58 := f.Base58()
 	buff := make([]byte, 0, len(b58)+2)
@@ -258,7 +257,7 @@ func (f ID) MarshalJSON() ([]byte, error) {
 
 // UnmarshalJSON converts a json byte array of a snowflake ID into an ID type.
 // Note: this is not regular UnmarshalJSON, it converts the ID from a base58,
-//  instead of a regular strconv.ParseInt(id,10).
+// instead of a regular strconv.ParseInt(id,10).
 func (f *ID) UnmarshalJSON(b []byte) error {
 	if len(b) < 3 || b[0] != '"' || b[len(b)-1] != '"' {
 		return JSONSyntaxError{b}

@@ -9,8 +9,8 @@ import (
 )
 
 func TestNewJwtToken(t *testing.T) {
-	var uid int64 = 1
-	jwt, err := NewJwtToken(types.ID(uid))
+	var uid = types.ID(1)
+	jwt, err := NewJwtToken(uid)
 	assert.Nil(t, err)
 	assert.NotEmpty(t, jwt)
 

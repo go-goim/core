@@ -2,7 +2,7 @@ package request
 
 import (
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 
 	"github.com/gin-gonic/gin/binding"
@@ -38,7 +38,7 @@ func (b PbJSONBinding) Name() string {
 }
 
 func (b PbJSONBinding) Bind(req *http.Request, obj interface{}) error {
-	buf, err := ioutil.ReadAll(req.Body)
+	buf, err := io.ReadAll(req.Body)
 	if err != nil {
 		return err
 	}

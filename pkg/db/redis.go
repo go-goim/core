@@ -51,23 +51,24 @@ func Pipeline(ctx context.Context, fn func(pipeline redisv8.Pipeliner) error) er
 	return err
 }
 
-// TxPipeline get redisv8.Client from ctx and run Transaction Pipeline Operation with ctx
-//  It's same as Pipeline, but wraps queued commands with MULTI/EXEC.
-// How to use:
-// var (
-//		get *redisv8.StringCmd
-//	)
-//	err := TxPipeline(ctx, func(pipeline redisv8.Pipeliner) error {
-//		pipeline.Set(ctx, "key", "value", 0)
-//		get = pipeline.Get(ctx, "key")
-//		return nil
-//	})
-//	if err != nil {
-//		return err
-//	}
-//
-//	fmt.Println(get.Val())
-//	// Output: value
+// TxPipeline get redisv8.Client from ctx and run Transaction Pipeline Operation with ctx.
+// It's same as Pipeline, but wraps queued commands with MULTI/EXEC.
+/*
+	How to use:
+ 	var (
+		get *redisv8.StringCmd
+	)
+	err := TxPipeline(ctx, func(pipeline redisv8.Pipeliner) error {
+		pipeline.Set(ctx, "key", "value", 0)
+		get = pipeline.Get(ctx, "key")
+		return nil
+	})
+	if err != nil {
+		return err
+	}
+
+	fmt.Println(get.Val())
+*/
 func TxPipeline(ctx context.Context, fn func(pipeline redisv8.Pipeliner) error) error {
 	if ctx == nil {
 		ctx = context.Background()
