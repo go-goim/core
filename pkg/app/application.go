@@ -31,7 +31,7 @@ import (
 
 // Application is a common app entry.
 // All apps can use this Application as a base entry and add own fields and methods
-//  in their own app packages.
+// in their own app packages.
 type Application struct {
 	Core     *kratos.App
 	Register registry.RegisterDiscover

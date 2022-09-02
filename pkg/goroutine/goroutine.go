@@ -31,7 +31,7 @@ func init() {
 }
 
 // Submit new task to pool
-//  It will block if goroutine is up to max
+// It will block if goroutine is up to max
 func Submit(f func()) error {
 	return _defaultPool.Submit(f)
 }
