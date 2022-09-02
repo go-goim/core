@@ -21,7 +21,7 @@ require (
 	go.etcd.io/etcd/client/v3 v3.5.4
 	go.uber.org/atomic v1.9.0
 	go.uber.org/zap v1.21.0
-	google.golang.org/grpc v1.48.0
+	google.golang.org/grpc v1.49.0
 	google.golang.org/protobuf v1.28.0
 	gopkg.in/natefinch/lumberjack.v2 v2.0.0
 	gorm.io/driver/mysql v1.3.3
@@ -29,7 +29,7 @@ require (
 )
 
 require (
-	github.com/go-goim/api v0.0.7
+	github.com/go-goim/api v0.0.8
 	github.com/go-kratos/kratos/contrib/config/etcd/v2 v2.0.0-20220528114537-97c103a39562
 	github.com/panjf2000/ants/v2 v2.5.0
 	github.com/tsuna/gohbase v0.0.0-20220517082425-cb1f77f08e4f
