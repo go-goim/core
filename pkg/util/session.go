@@ -95,7 +95,7 @@ func ParseSession(s string) (tp messagev1.SessionType, from, to types.ID, err er
 	}
 
 	// if tp is group chat, to is group id
-	if messagev1.SessionType(tp) == messagev1.SessionType_GroupChat {
+	if tp == messagev1.SessionType_GroupChat {
 		to = from
 	}
 
