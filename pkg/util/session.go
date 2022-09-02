@@ -10,13 +10,14 @@ import (
 )
 
 // Session generate session id
-// switch tpye {
-// case messagev1.SessionType_SingleChat:
-// 	001fromUIDtoUID
-// case messagev1.SessionType_GroupChat:
-// 	010groupID00000000
-// }
-// to is groupID when type is groupChat
+/*
+ switch tpye {
+ case messagev1.SessionType_SingleChat:
+ 	001fromUIDtoUID
+ case messagev1.SessionType_GroupChat:
+ 	010groupID00000000
+ }
+*/
 func Session(tp messagev1.SessionType, from, to types.ID) string {
 	// check if tp is valid
 	if tp > 0xFF || tp < 0 {
