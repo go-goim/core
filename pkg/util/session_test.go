@@ -103,7 +103,7 @@ func TestParseSession(t *testing.T) {
 	tests := []struct {
 		name     string
 		args     args
-		wantTp   int32
+		wantTp   messagev1.SessionType
 		wantFrom types.ID
 		wantTo   types.ID
 		wantErr  assert.ErrorAssertionFunc

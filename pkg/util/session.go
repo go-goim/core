@@ -61,7 +61,7 @@ var (
 	ErrInvalidSessionIDLength = fmt.Errorf("invalid session id length")
 )
 
-func ParseSession(s string) (tp int32, from, to types.ID, err error) {
+func ParseSession(s string) (tp messagev1.SessionType, from, to types.ID, err error) {
 	// check if s is valid
 	if len(s) < 2+2*11 {
 		return 0, 0, 0, ErrInvalidSessionIDLength
@@ -69,11 +69,11 @@ func ParseSession(s string) (tp int32, from, to types.ID, err error) {
 
 	// first 2 bytes is session type
 	tpStr := s[:2]
-	i64, err := strconv.ParseInt(tpStr, 16, 32)
+	i32, err := strconv.ParseInt(tpStr, 16, 32)
 	if err != nil {
 		return 0, 0, 0, err
 	}
-	tp = int32(i64)
+	tp = messagev1.SessionType(i32)
 
 	// check if tp is valid
 	if tp > 0xFF || tp < 0 {
