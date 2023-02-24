@@ -17,7 +17,7 @@ require (
 	github.com/jroimartin/gocui v0.5.0
 	github.com/mattn/go-colorable v0.1.12
 	github.com/spf13/pflag v1.0.5
-	github.com/stretchr/testify v1.8.0
+	github.com/stretchr/testify v1.8.1
 	go.etcd.io/etcd/client/v3 v3.5.5
 	go.uber.org/atomic v1.9.0
 	go.uber.org/zap v1.24.0
