@@ -9,8 +9,7 @@ import (
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/proto"
 
-	responsepb "github.com/go-goim/api/transport/response"
-
+	"github.com/go-goim/api/errors"
 	"github.com/go-goim/core/pkg/mid"
 )
 
@@ -70,7 +69,7 @@ func (b PbJSONBinding) BindBody(body []byte, obj interface{}) error {
 
 	err := validate.Validate()
 	if err != nil {
-		return responsepb.NewBaseResponseWithMessage(responsepb.Code_InvalidParams, err.Error())
+		return errors.ErrorCode_InvalidParams.WithError(err)
 	}
 
 	return nil

@@ -5,10 +5,9 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	responsepb "github.com/go-goim/api/transport/response"
-	"github.com/go-goim/core/pkg/web"
-
+	"github.com/go-goim/api/errors"
 	"github.com/go-goim/core/pkg/log"
+	"github.com/go-goim/core/pkg/web"
 )
 
 func ErrorResp(c *gin.Context, err error) {
@@ -22,7 +21,7 @@ func ErrorRespWithStatus(c *gin.Context, httpCode int, err error) {
 }
 
 func SuccessResp(c *gin.Context, body interface{}, sf ...SetFunc) {
-	resp := NewResponseFromCode(responsepb.Code_OK).SetData(body)
+	resp := NewResponseFromCode(errors.ErrorCode_OK).SetData(body)
 	for _, f := range sf {
 		f(resp.BaseResponse)
 	}
@@ -32,16 +31,11 @@ func SuccessResp(c *gin.Context, body interface{}, sf ...SetFunc) {
 
 // OK is a shortcut for c.JSON(http.StatusOK, NewResponseFromPb(responsepb.OK))
 func OK(c *gin.Context) {
-	c.JSON(http.StatusOK, NewResponseFromCode(responsepb.Code_OK))
+	c.JSON(http.StatusOK, NewResponseFromCode(errors.ErrorCode_OK))
 }
 
 func errorResp(err error) *Response {
-	switch t := err.(type) {
-	case *responsepb.BaseResponse:
-		return NewResponseFromPb(t)
-	default:
-		return NewResponseFromPb(responsepb.NewBaseResponseWithError(err))
-	}
+	return NewResponseFromPb(errors.NewErrorWithError(err))
 }
 
 type SetFunc func(resp *BaseResponse)

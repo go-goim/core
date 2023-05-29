@@ -3,10 +3,11 @@ package grpc
 import (
 	"context"
 
-	responsepb "github.com/go-goim/api/transport/response"
 	kratosGrpc "github.com/go-kratos/kratos/v2/transport/grpc"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/connectivity"
+
+	"github.com/go-goim/api/errors"
 )
 
 type ClientConn struct {
@@ -63,7 +64,7 @@ type clientConnFactory struct {
 }
 
 var (
-	ErrConnNotReady = responsepb.Code_InternalError.BaseResponseWithMessage("conn not ready")
+	ErrConnNotReady = errors.ErrorCode_InternalError.WithMessage("connection is not ready")
 )
 
 func newClientConnFactory(insecure bool, opts ...kratosGrpc.ClientOption) *clientConnFactory {
