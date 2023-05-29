@@ -5,7 +5,7 @@ go 1.18
 require (
 	github.com/apache/rocketmq-client-go/v2 v2.1.1
 	github.com/btcsuite/btcd/btcutil v1.1.1
-	github.com/envoyproxy/protoc-gen-validate v0.6.7 // indirect
+	github.com/envoyproxy/protoc-gen-validate v0.9.1 // indirect
 	github.com/gin-gonic/gin v1.8.1
 	github.com/go-kratos/kratos/contrib/registry/etcd/v2 v2.0.0-20220301040457-03ad2b663624
 	github.com/go-kratos/kratos/v2 v2.5.4
@@ -17,19 +17,19 @@ require (
 	github.com/jroimartin/gocui v0.5.0
 	github.com/mattn/go-colorable v0.1.12
 	github.com/spf13/pflag v1.0.5
-	github.com/stretchr/testify v1.8.1
+	github.com/stretchr/testify v1.8.2
 	go.etcd.io/etcd/client/v3 v3.5.5
 	go.uber.org/atomic v1.9.0
 	go.uber.org/zap v1.24.0
-	google.golang.org/grpc v1.48.0
-	google.golang.org/protobuf v1.28.0
+	google.golang.org/grpc v1.49.0
+	google.golang.org/protobuf v1.30.0
 	gopkg.in/natefinch/lumberjack.v2 v2.0.0
 	gorm.io/driver/mysql v1.3.3
 	gorm.io/gorm v1.24.5
 )
 
 require (
-	github.com/go-goim/api v0.0.8
+	github.com/go-goim/api v0.0.9
 	github.com/go-kratos/kratos/contrib/config/etcd/v2 v2.0.0-20220528114537-97c103a39562
 	github.com/panjf2000/ants/v2 v2.7.1
 	github.com/tsuna/gohbase v0.0.0-20220517082425-cb1f77f08e4f
@@ -102,10 +102,10 @@ require (
 	go.opentelemetry.io/otel/trace v1.7.0 // indirect
 	go.uber.org/multierr v1.6.0 // indirect
 	golang.org/x/crypto v0.0.0-20210921155107-089bfa567519 // indirect
-	golang.org/x/net v0.0.0-20220425223048-2871e0cb64e4 // indirect
+	golang.org/x/net v0.7.0 // indirect
 	golang.org/x/sync v0.1.0 // indirect
-	golang.org/x/sys v0.0.0-20220728004956-3c1f35247d10 // indirect
-	golang.org/x/text v0.3.8 // indirect
+	golang.org/x/sys v0.5.0 // indirect
+	golang.org/x/text v0.7.0 // indirect
 	google.golang.org/genproto v0.0.0-20220519153652-3a47de7e79bd // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect

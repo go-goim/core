@@ -1,7 +1,7 @@
 package response
 
 import (
-	responsepb "github.com/go-goim/api/transport/response"
+	"github.com/go-goim/api/errors"
 )
 
 type BaseResponse struct {
@@ -40,18 +40,18 @@ type Response struct {
 	Data          interface{} `json:"data,omitempty"`
 }
 
-func NewResponseFromPb(base *responsepb.BaseResponse) *Response {
+func NewResponseFromPb(err *errors.Error) *Response {
 	return &Response{
 		BaseResponse: &BaseResponse{
-			Code:    int(base.Code),
-			Reason:  base.Reason,
-			Message: base.Message,
+			Code:    int(err.ErrorCode),
+			Reason:  err.Reason,
+			Message: err.Message,
 		},
 	}
 }
 
-func NewResponseFromCode(code responsepb.Code) *Response {
-	return NewResponseFromPb(code.BaseResponse())
+func NewResponseFromCode(code errors.ErrorCode) *Response {
+	return NewResponseFromPb(errors.NewErrorWithCode(code))
 }
 
 func (r *Response) SetData(data interface{}) *Response {
