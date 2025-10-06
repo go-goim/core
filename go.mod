@@ -1,6 +1,6 @@
 module github.com/go-goim/core
 
-go 1.18
+go 1.23
 
 require (
 	github.com/apache/rocketmq-client-go/v2 v2.1.1
@@ -22,7 +22,7 @@ require (
 	go.uber.org/atomic v1.9.0
 	go.uber.org/zap v1.24.0
 	google.golang.org/grpc v1.49.0
-	google.golang.org/protobuf v1.30.0
+	google.golang.org/protobuf v1.36.10
 	gopkg.in/natefinch/lumberjack.v2 v2.0.0
 	gorm.io/driver/mysql v1.3.3
 	gorm.io/gorm v1.24.5
